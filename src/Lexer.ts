@@ -4,6 +4,7 @@ export enum TokenKind {
   Elision,
   Article,
   Word,
+  Period,
   Space,
 }
 
@@ -14,5 +15,6 @@ export const lexer = buildLexer<TokenKind>([
   [true, /^[Dd]['’]/g, TokenKind.Elision],
   [true, /^[Dd][Ee]\b/g, TokenKind.Article],
   [true, /^[A-Za-zÀ-ÖØ-öø-ÿ]+/g, TokenKind.Word],
+  [true, /^\./g, TokenKind.Period],
   [false, /^\s+/g, TokenKind.Space],
 ]);

@@ -22,11 +22,18 @@ npm install
 
 ```
 src/
+  domain/models/      Blazon, Field, Tinctures — the parser's output, free of parsing concerns
   Lexer.ts            tokenizer (typescript-parsec buildLexer)
-  Parser.ts           grammar rules
+  Combinators.ts      combinators missing from typescript-parsec
+  Parser.ts           grammar rules, producing domain models directly
   index.ts            public API
-  TestParser.test.ts  tests
+  Test*.test.ts       tests
 ```
+
+The grammar builds domain models as it reduces — `TINCTURE` yields a `Tincture`,
+`FIELD` a `Field`, `BLAZON` a `Blazon` — so there is no separate assembly step.
+Vocabulary and elision are checked by `guard` (see `Combinators.ts`) so that a
+rejection fails one branch of the grammar instead of throwing out of the parse.
 
 ## Toolchain notes
 
