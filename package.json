@@ -1,0 +1,25 @@
+{
+  "name": "blason-parser",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf lib",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test:watch": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "description": "A parser for heraldic blazons, built on typescript-parsec",
+  "types": "lib/index.d.ts",
+  "dependencies": {
+    "typescript-parsec": "^0.3.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  }
+}
