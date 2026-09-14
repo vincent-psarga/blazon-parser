@@ -1,4 +1,4 @@
-# blason-parser
+# blazon-parser
 
 A parser for heraldic blazons, built on [typescript-parsec](https://github.com/microsoft/ts-parsec).
 
@@ -81,7 +81,7 @@ src/
       BlazonShield.tsx        one blazon, drawn
       Colourings.ts           the paintings a page offers: colour, hatching
       Languages.ts            the languages offered, and what each translates into
-      index.ts                the blason-parser/react entry point
+      index.ts                the blazon-parser/react entry point
 
   index.ts                    public API
 ```
@@ -138,7 +138,7 @@ articles, its elisions, its conjunction.
 and in hatching, since both are ways of saying the same tinctures.
 
 ```tsx
-import { BlazonPage, TincturesPage, DivisionsPage } from 'blason-parser/react';
+import { BlazonPage, TincturesPage, DivisionsPage } from 'blazon-parser/react';
 
 createRoot(document.getElementById('root')!).render(<BlazonPage />);
 ```
@@ -151,8 +151,8 @@ demo carries its own and serves them at `/doc`, `/doc/tinctures` and
 `/doc/divisions`.
 
 It lives behind its own entry point, and React is an optional peer dependency, so
-installing the library on a backend never pulls React in — `require('blason-parser')`
-loads no React module at all. Only `blason-parser/react` needs it.
+installing the library on a backend never pulls React in — `require('blazon-parser')`
+loads no React module at all. Only `blazon-parser/react` needs it.
 
 The page ships unstyled, offering `.blazon-page` and `.blazon-shield` to hang a
 look on; a library should not impose one, and a stylesheet imported from the
