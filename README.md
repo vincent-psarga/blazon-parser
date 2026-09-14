@@ -166,3 +166,12 @@ stylesheet of its own — `npm run dev` — and stays out of the published build
 - Vitest transforms TS with esbuild and does **not** type-check. `tsconfig.json` excludes
   test files so they stay out of `lib/`; `tsconfig.test.json` adds them back so
   `npm run typecheck` still covers them. Run it in CI alongside `npm test`.
+
+## Licence
+
+The source is MIT; see `LICENSE`.
+
+The demo self-hosts **Archivo Narrow** (Omnibus-Type) under the SIL Open Font
+License 1.1, which is a separate licence from this project's — see
+`demo/fonts/OFL.txt`. The font is used only by the demo, and `package.json` ships
+`lib` alone, so the published package contains no font.
