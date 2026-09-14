@@ -4,6 +4,7 @@ import { ArmorialsPage, armorialPath } from './pages/ArmorialsPage';
 import { BlazonPage } from './pages/BlazonPage';
 import { DivisionsPage } from './pages/DivisionsPage';
 import { DocIndexPage } from './pages/DocIndexPage';
+import { OrdinariesPage } from './pages/OrdinariesPage';
 import { TincturesPage } from './pages/TincturesPage';
 import { ARMORIALS } from './armorials';
 
@@ -61,6 +62,7 @@ export function App() {
   const docs = [
     { path: '/doc/tinctures', label: 'Tinctures' },
     { path: '/doc/divisions', label: 'Divisions' },
+    { path: '/doc/ordinaries', label: 'Ordinaries' },
   ];
 
   const readThis = (blazon: string) => navigate(`/?b=${encodeURIComponent(blazon)}`);
@@ -70,6 +72,7 @@ export function App() {
     '/doc': <DocIndexPage onGo={navigate} />,
     '/doc/tinctures': <TincturesPage onTry={readThis} />,
     '/doc/divisions': <DivisionsPage onTry={readThis} />,
+    '/doc/ordinaries': <OrdinariesPage onTry={readThis} />,
     '/armorials': <ArmorialsPage armorials={ARMORIALS} onGo={navigate} />,
   };
 

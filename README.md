@@ -35,8 +35,9 @@ script.
 src/
   domain/
     models/                   what a blazon is, in English
-      Blazon.ts               a blazon: its field
+      Blazon.ts               a blazon: its field, and what the field bears
       Field.ts                a plain or divided field; DivisionType
+      Ordinary.ts             a band laid on the field; OrdinaryType
       Tinctures.ts            Metals, Colours, Furs, and the Tincture union
     services/                 what the library offers, as interfaces
       IBlazonParser.ts        text -> Blazon
@@ -86,6 +87,7 @@ demo/
     BlazonPage.tsx            type a blazon, read its translation, see the arms
     TincturesPage.tsx         every tincture, named, painted and hatched
     DivisionsPage.tsx         every partition, named and drawn
+    OrdinariesPage.tsx        every ordinary, named and drawn
     DocIndexPage.tsx          what a blazon may be, and what it may not
     ArmorialsPage.tsx         the armorials on offer, and how much each parses
     ArmorialPage.tsx          one armorial, read entry by entry
@@ -108,10 +110,26 @@ caught up. A term may be spelled several ways — `['mantelé-versé',
 'mantelé-renversé']` — with the first spelling used for writing it back out.
 
 A blazon has the same shape in every language — a field, plain or divided between
-two tinctures — so one rule reads them all and one sentence writes them all. A
-language supplies a `BlazonGrammar` for reading and a `BlazonWording` for writing:
-its tinctures, its partitions, and its conjunction. French wraps its tinctures in
-an article that has to agree with the word it introduces; English names them bare.
+two tinctures, bearing at most one ordinary — so one rule reads them all and one
+sentence writes them all. A language supplies a `BlazonGrammar` for reading and a
+`BlazonWording` for writing: its tinctures, its partitions, its ordinaries, and
+its conjunction. French wraps its tinctures in an article that has to agree with
+the word it introduces; English names them bare.
+
+An ordinary is laid on the field rather than cutting it, and carries a tincture of
+its own. Most are named after the same line as a partition, so what tells the two
+apart is the word in front: English divides `per fess` and charges `a fess`, while
+French changes the word outright — `coupé` divides where `fasce` is borne, and
+`tranché` and `taillé` divide along the lines the `bande` and the `barre` run. The
+French article agrees in gender as well — `à la fasce` but `au chevron` — and
+gender can no more be read off a spelling than a mute h can, so the feminine ones
+are named in `FrenchGrammar` beside them.
+
+Eight ordinaries so far — chief, pale, fess, bend, bend sinister, chevron, cross
+and saltire — each a plain band of a plain tincture, and a field bears one at
+most. The last two are single charges for all that they are drawn twice over: a
+cross is the pale and the fess crossing, a saltire the two diagonals. Nothing may
+be charged upon one, and no line but the straight one is read.
 
 Drawing is a third service over the same models, and needs no language at all: a
 `ColorModel` says what each tincture is painted with, so the shades stay out of
@@ -154,8 +172,8 @@ single entry point — `require('blazon-parser')` pulls in no view layer at all.
 
 `BlazonPage` takes a blazon, shows it translated, and draws the arms — in colour
 and in hatching, since both are ways of saying the same tinctures.
-`TincturesPage` and `DivisionsPage` document the vocabulary on one shared
-anatomy: the whole closed set hangs present at once, and the term being read is
+`TincturesPage`, `DivisionsPage` and `OrdinariesPage` document the vocabulary on
+one shared anatomy: the whole closed set hangs present at once, and the term being read is
 struck forward at full measure in both languages and both paintings.
 `ArmorialsPage` and `ArmorialPage` read a real armorial and own up to how much of
 it parses.
@@ -163,7 +181,8 @@ it parses.
 The pages are components and nothing more — routing belongs to whatever mounts
 them, so `App.tsx` carries its own, small enough not to need a router and honest
 about the fact that a real application would bring one. It serves `/`, `/doc`,
-`/doc/tinctures`, `/doc/divisions`, `/armorials` and `/armorial/<slug>`.
+`/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`, `/armorials` and
+`/armorial/<slug>`.
 
 `pages/` holds what answers to an address, `components/` what more than one page
 is built from, and `utils/` the small things neither of those should carry: the

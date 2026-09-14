@@ -32,10 +32,10 @@ describe('the rail', () => {
     expect(inMenu('Tinctures')).toBeNull();
   });
 
-  test('offers the index alongside both pages when opened', async () => {
+  test('offers the index alongside every page when opened', async () => {
     render(<App />);
     await openDoc();
-    for (const name of ['Everything', 'Tinctures', 'Divisions']) {
+    for (const name of ['Everything', 'Tinctures', 'Divisions', 'Ordinaries']) {
       expect(inMenu(name)).toBeInTheDocument();
     }
   });
@@ -44,6 +44,7 @@ describe('the rail', () => {
     ['Everything', 'The vocabulary', '/doc'],
     ['Tinctures', 'Tinctures', '/doc/tinctures'],
     ['Divisions', 'Divisions', '/doc/divisions'],
+    ['Ordinaries', 'Ordinaries', '/doc/ordinaries'],
   ])('goes to %s', async (link, title, path) => {
     render(<App />);
     await openDoc();
@@ -77,15 +78,19 @@ describe('the index', () => {
   test('says what a blazon may be, and promises nothing more', async () => {
     window.history.pushState(null, '', '/doc');
     render(<App />);
-    expect(screen.getByText(/no charges or ordinaries yet/)).toBeInTheDocument();
+    expect(screen.getByText(/no other charges yet/)).toBeInTheDocument();
   });
 
-  test('leads to both references', async () => {
+  test.each([
+    ['Tinctures', 'Tinctures'],
+    ['Divisions', 'Divisions'],
+    ['Ordinaries', 'Ordinaries'],
+  ])('leads to the %s reference', async (link, title) => {
     window.history.pushState(null, '', '/doc');
     render(<App />);
     const index = screen.getByRole('navigation', { name: 'Documentation' });
-    await userEvent.setup().click(within(index).getByRole('link', { name: /Tinctures/ }));
-    expect(heading()).toBe('Tinctures');
+    await userEvent.setup().click(within(index).getByRole('link', { name: new RegExp(link) }));
+    expect(heading()).toBe(title);
   });
 });
 
@@ -100,6 +105,17 @@ describe('handing a term to the translator', () => {
     expect(heading()).toBe('Blazon');
     expect(screen.getByLabelText('Blazon')).toHaveValue('De sinople.');
     expect(window.location.search).toContain('De%20sinople.');
+  });
+
+  test('carries an ordinary over as a blazon the reader can then read back', async () => {
+    window.history.pushState(null, '', '/doc/ordinaries');
+    render(<App />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'saltire' }));
+    await user.click(screen.getByRole('button', { name: 'Read this one' }));
+
+    expect(heading()).toBe('Blazon');
+    expect(screen.getByLabelText('Blazon')).toHaveValue("D'argent au sautoir de gueules.");
   });
 
   test('reads a blazon named in the address on arrival', () => {

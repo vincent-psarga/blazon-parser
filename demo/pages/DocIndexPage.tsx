@@ -1,8 +1,10 @@
 import { DivisionType } from '../../src/domain/models/Field';
+import { OrdinaryType } from '../../src/domain/models/Ordinary';
 import { Colours, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
 import { nameOf } from '../../src/domain/translations/Translation';
 import { EnglishTinctures } from '../../src/domain/translations/en/Tinctures';
 import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions';
+import { EnglishOrdinaryType } from '../../src/domain/translations/en/Ordinaries';
 import { BlazonShield } from '../components/BlazonShield';
 import { COLOURINGS, OUTLINE } from '../utils/Colourings';
 
@@ -12,6 +14,7 @@ export interface DocIndexPageProps {
 }
 
 const DIVISIONS = Object.values(DivisionType);
+const ORDINARIES = Object.values(OrdinaryType);
 
 // An index of a closed set shows the set. Two links in an empty half-screen
 // index nothing.
@@ -36,6 +39,16 @@ const PAGES = [
       blazon: { field: { type, firstTincture: Metals.argent, secondTincture: Colours.gules } },
     })),
   },
+  {
+    path: '/doc/ordinaries',
+    name: 'Ordinaries',
+    note: 'Each borne gules on the same argent field, so the only thing that changes from one to the next is the band.',
+    arms: ORDINARIES.map((type) => ({
+      key: type,
+      label: nameOf(EnglishOrdinaryType, type),
+      blazon: { field: { tincture: Metals.argent }, ordinary: { type, tincture: Colours.gules } },
+    })),
+  },
 ];
 
 export function DocIndexPage({ onGo }: DocIndexPageProps) {
@@ -43,12 +56,13 @@ export function DocIndexPage({ onGo }: DocIndexPageProps) {
     <main className="plane">
       <h1>The vocabulary</h1>
       <p className="plane__extent">
-        {TINCTURES.length} tinctures · {DIVISIONS.length} partitions
+        {TINCTURES.length} tinctures · {DIVISIONS.length} partitions · {ORDINARIES.length}{' '}
+        ordinaries
       </p>
       <p className="plane__lead">
-        Everything the parser reads, in French and in English. A blazon it accepts is a field: one
-        tincture, or two divided by a line. There are no charges or ordinaries yet, and nothing here
-        promises any.
+        Everything the parser reads, in French and in English. A blazon it accepts is a field — one
+        tincture, or two divided by a line — and at most one plain band laid over it. There are no
+        other charges yet, and nothing here promises any.
       </p>
 
       <nav className="index" aria-label="Documentation">

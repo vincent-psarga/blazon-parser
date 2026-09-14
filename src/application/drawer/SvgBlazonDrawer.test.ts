@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { DivisionType } from '../../domain/models/Field';
+import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { ColorModel, isPattern } from '../../domain/services/IBlazonDrawer';
 import { HatchingColours } from '../../infra/colours/HatchingColours';
@@ -77,6 +78,91 @@ describe('SvgBlazonDrawer', () => {
         },
       });
       expect(fills(svg)).toEqual(['#000000', '#000000']);
+    });
+  });
+
+  describe('a field bearing an ordinary', () => {
+    test.each(Object.values(OrdinaryType))('lays %s over the field', (type) => {
+      const svg = drawer.draw({
+        field: { tincture: Colours.azure },
+        ordinary: { type, tincture: Metals.or },
+      });
+      // The field is painted first and the ordinary over it, so the shield's own
+      // colour comes before the band's in the document. A saltire contributes two
+      // shapes rather than one, so what follows is counted rather than listed.
+      const [field, ...borne] = fills(svg);
+      expect(field).toBe(WikipediaColours[Colours.azure]);
+      expect(borne.length).toBeGreaterThan(0);
+      expect(borne.every((fill) => fill === WikipediaColours[Metals.or])).toBe(true);
+    });
+
+    test('draws a fess as a band across the middle of the shield', () => {
+      const svg = drawer.draw({
+        field: { tincture: Colours.azure },
+        ordinary: { type: OrdinaryType.fess, tincture: Metals.or },
+      });
+      expect(svg).toContain('<rect x="0" y="80" width="200" height="80" fill="#ffd700"/>');
+    });
+
+    test('draws a saltire as two limbs crossing, painted alike', () => {
+      const svg = drawer.draw({
+        field: { tincture: Colours.azure },
+        ordinary: { type: OrdinaryType.saltire, tincture: Metals.argent },
+      });
+      expect(svg.split('<polygon').length - 1).toBe(2);
+      expect(fills(svg).slice(1)).toEqual(['#ffffff', '#ffffff']);
+    });
+
+    test('keeps the ordinary inside the shield', () => {
+      const svg = drawer.draw({
+        field: { tincture: Colours.azure },
+        ordinary: { type: OrdinaryType.chevron, tincture: Metals.or },
+      });
+      const arms = svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>'));
+      expect(arms).toContain('<polygon');
+    });
+
+    test('lays an ordinary on a divided field over both halves', () => {
+      const svg = drawer.draw({
+        field: {
+          type: DivisionType.pale,
+          firstTincture: Colours.azure,
+          secondTincture: Metals.or,
+        },
+        ordinary: { type: OrdinaryType.fess, tincture: Colours.gules },
+      });
+      expect(fills(svg)).toEqual(['#0000ff', '#ffd700', '#ff0000']);
+    });
+
+    test('paints an ordinary of the same tincture as its field', () => {
+      const svg = drawer.draw({
+        field: { tincture: Colours.sable },
+        ordinary: { type: OrdinaryType.fess, tincture: Colours.sable },
+      });
+      expect(fills(svg)).toEqual(['#000000', '#000000']);
+    });
+
+    test('carries the pattern an ordinary is painted with', () => {
+      const hatched = new SvgBlazonDrawer(HatchingColours);
+      const svg = hatched.draw({
+        field: { tincture: Metals.or },
+        ordinary: { type: OrdinaryType.fess, tincture: Colours.azure },
+      });
+      const paint = HatchingColours[Colours.azure];
+      expect(isPattern(paint)).toBe(true);
+      expect(svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'))).toContain('hatch-azure');
+      expect(svg).toContain(isPattern(paint) ? `fill="${paint.fill}"` : '');
+    });
+
+    test('draws nothing extra when the field bears nothing', () => {
+      const bare = drawer.draw({ field: { tincture: Colours.azure } });
+      expect(bare).not.toContain('<polygon');
+      expect(bare).not.toContain('<rect');
+    });
+
+    test('draws what was read from a blazon', () => {
+      const svg = drawer.draw(parser.parse("D'azur à la fasce d'or"));
+      expect(fills(svg)).toEqual(['#0000ff', '#ffd700']);
     });
   });
 

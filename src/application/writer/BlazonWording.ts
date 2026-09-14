@@ -1,5 +1,6 @@
 import { Blazon } from '../../domain/models/Blazon';
 import { Division, DivisionType, Field, isDivision } from '../../domain/models/Field';
+import { Ordinary, OrdinaryType } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { Translation, nameOf } from '../../domain/translations/Translation';
 
@@ -11,8 +12,11 @@ import { Translation, nameOf } from '../../domain/translations/Translation';
 export interface BlazonWording {
   readonly tinctures: Translation<Tincture>;
   readonly divisions: Translation<DivisionType>;
+  readonly ordinaries: Translation<OrdinaryType>;
   /** How a tincture is introduced: "d'or" in French, plain "or" in English. */
   readonly introduce: (name: string) => string;
+  /** How an ordinary is introduced: "à la fasce" in French, "a fess" in English. */
+  readonly bear: (name: string) => string;
   /** The conjunction joining the halves of a divided field. */
   readonly conjunction: string;
 }
@@ -25,7 +29,16 @@ export interface BlazonWording {
  * describes is the same, which is what the round trip preserves.
  */
 export function writeBlazon(wording: BlazonWording, blazon: Blazon): string {
-  return `${capitalise(writeField(wording, blazon.field))}.`;
+  const field = capitalise(writeField(wording, blazon.field));
+  const borne = blazon.ordinary === undefined ? '' : ` ${writeOrdinary(wording, blazon.ordinary)}`;
+  return `${field}${borne}.`;
+}
+
+function writeOrdinary(wording: BlazonWording, ordinary: Ordinary): string {
+  return [
+    wording.bear(nameOf(wording.ordinaries, ordinary.type)),
+    writeTincture(wording, ordinary.tincture),
+  ].join(' ');
 }
 
 function writeField(wording: BlazonWording, field: Field): string {

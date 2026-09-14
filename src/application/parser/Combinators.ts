@@ -123,6 +123,45 @@ export function term<T extends string>(
 }
 
 /**
+ * Matches something optional that still explains itself once it has begun.
+ *
+ * `optional` is silent by design, which is right for a phrase that is simply not
+ * there. A phrase whose opening words were read and which then went wrong is a
+ * different thing: those words committed the reading, so the complaint belongs to
+ * the blazon rather than to the grammar's own backtracking. Failing further along
+ * than the token it would have started at is what tells the two apart.
+ */
+export function optionalUnlessBegun<TKind, TResult>(
+  parser: Parser<TKind, TResult>
+): Parser<TKind, TResult | undefined> {
+  return {
+    parse(token: Token<TKind> | undefined): ParserOutput<TKind, TResult | undefined> {
+      const output = parser.parse(token);
+      if (output.successful || began(token, output.error)) {
+        return output;
+      }
+      return {
+        successful: true,
+        candidates: [{ firstToken: token, nextToken: token, result: undefined }],
+        error: undefined,
+      };
+    },
+  };
+}
+
+/**
+ * Whether a reading had got under way before it failed.
+ *
+ * Failing at the very token it would have started on means nothing here
+ * introduces such a phrase at all. Failing later — or running out of input,
+ * which is later than any token — means the opening words were read and what
+ * they promised is still owed.
+ */
+function began<TKind>(token: Token<TKind> | undefined, error: ParseError): boolean {
+  return token !== undefined && (error.pos === undefined || error.pos.index > token.pos.index);
+}
+
+/**
  * Matches something optional, without reporting why it was absent.
  *
  * typescript-parsec's own opt_sc carries the failed branch's error forward, and

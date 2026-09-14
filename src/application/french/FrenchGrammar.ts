@@ -1,3 +1,4 @@
+import { seq } from 'typescript-parsec';
 import { TokenKind } from '../lexer/Lexer';
 import { keyword } from '../parser/Combinators';
 
@@ -29,7 +30,26 @@ export function withArticle(word: string): string {
   return elides(word) ? `d'${word}` : `de ${word}`;
 }
 
+/**
+ * Ordinaries whose French name is feminine.
+ *
+ * The field bears "la fasce" but "le chevron", so "à" contracts to "au" for one
+ * and stays "à la" for the other. Gender can no more be read off a spelling than
+ * a mute h can, so the feminine ones are named, as the mute h's are above.
+ */
+const FEMININE = new Set(['fasce', 'bande', 'barre', 'croix']);
+
+/** Renders an ordinary as the field bears it: "à la fasce", "au chevron". */
+export function bearing(word: string): string {
+  return FEMININE.has(word) ? `à la ${word}` : `au ${word}`;
+}
+
 /** The conjunction joining the halves of a divided field. */
 export const CONJUNCTION = 'et';
 
 export const AND = keyword(CONJUNCTION);
+
+// The two shapes "à" takes before an ordinary. Each is a fixed phrase, so a rule
+// built on one knows which article it read without having to carry it along.
+export const A_LA = seq(keyword('à'), keyword('la'));
+export const AU = keyword('au');

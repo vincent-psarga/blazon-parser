@@ -1,5 +1,6 @@
 import { Blazon } from '../../domain/models/Blazon';
 import { DivisionType, Field, isDivision } from '../../domain/models/Field';
+import { Ordinary, OrdinaryType } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import {
   ColorModel,
@@ -21,17 +22,23 @@ const OUTLINE_WIDTH = 3;
 // rather than left to collide with whatever else the page calls its clip path.
 const SHIELD_CLIP = 'blason-shield';
 
-type Half = (fill: string) => string;
+type Shape = (fill: string) => string;
 
 const rect =
-  (x: number, y: number, width: number, height: number): Half =>
+  (x: number, y: number, width: number, height: number): Shape =>
   (fill) =>
     `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${fill}"/>`;
 
-const triangle =
-  (points: string): Half =>
+const polygon =
+  (points: string): Shape =>
   (fill) =>
     `<polygon points="${points}" fill="${fill}"/>`;
+
+/** Two shapes painted the same, for an ordinary that crosses itself. */
+const both =
+  (first: Shape, second: Shape): Shape =>
+  (fill) =>
+    first(fill) + second(fill);
 
 /**
  * Where the two halves of a divided field lie, before the shield clips them.
@@ -41,11 +48,52 @@ const triangle =
  * from where it starts. Being keyed on DivisionType, a partition added to the
  * vocabulary breaks this until it is given a shape.
  */
-const HALVES: Record<DivisionType, readonly [Half, Half]> = {
+const HALVES: Record<DivisionType, readonly [Shape, Shape]> = {
   [DivisionType.pale]: [rect(0, 0, 100, HEIGHT), rect(100, 0, 100, HEIGHT)],
   [DivisionType.fess]: [rect(0, 0, WIDTH, 120), rect(0, 120, WIDTH, 120)],
-  [DivisionType.bend]: [triangle('0,0 200,0 200,240'), triangle('0,0 200,240 0,240')],
-  [DivisionType.bendSinister]: [triangle('200,0 0,0 0,240'), triangle('200,0 0,240 200,240')],
+  [DivisionType.bend]: [polygon('0,0 200,0 200,240'), polygon('0,0 200,240 0,240')],
+  [DivisionType.bendSinister]: [polygon('200,0 0,0 0,240'), polygon('200,0 0,240 200,240')],
+};
+
+/**
+ * A band running corner to corner, its half-width measured across the shield
+ * rather than square to the band: the diagonal is drawn by sliding the top and
+ * bottom edges sideways, which keeps the arithmetic in whole numbers.
+ */
+const bendBand = (half: number): Shape =>
+  polygon(`${-half},0 ${half},0 ${WIDTH + half},${HEIGHT} ${WIDTH - half},${HEIGHT}`);
+
+const bendSinisterBand = (half: number): Shape =>
+  polygon(`${WIDTH - half},0 ${WIDTH + half},0 ${half},${HEIGHT} ${-half},${HEIGHT}`);
+
+/** A bend takes a third of the field; limbs that cross are narrower, being two. */
+const BEND = 40;
+const LIMB = 26;
+const ARM = 28;
+
+/**
+ * The band each ordinary lays over the field, before the shield clips it.
+ *
+ * Every one is drawn past the edges it meets and left to the clip path, so the
+ * band keeps its own width and angle instead of being fitted to the shield's
+ * curve. Being keyed on OrdinaryType, an ordinary added to the vocabulary breaks
+ * this until it is given a shape.
+ */
+const ORDINARIES: Record<OrdinaryType, Shape> = {
+  // A third of the shield each: across the top, down the middle, across the waist.
+  [OrdinaryType.chief]: rect(0, 0, WIDTH, 80),
+  [OrdinaryType.pale]: rect(67, 0, 66, HEIGHT),
+  [OrdinaryType.fess]: rect(0, 80, WIDTH, 80),
+  [OrdinaryType.bend]: bendBand(BEND),
+  [OrdinaryType.bendSinister]: bendSinisterBand(BEND),
+  [OrdinaryType.chevron]: polygon('0,168 100,68 200,168 200,228 100,128 0,228'),
+  // The last two are one charge apiece for all that they are drawn twice over:
+  // the cross is the pale and the fess crossing, the saltire the two diagonals.
+  [OrdinaryType.cross]: both(
+    rect(WIDTH / 2 - ARM, 0, ARM * 2, HEIGHT),
+    rect(0, HEIGHT / 2 - ARM, WIDTH, ARM * 2)
+  ),
+  [OrdinaryType.saltire]: both(bendBand(LIMB), bendSinisterBand(LIMB)),
 };
 
 /** Draws a blazon as an SVG shield. */
@@ -67,12 +115,18 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${HEIGHT}"`,
       ` width="${WIDTH}" height="${HEIGHT}">`,
       `<defs><clipPath id="${SHIELD_CLIP}"><path d="${SHIELD}"/></clipPath>`,
-      patternsFor(blazon.field, colours),
+      patternsFor(blazon, colours),
       `</defs>`,
-      `<g clip-path="url(#${SHIELD_CLIP})">${this.paintField(blazon.field, colours)}</g>`,
+      `<g clip-path="url(#${SHIELD_CLIP})">${this.paintArms(blazon, colours)}</g>`,
       `<path d="${SHIELD}" fill="none" stroke="${escapeAttribute(this.outline)}" stroke-width="${OUTLINE_WIDTH}"/>`,
       `</svg>`,
     ].join('');
+  }
+
+  /** The field first, then whatever it bears: an ordinary is laid over, not under. */
+  private paintArms(blazon: Blazon, colours: ColorModel): string {
+    const field = this.paintField(blazon.field, colours);
+    return blazon.ordinary === undefined ? field : field + paintOrdinary(blazon.ordinary, colours);
   }
 
   private paintField(field: Field, colours: ColorModel): string {
@@ -88,25 +142,33 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
   }
 }
 
+function paintOrdinary(ordinary: Ordinary, colours: ColorModel): string {
+  return ORDINARIES[ordinary.type](colourOf(colours, ordinary.tincture));
+}
+
 function colourOf(colours: ColorModel, tincture: Tincture): string {
   const paint = colours[tincture];
   return escapeAttribute(isPattern(paint) ? paint.fill : paint);
 }
 
-function tincturesOf(field: Field): readonly Tincture[] {
-  return isDivision(field) ? [field.firstTincture, field.secondTincture] : [field.tincture];
+function tincturesOf(blazon: Blazon): readonly Tincture[] {
+  const field = isDivision(blazon.field)
+    ? [blazon.field.firstTincture, blazon.field.secondTincture]
+    : [blazon.field.tincture];
+  return blazon.ordinary === undefined ? field : [...field, blazon.ordinary.tincture];
 }
 
 /**
- * The definitions the field's own tinctures call for, and no others — a shield
- * carries the patterns it is painted with, not every pattern that exists.
+ * The definitions the blazon's own tinctures call for, and no others — a shield
+ * carries the patterns it is painted with, not every pattern that exists. An
+ * ordinary counts among them: it is painted with a tincture like anything else.
  *
  * A definition is markup, so it is placed as it stands rather than escaped. A
  * colour model is written in code alongside the drawer, not taken from a reader.
  */
-function patternsFor(field: Field, colours: ColorModel): string {
+function patternsFor(blazon: Blazon, colours: ColorModel): string {
   const definitions = new Map<string, string>();
-  for (const tincture of tincturesOf(field)) {
+  for (const tincture of tincturesOf(blazon)) {
     const paint = colours[tincture];
     if (isPattern(paint)) {
       definitions.set(paint.fill, paint.definition);
