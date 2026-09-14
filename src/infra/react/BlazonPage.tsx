@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Blazon } from '../../domain/models/Blazon';
 import { BlazonShield } from './BlazonShield';
-import { COLOURINGS, Colouring } from './Colourings';
+import { COLOURINGS, Colouring, OUTLINE } from './Colourings';
 import { LANGUAGES, LanguageCode, otherThan } from './Languages';
 
 export interface BlazonPageProps {
   /** The language the blazon is written in to begin with. */
   readonly initialLanguage?: LanguageCode;
+  /** A blazon to start from, as handed over by a documentation page. */
+  readonly initialText?: string;
   /** The paintings to show the arms in. */
   readonly colourings?: readonly Colouring[];
 }
@@ -24,9 +26,13 @@ function read(text: string, language: LanguageCode): Reading | undefined {
   }
 }
 
-export function BlazonPage({ initialLanguage = 'fr', colourings = COLOURINGS }: BlazonPageProps) {
+export function BlazonPage({
+  initialLanguage = 'fr',
+  initialText,
+  colourings = COLOURINGS,
+}: BlazonPageProps) {
   const [language, setLanguage] = useState<LanguageCode>(initialLanguage);
-  const [text, setText] = useState(LANGUAGES[initialLanguage].example);
+  const [text, setText] = useState(initialText ?? LANGUAGES[initialLanguage].example);
 
   const reading = useMemo(() => read(text, language), [text, language]);
   const blazon = reading !== undefined && 'blazon' in reading ? reading.blazon : undefined;
@@ -44,59 +50,68 @@ export function BlazonPage({ initialLanguage = 'fr', colourings = COLOURINGS }: 
   }
 
   return (
-    <main className="blazon-page">
+    <main className="plane">
       <h1>Blazon</h1>
+      <p className="plane__extent">Written in one tongue · read in the other</p>
 
-      <label htmlFor="blazon-language">Language</label>
-      <select
-        id="blazon-language"
-        value={language}
-        onChange={(event) => switchTo(event.target.value as LanguageCode)}
-      >
-        {Object.entries(LANGUAGES).map(([code, { label }]) => (
-          <option key={code} value={code}>
-            {label}
-          </option>
-        ))}
-      </select>
+      <div className="compose">
+        <div>
+          <label htmlFor="blazon-language">Language</label>
+          <select
+            id="blazon-language"
+            value={language}
+            onChange={(event) => switchTo(event.target.value as LanguageCode)}
+          >
+            {Object.entries(LANGUAGES).map(([code, { label }]) => (
+              <option key={code} value={code}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      <label htmlFor="blazon-text">Blazon</label>
-      <textarea
-        id="blazon-text"
-        rows={3}
-        value={text}
-        spellCheck={false}
-        placeholder={LANGUAGES[language].example}
-        onChange={(event) => setText(event.target.value)}
-      />
+        <div>
+          <label htmlFor="blazon-text">Blazon</label>
+          <textarea
+            id="blazon-text"
+            rows={2}
+            value={text}
+            spellCheck={false}
+            placeholder={LANGUAGES[language].example}
+            onChange={(event) => setText(event.target.value)}
+          />
+        </div>
 
-      <section aria-labelledby="blazon-translation-heading">
-        <h2 id="blazon-translation-heading">{LANGUAGES[other].label}</h2>
-        {reading !== undefined && 'error' in reading ? (
-          <p role="alert">{reading.error}</p>
-        ) : (
-          <p>{translation}</p>
-        )}
-      </section>
+        <section className="compose__out" aria-labelledby="blazon-translation-heading">
+          <h2 className="compose__label" id="blazon-translation-heading">
+            {LANGUAGES[other].label}
+          </h2>
+          {reading !== undefined && 'error' in reading ? (
+            <p role="alert">{reading.error}</p>
+          ) : (
+            <p lang={other}>{translation}</p>
+          )}
+        </section>
+      </div>
 
-      <section aria-labelledby="blazon-arms-heading">
-        <h2 id="blazon-arms-heading">Arms</h2>
-        {blazon !== undefined && (
-          <div className="blazon-colourings">
+      {blazon !== undefined && (
+        <div className="showing" aria-live="polite">
+          <div className="showing__fields">
             {colourings.map(({ label, colours }) => (
-              <figure key={label}>
+              <figure key={label} className="showing__field">
                 <BlazonShield
                   blazon={blazon}
                   alt={`${translation} (${label.toLowerCase()})`}
                   colours={colours}
-                  width={160}
+                  outline={OUTLINE}
+                  width={200}
                 />
                 <figcaption>{label}</figcaption>
               </figure>
             ))}
           </div>
-        )}
-      </section>
+        </div>
+      )}
     </main>
   );
 }

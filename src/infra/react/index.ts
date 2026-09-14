@@ -1,12 +1,16 @@
 export { BlazonPage } from './BlazonPage';
 export type { BlazonPageProps } from './BlazonPage';
 export { BlazonShield } from './BlazonShield';
-export { COLOURINGS } from './Colourings';
+export { COLOURINGS, OUTLINE } from './Colourings';
 export type { Colouring } from './Colourings';
 export type { BlazonShieldProps } from './BlazonShield';
 export { TincturesPage } from './TincturesPage';
 export type { TincturesPageProps } from './TincturesPage';
 export { DivisionsPage } from './DivisionsPage';
 export type { DivisionsPageProps } from './DivisionsPage';
+export { DocIndexPage } from './DocIndexPage';
+export type { DocIndexPageProps } from './DocIndexPage';
+export { Reference } from './Reference';
+export type { ReferenceEntry, ReferenceProps, ReferenceRank } from './Reference';
 export { LANGUAGES, otherThan } from './Languages';
 export type { Language, LanguageCode } from './Languages';

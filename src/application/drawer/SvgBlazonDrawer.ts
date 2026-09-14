@@ -14,7 +14,7 @@ const HEIGHT = 240;
 /** A heater shield, inset far enough that its own outline is not clipped away. */
 const SHIELD = 'M6 6 H194 V128 C194 186 150 220 100 234 C50 220 6 186 6 128 Z';
 
-const OUTLINE = '#1a1a1a';
+const DEFAULT_OUTLINE = '#1a1a1a';
 const OUTLINE_WIDTH = 3;
 
 // Two SVGs inlined in one document share an id space, so this one is spelled out
@@ -50,7 +50,15 @@ const HALVES: Record<DivisionType, readonly [Half, Half]> = {
 
 /** Draws a blazon as an SVG shield. */
 export class SvgBlazonDrawer implements IBlazonDrawer {
-  constructor(private readonly colours: ColorModel) {}
+  /**
+   * The outline is a property of the ground the arms are drawn on, not of the
+   * arms, so it is supplied rather than assumed: a shield drawn near-black
+   * vanishes on a dark page, which is the one thing a drawing must never do.
+   */
+  constructor(
+    private readonly colours: ColorModel,
+    private readonly outline: string = DEFAULT_OUTLINE
+  ) {}
 
   draw(blazon: Blazon, drawOptions?: DrawOptions): string {
     const colours = drawOptions?.colorModel ?? this.colours;
@@ -62,7 +70,7 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
       patternsFor(blazon.field, colours),
       `</defs>`,
       `<g clip-path="url(#${SHIELD_CLIP})">${this.paintField(blazon.field, colours)}</g>`,
-      `<path d="${SHIELD}" fill="none" stroke="${OUTLINE}" stroke-width="${OUTLINE_WIDTH}"/>`,
+      `<path d="${SHIELD}" fill="none" stroke="${escapeAttribute(this.outline)}" stroke-width="${OUTLINE_WIDTH}"/>`,
       `</svg>`,
     ].join('');
   }

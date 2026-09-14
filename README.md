@@ -74,10 +74,12 @@ src/
       Furs.ts                 ermine and vair, built from whichever two tinctures
     react/
       BlazonPage.tsx          type a blazon, read its translation, see the arms
-      Colourings.ts           the paintings a page offers: colour, hatching
+      Reference.tsx           the anatomy both vocabulary pages are built on
       TincturesPage.tsx       every tincture, named, painted and hatched
       DivisionsPage.tsx       every partition, named and drawn
+      DocIndexPage.tsx        what a blazon may be, and what it may not
       BlazonShield.tsx        one blazon, drawn
+      Colourings.ts           the paintings a page offers: colour, hatching
       Languages.ts            the languages offered, and what each translates into
       index.ts                the blason-parser/react entry point
 
@@ -141,10 +143,12 @@ import { BlazonPage, TincturesPage, DivisionsPage } from 'blason-parser/react';
 createRoot(document.getElementById('root')!).render(<BlazonPage />);
 ```
 
-`TincturesPage` and `DivisionsPage` document the vocabulary, each term named in
-both languages beside the shield it draws. They are components and nothing more —
-routing belongs to whatever mounts them, so the demo carries its own and serves
-them at `/doc/tinctures` and `/doc/divisions`.
+`TincturesPage` and `DivisionsPage` document the vocabulary on one shared
+anatomy: the whole closed set hangs present at once, and the term being read is
+struck forward at full measure in both languages and both paintings. They are
+components and nothing more — routing belongs to whatever mounts them, so the
+demo carries its own and serves them at `/doc`, `/doc/tinctures` and
+`/doc/divisions`.
 
 It lives behind its own entry point, and React is an optional peer dependency, so
 installing the library on a backend never pulls React in — `require('blason-parser')`

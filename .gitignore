@@ -7,3 +7,6 @@ coverage/
 *.tgz
 dist/
 .vite/
+
+# Design tooling state: briefs, critiques, screenshots and caches. Not source.
+.impeccable/

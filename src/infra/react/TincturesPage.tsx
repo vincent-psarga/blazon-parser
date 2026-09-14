@@ -2,66 +2,89 @@ import { Colours, Furs, Metals, Tincture } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
-import { BlazonShield } from './BlazonShield';
-import { COLOURINGS, Colouring } from './Colourings';
+import { EnglishBlazonWriter } from '../../application/writer/EnglishBlazonWriter';
+import { FrenchBlazonWriter } from '../../application/writer/FrenchBlazonWriter';
+import { Colouring } from './Colourings';
+import { Reference, ReferenceEntry, ReferenceRank } from './Reference';
+
+const inFrench = new FrenchBlazonWriter();
+const inEnglish = new EnglishBlazonWriter();
+
+/** A line of help only where the term is genuinely opaque to a newcomer. */
+const GLOSS: Record<Tincture, string> = {
+  [Metals.or]: 'Gold. The same word in both tongues, and never the conjunction.',
+  [Metals.argent]:
+    'Silver, or plain white. It carries no hatching at all: the bare paper is the metal.',
+  [Colours.azure]: 'Blue. French drops the final e.',
+  [Colours.gules]: 'Red. From the fur-trimmed throat of a garment, not from any word for red.',
+  [Colours.sable]:
+    'Black, spelled alike in both, so only the blazon around it tells you which language you are reading.',
+  [Colours.vert]: 'Green, and the one tincture whose two names share nothing whatever.',
+  [Furs.ermine]: 'A white pelt strewn with black tails. Its h is mute, so French says d’hermine.',
+  [Furs.vair]: 'Squirrel fur, argent and azure, cut into bells and set in alternating rows.',
+};
+
+function entry(tincture: Tincture): ReferenceEntry {
+  const blazon = { field: { tincture } };
+  return {
+    term: tincture,
+    french: nameOf(FrenchTinctures, tincture),
+    english: nameOf(EnglishTinctures, tincture),
+    reference: tincture,
+    gloss: GLOSS[tincture],
+    blazon,
+    inFrench: inFrench.write(blazon),
+    inEnglish: inEnglish.write(blazon),
+  };
+}
 
 /**
- * The ranks are kept apart because heraldry keeps them apart: the rule of tincture
- * forbids laying a metal on a metal, or a colour on a colour. The furs answer to
- * neither, being reckoned to hold something of both.
+ * The ranks are kept apart because heraldry keeps them apart, and the page says
+ * so rather than leaving the reader to infer it from three unexplained headings.
  */
-const RANKS: readonly { readonly heading: string; readonly tinctures: readonly Tincture[] }[] = [
-  { heading: 'Metals', tinctures: Object.values(Metals) },
-  { heading: 'Colours', tinctures: Object.values(Colours) },
-  { heading: 'Furs', tinctures: Object.values(Furs) },
+const RANKS: readonly ReferenceRank[] = [
+  {
+    heading: 'Metals',
+    law: 'Metal may not be laid on metal — half the rule of tincture, and the reason these ranks are kept apart at all.',
+    entries: Object.values(Metals).map(entry),
+  },
+  {
+    heading: 'Colours',
+    law: 'Nor colour on colour. The rule holds both ways.',
+    entries: Object.values(Colours).map(entry),
+  },
+  {
+    heading: 'Furs',
+    law: 'The furs answer to neither rank, being reckoned to hold something of both.',
+    entries: Object.values(Furs).map(entry),
+  },
 ];
 
 export interface TincturesPageProps {
   /** The paintings to show each tincture in. */
   readonly colourings?: readonly Colouring[];
+  /** Hands the reader the struck term to read in the translator. */
+  readonly onTry?: (blazon: string) => void;
 }
 
-export function TincturesPage({ colourings = COLOURINGS }: TincturesPageProps) {
+export function TincturesPage({ colourings, onTry }: TincturesPageProps) {
   return (
-    <main className="blazon-doc">
-      <h1>Tinctures</h1>
-      <p className="blazon-doc-lead">
-        The tinctures a field may be painted with, and what each is called in either language. The
-        shades are a convention: heraldry fixes no hue, only which tincture is meant. Where colour
-        cannot be had at all, hatching stands in for it — argent left blank, or dotted, the rest
-        ruled in a direction of their own.
-      </p>
-
-      {RANKS.map(({ heading, tinctures }) => (
-        <section key={heading} aria-labelledby={`rank-${heading}`}>
-          <h2 id={`rank-${heading}`}>{heading}</h2>
-          <ul className="blazon-gallery">
-            {tinctures.map((tincture) => (
-              <li key={tincture}>
-                <div className="blazon-colourings">
-                  {colourings.map(({ label, colours }) => (
-                    <figure key={label}>
-                      <BlazonShield
-                        blazon={{ field: { tincture } }}
-                        alt={`${nameOf(EnglishTinctures, tincture)}, ${label.toLowerCase()}`}
-                        colours={colours}
-                        width={72}
-                      />
-                      <figcaption>{label}</figcaption>
-                    </figure>
-                  ))}
-                </div>
-                <dl>
-                  <dt>Français</dt>
-                  <dd>{nameOf(FrenchTinctures, tincture)}</dd>
-                  <dt>English</dt>
-                  <dd>{nameOf(EnglishTinctures, tincture)}</dd>
-                </dl>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
-    </main>
+    <Reference
+      title="Tinctures"
+      extent="Eight tinctures · three ranks · all the parser reads"
+      lead={
+        <>
+          <p className="plane__lead">
+            The tinctures a field may be painted with. Heraldry fixes no hue, only which tincture is
+            meant, so these shades are a convention — and the hatching beside each one is how that
+            convention survived being engraved in black and white.
+          </p>
+          <p className="plane__lead">Choose any term to read it at full size.</p>
+        </>
+      }
+      ranks={RANKS}
+      colourings={colourings}
+      onTry={onTry}
+    />
   );
 }

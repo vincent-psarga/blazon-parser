@@ -7,108 +7,104 @@ import { App } from './App';
 beforeEach(() => window.history.pushState(null, '', '/'));
 afterEach(cleanup);
 
-const nav = () => screen.getByRole('navigation');
-const doc = () => within(nav()).getByRole('button', { name: 'Doc' });
-const inMenu = (name: string) => within(nav()).queryByRole('link', { name });
+const rail = () =>
+  screen.getByRole('navigation', { name: '' }) ?? screen.getAllByRole('navigation')[0];
+const doc = () => within(screen.getAllByRole('navigation')[0]).getByRole('button', { name: 'Doc' });
+const inMenu = (name: string) =>
+  within(screen.getAllByRole('navigation')[0]).queryByRole('link', { name });
 const heading = () => screen.getByRole('heading', { level: 1 }).textContent;
 
-async function openDoc() {
-  await userEvent.setup().click(doc());
-}
+const openDoc = () => userEvent.setup().click(doc());
 
-describe('the top menu', () => {
-  test('offers the blazon page and a Doc menu', () => {
+describe('the rail', () => {
+  test('carries the demo and the documentation, and names each once', () => {
     render(<App />);
-    expect(within(nav()).getByRole('link', { name: 'Blazon' })).toBeInTheDocument();
+    expect(within(rail()).getByRole('link', { name: 'Demo' })).toBeInTheDocument();
     expect(doc()).toBeInTheDocument();
+    // Two entries pointing at the same page is one entry too many.
+    expect(within(rail()).getAllByRole('link')).toHaveLength(1);
   });
 
-  test('keeps the documentation pages behind the Doc menu until it is opened', () => {
+  test('keeps the documentation behind the menu until it is opened', () => {
     render(<App />);
     expect(doc()).toHaveAttribute('aria-expanded', 'false');
     expect(inMenu('Tinctures')).toBeNull();
-    expect(inMenu('Divisions')).toBeNull();
   });
 
-  test('reveals both documentation pages when opened', async () => {
+  test('offers the index alongside both pages when opened', async () => {
     render(<App />);
     await openDoc();
-    expect(doc()).toHaveAttribute('aria-expanded', 'true');
-    expect(inMenu('Tinctures')).toBeInTheDocument();
-    expect(inMenu('Divisions')).toBeInTheDocument();
+    for (const name of ['Everything', 'Tinctures', 'Divisions']) {
+      expect(inMenu(name)).toBeInTheDocument();
+    }
   });
 
-  describe('choosing from it', () => {
+  test.each([
+    ['Everything', 'The vocabulary', '/doc'],
+    ['Tinctures', 'Tinctures', '/doc/tinctures'],
+    ['Divisions', 'Divisions', '/doc/divisions'],
+  ])('goes to %s', async (link, title, path) => {
+    render(<App />);
+    await openDoc();
+    await userEvent.setup().click(inMenu(link)!);
+    expect(heading()).toBe(title);
+    expect(window.location.pathname).toBe(path);
+  });
+
+  test('marks Doc as where the reader is, on any documentation page', async () => {
+    render(<App />);
+    await openDoc();
+    await userEvent.setup().click(inMenu('Divisions')!);
+    expect(doc()).toHaveAttribute('aria-current', 'page');
+  });
+
+  describe('dismissing the menu', () => {
     test.each([
-      ['Tinctures', 'Tinctures', '/doc/tinctures'],
-      ['Divisions', 'Divisions', '/doc/divisions'],
-    ])('goes to %s', async (link, title, path) => {
+      ['a second click of Doc', async () => openDoc()],
+      ['Escape', async () => userEvent.setup().keyboard('{Escape}')],
+      ['a click landing elsewhere', async () => userEvent.setup().click(document.body)],
+    ])('closes on %s', async (_name, dismiss) => {
       render(<App />);
       await openDoc();
-      await userEvent.setup().click(inMenu(link)!);
-      expect(heading()).toBe(title);
-      expect(window.location.pathname).toBe(path);
-    });
-
-    test('closes the menu behind it', async () => {
-      render(<App />);
-      await openDoc();
-      await userEvent.setup().click(inMenu('Tinctures')!);
-      expect(doc()).toHaveAttribute('aria-expanded', 'false');
+      await dismiss();
       expect(inMenu('Tinctures')).toBeNull();
-    });
-
-    test('marks Doc as where the reader is', async () => {
-      render(<App />);
-      await openDoc();
-      await userEvent.setup().click(inMenu('Divisions')!);
-      expect(doc()).toHaveAttribute('aria-current', 'page');
-    });
-  });
-
-  describe('dismissing it', () => {
-    test('closes on a second click of Doc', async () => {
-      render(<App />);
-      await openDoc();
-      await openDoc();
-      expect(inMenu('Tinctures')).toBeNull();
-    });
-
-    test('closes on Escape', async () => {
-      render(<App />);
-      await openDoc();
-      await userEvent.setup().keyboard('{Escape}');
-      expect(inMenu('Tinctures')).toBeNull();
-    });
-
-    test('closes on a click that lands elsewhere', async () => {
-      render(<App />);
-      await openDoc();
-      await userEvent.setup().click(document.body);
-      expect(inMenu('Tinctures')).toBeNull();
-    });
-
-    test('stays open while the reader is still inside it', async () => {
-      render(<App />);
-      await openDoc();
-      await userEvent.setup().pointer({ target: inMenu('Tinctures')!, keys: '[MouseLeft>]' });
-      expect(inMenu('Divisions')).toBeInTheDocument();
     });
   });
 });
 
-describe('the blazon page', () => {
-  test('is what the reader lands on', () => {
+describe('the index', () => {
+  test('says what a blazon may be, and promises nothing more', async () => {
+    window.history.pushState(null, '', '/doc');
     render(<App />);
-    expect(heading()).toBe('Blazon');
+    expect(screen.getByText(/no charges or ordinaries yet/)).toBeInTheDocument();
   });
 
-  test('is reachable again from a documentation page', async () => {
+  test('leads to both references', async () => {
+    window.history.pushState(null, '', '/doc');
     render(<App />);
-    await openDoc();
-    await userEvent.setup().click(inMenu('Tinctures')!);
-    await userEvent.setup().click(within(nav()).getByRole('link', { name: 'Blazon' }));
+    const index = screen.getByRole('navigation', { name: 'Documentation' });
+    await userEvent.setup().click(within(index).getByRole('link', { name: /Tinctures/ }));
+    expect(heading()).toBe('Tinctures');
+  });
+});
+
+describe('handing a term to the translator', () => {
+  test('carries the struck blazon over, and leaves it in the address', async () => {
+    window.history.pushState(null, '', '/doc/tinctures');
+    render(<App />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'vert' }));
+    await user.click(screen.getByRole('button', { name: 'Read this one' }));
+
     expect(heading()).toBe('Blazon');
+    expect(screen.getByLabelText('Blazon')).toHaveValue('De sinople.');
+    expect(window.location.search).toContain('De%20sinople.');
+  });
+
+  test('reads a blazon named in the address on arrival', () => {
+    window.history.pushState(null, '', `/?b=${encodeURIComponent('De gueules')}`);
+    render(<App />);
+    expect(screen.getByLabelText('Blazon')).toHaveValue('De gueules');
   });
 });
 

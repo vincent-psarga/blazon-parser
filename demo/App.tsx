@@ -1,99 +1,91 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { BlazonPage, DivisionsPage, TincturesPage } from '../src/infra/react';
-
-interface Route {
-  readonly path: string;
-  readonly label: string;
-  readonly page: ReactNode;
-}
-
-const HOME: Route = { path: '/', label: 'Blazon', page: <BlazonPage /> };
-
-const DOC: readonly Route[] = [
-  { path: '/doc/tinctures', label: 'Tinctures', page: <TincturesPage /> },
-  { path: '/doc/divisions', label: 'Divisions', page: <DivisionsPage /> },
-];
-
-const ROUTES: readonly Route[] = [HOME, ...DOC];
+import { BlazonPage, DivisionsPage, DocIndexPage, TincturesPage } from '../src/infra/react';
 
 /**
  * Routing belongs to whatever mounts the pages, not to the library, so the demo
  * keeps its own — small enough not to need a router, and honest about the fact
  * that a real application would bring its own.
  */
-function useRoute(): [string, (to: string) => void] {
-  const [path, setPath] = useState(window.location.pathname);
+function useRoute(): [string, string, (to: string) => void] {
+  const read = () => window.location.pathname + window.location.search;
+  const [href, setHref] = useState(read);
 
   useEffect(() => {
-    const onPopState = () => setPath(window.location.pathname);
+    const onPopState = () => setHref(read());
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
+  const [path, query = ''] = href.split('?');
   return [
     path,
+    query,
     (to: string) => {
       window.history.pushState(null, '', to);
-      setPath(to);
+      setHref(to);
+      window.scrollTo(0, 0);
     },
   ];
 }
 
 export function App() {
-  const [path, navigate] = useRoute();
-  const route = ROUTES.find((candidate) => candidate.path === path);
+  const [path, query, navigate] = useRoute();
+
+  // A documentation page hands a blazon over by naming it in the address, so the
+  // handover is linkable and survives a reload.
+  const handedOver = new URLSearchParams(query).get('b') ?? undefined;
+
+  const docs = [
+    { path: '/doc/tinctures', label: 'Tinctures' },
+    { path: '/doc/divisions', label: 'Divisions' },
+  ];
+
+  const readThis = (blazon: string) => navigate(`/?b=${encodeURIComponent(blazon)}`);
+
+  const pages: Record<string, ReactNode> = {
+    '/': <BlazonPage initialText={handedOver} />,
+    '/doc': <DocIndexPage onGo={navigate} />,
+    '/doc/tinctures': <TincturesPage onTry={readThis} />,
+    '/doc/divisions': <DivisionsPage onTry={readThis} />,
+  };
 
   return (
     <>
-      <nav className="demo-nav">
-        <NavLink route={HOME} path={path} navigate={navigate} />
-        <NavMenu label="Doc" routes={DOC} path={path} navigate={navigate} />
+      <nav className="rail">
+        <a href="/" aria-current={path === '/' ? 'page' : undefined} onClick={go(navigate, '/')}>
+          Demo
+        </a>
+        <RailMenu label="Doc" docs={docs} path={path} navigate={navigate} />
       </nav>
-      {route?.page ?? <NotFound path={path} />}
+      {pages[path] ?? <NotFound path={path} />}
     </>
   );
 }
 
-interface NavProps {
+function go(navigate: (to: string) => void, to: string) {
+  return (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    navigate(to);
+  };
+}
+
+function RailMenu({
+  label,
+  docs,
+  path,
+  navigate,
+}: {
+  readonly label: string;
+  readonly docs: readonly { readonly path: string; readonly label: string }[];
   readonly path: string;
   readonly navigate: (to: string) => void;
-}
-
-function NavLink({
-  route,
-  path,
-  navigate,
-  onFollow,
-}: NavProps & { readonly route: Route } & {
-  readonly onFollow?: () => void;
 }) {
-  return (
-    <a
-      href={route.path}
-      aria-current={route.path === path ? 'page' : undefined}
-      onClick={(event) => {
-        event.preventDefault();
-        navigate(route.path);
-        onFollow?.();
-      }}
-    >
-      {route.label}
-    </a>
-  );
-}
-
-function NavMenu({
-  label,
-  routes,
-  path,
-  navigate,
-}: NavProps & { readonly label: string; readonly routes: readonly Route[] }) {
   const [open, setOpen] = useState(false);
   const menu = useRef<HTMLDivElement>(null);
 
-  // A menu left open after the reader has looked elsewhere is just clutter, so
-  // it closes on the two gestures that mean "never mind": Escape, and a click
-  // that lands anywhere else.
+  // A menu left open after the reader has looked elsewhere is just clutter, so it
+  // closes on the two gestures that mean "never mind": Escape, and a click that
+  // lands anywhere else.
   useEffect(() => {
     if (!open) {
       return;
@@ -117,26 +109,44 @@ function NavMenu({
   }, [open]);
 
   return (
-    <div className="demo-menu" ref={menu}>
+    <div className="rail__menu" ref={menu}>
       <button
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
-        aria-current={routes.some((route) => route.path === path) ? 'page' : undefined}
+        aria-current={path.startsWith('/doc') ? 'page' : undefined}
         onClick={() => setOpen((wasOpen) => !wasOpen)}
       >
         {label}
       </button>
       {open && (
         <ul>
-          {routes.map((route) => (
-            <li key={route.path}>
-              <NavLink
-                route={route}
-                path={path}
-                navigate={navigate}
-                onFollow={() => setOpen(false)}
-              />
+          <li>
+            <a
+              href="/doc"
+              aria-current={path === '/doc' ? 'page' : undefined}
+              onClick={(event) => {
+                event.preventDefault();
+                navigate('/doc');
+                setOpen(false);
+              }}
+            >
+              Everything
+            </a>
+          </li>
+          {docs.map((doc) => (
+            <li key={doc.path}>
+              <a
+                href={doc.path}
+                aria-current={doc.path === path ? 'page' : undefined}
+                onClick={(event) => {
+                  event.preventDefault();
+                  navigate(doc.path);
+                  setOpen(false);
+                }}
+              >
+                {doc.label}
+              </a>
             </li>
           ))}
         </ul>
@@ -147,9 +157,10 @@ function NavMenu({
 
 function NotFound({ path }: { readonly path: string }) {
   return (
-    <main className="blazon-doc">
+    <main className="plane">
       <h1>Nothing here</h1>
-      <p className="blazon-doc-lead">No page answers to {path}.</p>
+      <p className="plane__extent">No page answers to {path}</p>
+      <p className="plane__lead">Try the vocabulary, or write a blazon.</p>
     </main>
   );
 }

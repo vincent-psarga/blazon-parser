@@ -12,6 +12,8 @@ export interface BlazonShieldProps {
   readonly alt: string;
   /** What each tincture is painted with. Heraldry fixes no shade. */
   readonly colours?: ColorModel;
+  /** What the shield's edge is drawn in, so it never vanishes into its ground. */
+  readonly outline?: string;
   readonly width?: number;
 }
 
@@ -22,10 +24,10 @@ export interface BlazonShieldProps {
  * path in a document of its own — several shields inlined on one page would
  * otherwise share an id space and all take the first one's shape.
  */
-export function BlazonShield({ blazon, alt, colours, width = 200 }: BlazonShieldProps) {
+export function BlazonShield({ blazon, alt, colours, outline, width = 200 }: BlazonShieldProps) {
   const svg = useMemo(
-    () => new SvgBlazonDrawer(colours ?? WikipediaColours).draw(blazon),
-    [blazon, colours]
+    () => new SvgBlazonDrawer(colours ?? WikipediaColours, outline).draw(blazon),
+    [blazon, colours, outline]
   );
 
   return (

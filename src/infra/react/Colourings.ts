@@ -13,3 +13,6 @@ export const COLOURINGS: readonly Colouring[] = [
   { label: 'Colour', colours: WikipediaColours },
   { label: 'Hatching', colours: HatchingColours },
 ];
+
+/** What a shield's edge is drawn in on this world's ground. */
+export const OUTLINE = '#efeae0';

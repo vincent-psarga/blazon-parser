@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test } from 'vitest';
-import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { isPattern } from '../../domain/services/IBlazonDrawer';
 import { nameOf } from '../../domain/translations/Translation';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
@@ -12,96 +13,95 @@ import { TincturesPage } from './TincturesPage';
 
 afterEach(cleanup);
 
-const rank = (heading: string) =>
-  within(screen.getByRole('region', { name: heading })).getAllByRole('listitem');
-
-const itemFor = (tincture: (typeof TINCTURES)[number]) =>
-  screen
-    .getAllByRole('listitem')
-    .find((candidate) => candidate.textContent?.includes(nameOf(FrenchTinctures, tincture)))!;
+// The set is labelled in the page's own language; the struck term carries both.
+const ghost = (tincture: (typeof TINCTURES)[number]) =>
+  screen.getByRole('button', { name: nameOf(EnglishTinctures, tincture) });
+const showing = () => document.querySelector('.showing') as HTMLElement;
+const painting = (colouring: string) =>
+  decodeURIComponent(
+    within(showing())
+      .getByAltText(new RegExp(`, ${colouring}$`, 'i'))
+      .getAttribute('src') ?? ''
+  );
+const names = () => {
+  const [french, english] = Array.from(
+    showing().querySelectorAll('.showing__names dd')
+  ) as HTMLElement[];
+  return { french, english };
+};
 
 const fillOf = (paint: (typeof WikipediaColours)[keyof typeof WikipediaColours]) =>
   isPattern(paint) ? paint.fill : paint;
 
-const shield = (item: HTMLElement, colouring: string) =>
-  decodeURIComponent(
-    within(item)
-      .getByAltText(new RegExp(`, ${colouring}$`, 'i'))
-      .getAttribute('src') ?? ''
-  );
-
 describe('TincturesPage', () => {
-  test('separates the metals from the colours', () => {
+  test('keeps the three ranks apart', () => {
     render(<TincturesPage />);
-    expect(rank('Metals')).toHaveLength(Object.values(Metals).length);
-    expect(rank('Colours')).toHaveLength(Object.values(Colours).length);
+    for (const heading of ['Metals', 'Colours', 'Furs']) {
+      expect(screen.getByRole('region', { name: heading })).toBeInTheDocument();
+    }
   });
 
-  test('lists every tincture exactly once', () => {
+  test('gives the reader the rule the ranks exist for', () => {
     render(<TincturesPage />);
-    expect(screen.getAllByRole('listitem')).toHaveLength(TINCTURES.length);
+    expect(screen.getByText(/Metal may not be laid on metal/)).toBeInTheDocument();
+    expect(screen.getByText(/Nor colour on colour/)).toBeInTheDocument();
+    expect(screen.getByText(/answer to neither rank/)).toBeInTheDocument();
   });
 
-  test.each(TINCTURES)('names %s in both languages', (tincture) => {
+  test('states how many terms there are before showing any', () => {
     render(<TincturesPage />);
-    expect(itemFor(tincture).textContent).toContain(nameOf(FrenchTinctures, tincture));
-    expect(itemFor(tincture).textContent).toContain(nameOf(EnglishTinctures, tincture));
+    expect(screen.getByText(/Eight tinctures · three ranks/)).toBeInTheDocument();
   });
 
-  describe('showing both ways of painting a tincture', () => {
-    test.each(TINCTURES)('gives %s a shield in each', (tincture) => {
+  test.each(TINCTURES)('keeps %s present in the stack', (tincture) => {
+    render(<TincturesPage />);
+    expect(ghost(tincture)).toBeInTheDocument();
+  });
+
+  test.each(TINCTURES)('reads %s in both languages when struck', async (tincture) => {
+    render(<TincturesPage />);
+    await userEvent.setup().click(ghost(tincture));
+    // Four of the eight are spelled alike in both tongues, so the two readings are
+    // told apart by where they sit and what they are marked as, never by their text.
+    const { french, english } = names();
+    expect(french).toHaveTextContent(nameOf(FrenchTinctures, tincture));
+    expect(french).toHaveAttribute('lang', 'fr');
+    expect(english).toHaveTextContent(nameOf(EnglishTinctures, tincture));
+    expect(english).toHaveAttribute('lang', 'en');
+    expect(within(showing()).getByText(tincture)).toBeInTheDocument();
+  });
+
+  test.each(TINCTURES)('paints %s in colour and in hatching when struck', async (tincture) => {
+    render(<TincturesPage />);
+    await userEvent.setup().click(ghost(tincture));
+    expect(painting('colour')).toContain(`fill="${fillOf(WikipediaColours[tincture])}"`);
+    expect(painting('hatching')).toContain(`fill="${fillOf(HatchingColours[tincture])}"`);
+  });
+
+  describe('the terms a newcomer would stumble on', () => {
+    test.each([
+      [Colours.vert, /share nothing whatever/],
+      [Metals.or, /never the conjunction/],
+      [Furs.ermine, /h is mute/],
+      [Colours.sable, /spelled alike in both/],
+    ])('glosses %s', async (tincture, gloss) => {
       render(<TincturesPage />);
-      const item = itemFor(tincture);
-      expect(within(item).getAllByRole('img')).toHaveLength(2);
-      expect(within(item).getByText('Colour')).toBeInTheDocument();
-      expect(within(item).getByText('Hatching')).toBeInTheDocument();
-    });
-
-    test.each(TINCTURES)('paints %s with its own colour', (tincture) => {
-      render(<TincturesPage />);
-      const svg = shield(itemFor(tincture), 'colour');
-      expect(svg).toContain(`fill="${fillOf(WikipediaColours[tincture])}"`);
-    });
-
-    test.each(TINCTURES.filter((tincture) => !isPattern(WikipediaColours[tincture])))(
-      'needs no pattern to paint %s',
-      (tincture) => {
-        render(<TincturesPage />);
-        expect(shield(itemFor(tincture), 'colour')).not.toContain('<pattern');
-      }
-    );
-
-    test.each(TINCTURES.filter((tincture) => tincture !== Metals.argent))(
-      'hatches %s with its own marks',
-      (tincture) => {
-        render(<TincturesPage />);
-        const paint = HatchingColours[tincture];
-        const svg = shield(itemFor(tincture), 'hatching');
-        expect(isPattern(paint)).toBe(true);
-        expect(svg).toContain(fillOf(paint));
-        expect(svg).toContain('<pattern');
-      }
-    );
-
-    test('leaves argent blank when hatched, as the convention does', () => {
-      render(<TincturesPage />);
-      const svg = shield(itemFor(Metals.argent), 'hatching');
-      expect(svg).toContain('fill="#ffffff"');
-      expect(svg).not.toContain('<pattern');
-    });
-
-    test('tells the two shields apart for anyone who cannot see them', () => {
-      render(<TincturesPage />);
-      const item = itemFor(Colours.azure);
-      expect(within(item).getByAltText('azure, colour')).toBeInTheDocument();
-      expect(within(item).getByAltText('azure, hatching')).toBeInTheDocument();
+      await userEvent.setup().click(ghost(tincture));
+      expect(within(showing()).getByText(gloss)).toBeInTheDocument();
     });
   });
 
-  test('shows whatever paintings it is given instead', () => {
-    render(<TincturesPage colourings={[{ label: 'Hatching', colours: HatchingColours }]} />);
-    const item = itemFor(Colours.gules);
-    expect(within(item).getAllByRole('img')).toHaveLength(1);
-    expect(within(item).queryByText('Colour')).toBeNull();
+  test('labels the set in the language the page is written in', () => {
+    render(<TincturesPage />);
+    expect(ghost(Colours.gules)).toContainHTML('lang="en"');
+    expect(
+      screen.queryByRole('button', { name: nameOf(FrenchTinctures, Colours.gules) })
+    ).toBeNull();
+  });
+
+  test('still marks the French reading as French where it is given', async () => {
+    render(<TincturesPage />);
+    await userEvent.setup().click(ghost(Colours.gules));
+    expect(names().french).toHaveAttribute('lang', 'fr');
   });
 });

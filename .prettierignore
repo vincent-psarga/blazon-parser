@@ -2,3 +2,5 @@ lib/
 node_modules/
 coverage/
 package-lock.json
+.impeccable/
+demo/fonts/OFL.txt

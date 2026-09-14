@@ -1,262 +1,672 @@
 /*
- * The page ships unstyled — a library should not impose a look — so it offers
- * class names to hang one on. This is the demo's own.
+ * The demo's world. The library ships unstyled; everything here is the demo's own.
+ *
+ * An unframed plane under a fine bronze gauze. Every value in the vocabulary hangs
+ * present at once as an unlit ghost; the one being read is struck forward, the mesh
+ * cleared around it, burning at full strength. Nothing is enclosed: there are no
+ * rules, boxes or dividers anywhere, and grouping is gauze density and depth.
+ *
+ * The page is achromatic. Every chromatic pixel on it is a tincture.
  */
-:root {
-  color-scheme: light dark;
-  --ink: #1a1a1a;
-  --paper: #f7f5f0;
-  --edge: #cfc9bd;
-  --quiet: #6b6459;
-  --alarm: #9b1c1c;
+
+@font-face {
+  font-family: 'Archivo Narrow';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/archivo-narrow-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ink: #ece7dd;
-    --paper: #1b1a18;
-    --edge: #423e38;
-    --quiet: #a39a8c;
-    --alarm: #f08a8a;
-  }
+@font-face {
+  font-family: 'Archivo Narrow';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('./fonts/archivo-narrow-latin-ext.woff2') format('woff2');
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329,
+    U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F,
+    U+A720-A7FF;
+}
+
+:root {
+  /* The scene is an instrument read at a desk in the evening, so the ground is
+     committed dark. There is no light variant: a shield that vanishes into its
+     ground is the one failure this world exists to refuse. */
+  color-scheme: dark;
+
+  --void: #0a0e14;
+  --void-lift: #0e141d;
+  --gauze: 128 106 66;
+  --bone: #efeae0;
+  /* Secondary text is tinted from the ground's own blue, never grey. */
+  --bone-quiet: #97a3b3;
+  --strike: #fbf7ee;
+
+  --mesh: 7px;
+  --measure: 66ch;
+  --display: 'Archivo Narrow', 'Avenir Next Condensed', 'Arial Narrow', sans-serif;
+  --prose: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* Full-bleed children are measured against the viewport, which includes a
+     classic scrollbar; without this the document is wider than the page. */
+  overflow-x: clip;
+  /* Relative, so the reader's own font size still governs the scale. */
+  font-size: 100%;
 }
 
 body {
   margin: 0;
-  background: var(--paper);
-  color: var(--ink);
-  font:
-    16px/1.5 ui-serif,
-    Georgia,
-    serif;
+  min-height: 100vh;
+  color: var(--bone);
+  font-family: var(--prose);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  background-color: var(--void);
+  /*
+   * A woven gauze, not a ruled grid: the strands cross, and the nodes sit on
+   * alternating crossings the way a real mesh does. It runs past every edge
+   * and is never framed.
+   */
+  background-image: url('data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%2724%27%20height%3D%2724%27%3E%3Cg%20stroke%3D%27%23c79a4e%27%20fill%3D%27none%27%3E%3Cpath%20d%3D%27M0%206.5h24M0%2018.5h24%27%20stroke-width%3D%271%27%20opacity%3D%27.14%27%2F%3E%3Cpath%20d%3D%27M6.5%200v24M18.5%200v24%27%20stroke-width%3D%271%27%20opacity%3D%27.18%27%2F%3E%3C%2Fg%3E%3Cg%20fill%3D%27%23c79a4e%27%20opacity%3D%27.26%27%3E%3Crect%20x%3D%276%27%20y%3D%276%27%20width%3D%271.2%27%20height%3D%271.2%27%2F%3E%3Crect%20x%3D%2718%27%20y%3D%2718%27%20width%3D%271.2%27%20height%3D%271.2%27%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E');
+  background-size: 24px 24px;
+  background-attachment: fixed;
 }
 
-.blazon-page {
-  max-width: 42rem;
-  margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
-  display: grid;
-  gap: 0.5rem;
+::selection {
+  background: rgb(var(--gauze) / 0.55);
+  color: var(--strike);
 }
 
-.blazon-page h1 {
-  margin: 0 0 1.5rem;
-  font-size: 2rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+:focus-visible {
+  outline: 2px solid var(--strike);
+  outline-offset: 3px;
 }
 
-.blazon-page h2 {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--quiet);
+* {
+  scrollbar-color: rgb(var(--gauze) / 0.7) transparent;
+  scrollbar-width: thin;
 }
 
-.blazon-page label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--quiet);
-}
+/* ─ the rail ─────────────────────────────────────────────────────────────── */
 
-.blazon-page select,
-.blazon-page textarea {
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 1px solid var(--edge);
-  border-radius: 4px;
-  padding: 0.5rem 0.6rem;
-  margin-bottom: 1rem;
-}
-
-.blazon-page textarea {
-  resize: vertical;
-}
-
-.blazon-page select {
-  justify-self: start;
-}
-
-.blazon-page section {
-  display: grid;
-  gap: 0.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--edge);
-  margin-top: 0.5rem;
-}
-
-.blazon-page section p {
-  margin: 0;
-  min-height: 1.5rem;
-  font-size: 1.25rem;
-}
-
-.blazon-page [role='alert'] {
-  color: var(--alarm);
-  font-size: 0.9rem;
-  font-family: ui-monospace, monospace;
-}
-
-.blazon-shield {
-  justify-self: start;
-}
-
-.demo-nav {
+.rail {
   display: flex;
-  gap: 1.5rem;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid var(--edge);
-  font-size: 0.75rem;
+  align-items: baseline;
+  gap: 1.75rem;
+  padding: 1.25rem clamp(1rem, 5vw, 3rem);
+  font-family: var(--display);
+  font-size: 0.9375rem;
   font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
 }
 
-.demo-nav a,
-.demo-nav button {
-  color: var(--quiet);
-  text-decoration: none;
+.rail a,
+.rail button {
   font: inherit;
-  /* A button inherits neither of these from the nav on its own. */
-  text-transform: inherit;
   letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--bone-quiet);
   background: none;
   border: 0;
   padding: 0;
   cursor: pointer;
+  text-decoration: none;
 }
 
-.demo-nav [aria-current='page'] {
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 0.4em;
+/* Depth is the only rank: the current page is struck, the rest hang behind. */
+.rail [aria-current='page'] {
+  color: var(--strike);
+  text-shadow: 0 0 14px rgb(251 247 238 / 0.35);
 }
 
-.demo-menu {
+.rail__menu {
   position: relative;
 }
 
-.demo-menu button::after {
-  content: ' \25BE';
+.rail__menu > button::after {
+  content: ' ▾';
 }
 
-.demo-menu ul {
+.rail__menu ul {
   position: absolute;
-  top: calc(100% + 0.75rem);
-  left: -0.9rem;
-  z-index: 1;
+  top: calc(100% + 0.85rem);
+  left: -1rem;
+  z-index: 2;
   margin: 0;
-  padding: 0.5rem 0;
+  padding: 0.6rem 0;
   list-style: none;
-  min-width: 9rem;
-  background: var(--paper);
-  border: 1px solid var(--edge);
-  border-radius: 4px;
-  box-shadow: 0 6px 20px rgb(0 0 0 / 12%);
+  min-width: 11rem;
+  background: var(--void-lift);
+  box-shadow: 0 12px 34px rgb(0 0 0 / 0.55);
 }
 
-.demo-menu li a {
+.rail__menu li a {
   display: block;
-  padding: 0.4rem 0.9rem;
+  padding: 0.45rem 1rem;
 }
 
-.demo-menu li a:hover {
-  color: var(--ink);
+.rail__menu li a:hover {
+  color: var(--strike);
 }
 
-.blazon-doc {
-  max-width: 48rem;
+/* ─ the plane ────────────────────────────────────────────────────────────── */
+
+.plane {
+  padding: clamp(1.5rem, 4vw, 2.5rem) clamp(1rem, 5vw, 3rem) 6rem;
+  max-width: 78rem;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 4rem;
 }
 
-.blazon-doc h1 {
-  margin: 0 0 0.75rem;
-  font-size: 2rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.blazon-doc h2 {
-  margin: 2.5rem 0 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--quiet);
-}
-
-.blazon-doc-lead {
-  margin: 0 0 1rem;
-  max-width: 34rem;
-  color: var(--quiet);
-}
-
-.blazon-gallery {
-  list-style: none;
-  margin: 1.25rem 0 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
-  gap: 2rem 1.5rem;
-}
-
-.blazon-colourings {
-  display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
-}
-
-.blazon-colourings figure {
+.plane h1 {
   margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+/*
+ * Prose sits straight on the gauze. Clearing it behind each paragraph drew a
+ * hard-edged rectangle, which is the one thing this world refuses, so the mesh
+ * is held light enough to read through instead. Only the arms get a clearing,
+ * and that one bleeds to both edges so it has no vertical edge to read as a box.
+ */
+.plane__lead,
+.plane__extent,
+.stack__law {
+  max-width: var(--measure);
+}
+
+.plane__extent {
+  margin: 1rem 0 0;
+  font-family: var(--display);
+  font-size: 1.1875rem;
+  letter-spacing: 0.04em;
+  color: var(--bone-quiet);
+}
+
+.plane__lead {
+  margin: 1rem 0 0;
+  color: var(--bone);
+  text-wrap: pretty;
+}
+
+.plane__lead + .plane__lead {
+  margin-top: 0.4rem;
+  color: var(--bone-quiet);
+}
+
+/* ─ the ghost stack: every value present at once ─────────────────────────── */
+
+.stack {
+  margin-top: 1.4rem;
+  display: grid;
+  gap: 1.35rem;
+}
+
+.stack__rank {
+  display: grid;
+  gap: 0.6rem;
+  /* Rank is one declared step of depth, and every unlit cue derives from it. */
+  --lit: 0;
+}
+
+.stack__rank[data-lit] {
+  --lit: 1;
+}
+
+.stack__rank h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.375rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone);
+}
+
+.stack__law {
+  margin: -0.35rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--bone-quiet);
+}
+
+.stack__terms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ghost {
+  font: inherit;
+  color: var(--bone-quiet);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
   display: grid;
   justify-items: center;
+  gap: 0.5rem;
+}
+
+.ghost:hover .ghost__name {
+  color: var(--bone);
+}
+
+.ghost:hover img {
+  filter: brightness(0.95) saturate(1) contrast(0.85);
+}
+
+.ghost__name {
+  font-family: var(--display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  /* Tracking is fixed. Varying it by depth changed each name's width, which
+     reflowed the row and walked the shields sideways on every strike. */
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  transition: color 200ms linear;
+}
+
+.ghost__field {
+  position: relative;
+  display: block;
+}
+
+/*
+ * The gauze is drawn over the unlit value, which is what "behind the gauze"
+ * means; a fixed tile on the body can only ever sit under everything.
+ */
+/*
+ * Unlit is a value, never a transparency. Ghosting by opacity let the ground
+ * read straight through argent and hermine as a hatch they do not carry.
+ */
+.ghost img {
+  display: block;
+  filter: brightness(calc(0.55 + 0.3 * var(--lit, 0))) saturate(calc(0.75 + 0.2 * var(--lit, 0)))
+    contrast(0.8) blur(calc((1 - var(--lit, 0)) * 0.5px));
+  transition: filter 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Struck: the mesh clears, the value burns, and it leaves the measure behind. */
+.ghost[aria-current='true'] .ghost__name {
+  color: var(--strike);
+}
+
+.ghost[aria-current='true'] img {
+  filter: drop-shadow(0 0 10px rgb(251 247 238 / 0.22));
+}
+
+.ghost[aria-current='true'] .ghost__name {
+  text-shadow: 0 0 16px rgb(251 247 238 / 0.4);
+}
+
+/* ─ set and struck term, side by side ────────────────────────────────────── */
+
+/*
+ * The struck term rises to the top of its own column, beside the heading rather
+ * than below it. Leaving that corner empty pushed the term's own reference and
+ * gloss past the fold, which is the whole of what the first viewport promises.
+ */
+.plane--reference {
+  display: grid;
+  grid-template-columns: minmax(0, 34rem) minmax(0, 1fr);
+  column-gap: clamp(1.5rem, 4vw, 3.5rem);
+  align-items: start;
+}
+
+.plane--reference > .showing {
+  position: sticky;
+  top: clamp(1rem, 3vw, 2rem);
+  margin-top: 0;
+}
+
+.reference__read {
+  display: grid;
+  gap: 0;
+  align-content: start;
+  min-width: 0;
+}
+
+/* ─ the showing: one value at full measure ───────────────────────────────── */
+
+/*
+ * The arms sit on solid ground, not on a fade. The gauze behind the reading made
+ * it work for its legibility, and standing the panel plainly apart is worth more
+ * than the world's objection to an edge.
+ */
+.showing {
+  --pad: clamp(1.25rem, 2.5vw, 2rem);
+  position: relative;
+  margin-top: clamp(2.5rem, 5vw, 3.5rem);
+  margin-inline: calc(-1 * var(--pad));
+  padding: var(--pad);
+  /* Solid, so nothing reads through the arms or the words beside them. */
+  background: var(--void);
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  align-items: start;
+}
+
+.showing__fields {
+  display: flex;
+  gap: clamp(1rem, 3vw, 2rem);
+  align-items: start;
+}
+
+.showing__field {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+/* Struck forward, crisp and haloed — which is also why a sable field can never
+   disappear into the ground it is drawn on. */
+.showing__field img {
+  display: block;
+  width: clamp(7rem, 17vw, 12rem);
+  height: auto;
+  filter: drop-shadow(0 0 22px rgb(251 247 238 / 0.28));
+}
+
+.showing__field figcaption {
+  font-family: var(--display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+}
+
+.showing__read {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.showing__names {
+  margin: 0;
+  display: grid;
   gap: 0.4rem;
 }
 
-.blazon-colourings figcaption {
-  font-size: 0.6rem;
+.showing__names dt {
+  font-family: var(--display);
+  font-size: 0.8125rem;
   font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--quiet);
+  color: var(--bone-quiet);
 }
 
-.blazon-gallery li {
+.showing__names dd {
+  margin: 0 0 0.6rem;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1;
+  letter-spacing: -0.005em;
+  color: var(--strike);
+}
+
+.showing__ref {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  color: var(--bone-quiet);
+  font-variant-numeric: tabular-nums;
+}
+
+.showing__gloss {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--bone);
+  text-wrap: pretty;
+}
+
+.showing__usage {
+  margin: 0;
   display: grid;
-  justify-items: center;
+  gap: 0.35rem;
+  font-family: var(--display);
+  font-size: 1.125rem;
+  letter-spacing: 0.02em;
+}
+
+.showing__usage span {
+  color: var(--bone-quiet);
+}
+
+.showing__usage b {
+  font-weight: 700;
+  color: var(--bone);
+}
+
+.showing__try {
+  font: inherit;
+  font-family: var(--display);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--strike);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  justify-self: start;
+  text-decoration: underline;
+  text-underline-offset: 0.45em;
+  text-decoration-thickness: 1px;
+}
+
+/* ─ the translator ───────────────────────────────────────────────────────── */
+
+.compose {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 46rem;
+  margin-top: 2.5rem;
+}
+
+.compose label,
+.compose__label {
+  font-family: var(--display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+  display: block;
+  margin: 0 0 0.5rem;
+}
+
+.compose select,
+.compose textarea {
+  font: inherit;
+  color: var(--bone);
+  background: var(--void-lift);
+  border: 0;
+  width: 100%;
+  padding: 0.75rem 0.9rem;
+}
+
+.compose textarea {
+  font-family: var(--display);
+  font-size: 1.375rem;
+  letter-spacing: 0.01em;
+  resize: vertical;
+}
+
+.compose select {
+  width: auto;
+  font-family: var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.compose__out {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.compose__out p {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  line-height: 1.15;
+  color: var(--strike);
+  min-height: 1.2em;
+  text-wrap: balance;
+}
+
+.compose__out [role='alert'] {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #f0a3a3;
+}
+
+/* ─ the index ────────────────────────────────────────────────────────────── */
+
+.index {
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+  display: grid;
+  gap: clamp(2rem, 5vw, 3rem);
+  max-width: 60rem;
+}
+
+.index a {
+  text-decoration: none;
+  color: inherit;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.index a:hover .index__name,
+.index a:focus-visible .index__name {
+  color: var(--strike);
+  text-shadow: 0 0 18px rgb(251 247 238 / 0.35);
+}
+
+.index__name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 5vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--bone);
+  transition: color 140ms linear;
+}
+
+.index__note {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--bone-quiet);
+}
+
+/* The index of a closed set shows the set. */
+.index__set {
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.75rem;
-  text-align: center;
+  margin-top: 0.5rem;
 }
 
-.blazon-gallery dl {
-  margin: 0;
-  display: grid;
-  gap: 0.15rem;
+.index__arm img {
+  display: block;
+  filter: brightness(0.62) saturate(0.85);
+  transition: filter 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.blazon-gallery dt {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--quiet);
+.index a:hover .index__arm img,
+.index a:focus-visible .index__arm img {
+  filter: brightness(1) saturate(1);
 }
 
-.blazon-gallery dd {
-  margin: 0 0 0.35rem;
-  font-size: 1.05rem;
+/* ─ narrow ───────────────────────────────────────────────────────────────── */
+
+@media (max-width: 64rem) {
+  /* Below two columns the struck term follows the set in flow; sticky would pin
+     it over the very terms it must never hide. */
+  .plane--reference {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .plane--reference > .showing {
+    position: relative;
+    margin-top: 1.75rem;
+  }
+
+  .stack__terms {
+    gap: 1rem 1.1rem;
+  }
 }
 
-.blazon-doc-example {
-  margin: 0;
-  display: grid;
-  gap: 0.1rem;
-  font-size: 0.75rem;
-  color: var(--quiet);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .rail,
+  .showing__try {
+    display: none;
+  }
+
+  .ghost {
+    opacity: 1;
+  }
+
+  .ghost img {
+    filter: none;
+  }
+}
+
+/* ─ the strike ───────────────────────────────────────────────────────────── */
+
+/*
+ * The world is named for a verb, so the page performs it once: a struck value
+ * arrives over-bright and decays to rest. Exponential ease-out, and it begins
+ * from a state already visible, so nothing is hidden by timing.
+ */
+@keyframes strike {
+  from {
+    filter: drop-shadow(0 0 46px rgb(251 247 238 / 0.75)) brightness(1.5);
+  }
+  to {
+    filter: drop-shadow(0 0 22px rgb(251 247 238 / 0.28)) brightness(1);
+  }
+}
+
+.showing__fields img {
+  animation: strike 460ms cubic-bezier(0.16, 1, 0.3, 1);
 }
