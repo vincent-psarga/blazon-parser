@@ -1,16 +1,11 @@
 import { apply, tok } from 'typescript-parsec';
 import { DivisionType } from '../../domain/models/Field';
+import { bySpelling } from '../../domain/translations/Translation';
+import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
 import { TokenKind } from '../lexer/Lexer';
 import { guard } from './Combinators';
 
-// The four simple partitions, each named in French after the line that divides
-// the field: "parti" cuts per pale, "coupé" per fess, and so on.
-const DIVISIONS: ReadonlyMap<string, DivisionType> = new Map([
-  ['parti', DivisionType.pale],
-  ['coupé', DivisionType.fess],
-  ['tranché', DivisionType.bend],
-  ['taillé', DivisionType.bendSinister],
-]);
+const DIVISIONS = bySpelling(FrenchDivisionType);
 
 export const DIVISION = apply(
   guard(

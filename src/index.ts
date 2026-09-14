@@ -1,8 +1,12 @@
 export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
 export { parseBlazon, parseTincture } from './application/parser/Parser';
-export { withArticle } from './application/parser/Tincture';
+export { withArticle } from './application/parser/FrenchGrammar';
 export type { Blazon } from './domain/models/Blazon';
 export { DivisionType } from './domain/models/Field';
 export type { Division, Field } from './domain/models/Field';
-export { COLOURS, METALS, TINCTURES, isTincture } from './domain/models/Tinctures';
+export { Colours, Metals, TINCTURES, isTincture } from './domain/models/Tinctures';
 export type { Tincture } from './domain/models/Tinctures';
+export { bySpelling, nameOf, spellingsOf } from './domain/translations/Translation';
+export type { Translation } from './domain/translations/Translation';
+export { FrenchDivisionType } from './domain/translations/fr/Divisions';
+export { FrenchColours, FrenchMetals, FrenchTinctures } from './domain/translations/fr/Tinctures';

@@ -1,14 +1,15 @@
 import { describe, expect, test } from 'vitest';
 import { parseBlazon } from './Parser';
 import { DivisionType } from '../../domain/models/Field';
+import { Colours, Metals } from '../../domain/models/Tinctures';
 
 describe('divided fields', () => {
   test('reads "Parti d\'azur et d\'or" as a field divided per pale', () => {
     expect(parseBlazon("Parti d'azur et d'or")).toEqual({
       field: {
         type: DivisionType.pale,
-        firstTincture: 'azur',
-        secondTincture: 'or',
+        firstTincture: Colours.azure,
+        secondTincture: Metals.gold,
       },
     });
   });
@@ -20,25 +21,25 @@ describe('divided fields', () => {
     ['taillé', DivisionType.bendSinister],
   ])('%s divides the field per %s', (name, type) => {
     expect(parseBlazon(`${name} de gueules et d'argent`)).toEqual({
-      field: { type, firstTincture: 'gueules', secondTincture: 'argent' },
+      field: { type, firstTincture: Colours.gules, secondTincture: Metals.silver },
     });
   });
 
   test('accepts tinctures named without their article', () => {
     expect(parseBlazon('Parti azur et or')).toEqual({
-      field: { type: DivisionType.pale, firstTincture: 'azur', secondTincture: 'or' },
+      field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.gold },
     });
   });
 
   test('accepts the same tincture on both sides', () => {
     expect(parseBlazon("Coupé d'or et d'or")).toEqual({
-      field: { type: DivisionType.fess, firstTincture: 'or', secondTincture: 'or' },
+      field: { type: DivisionType.fess, firstTincture: Metals.gold, secondTincture: Metals.gold },
     });
   });
 
   test('is case insensitive', () => {
     expect(parseBlazon("TRANCHÉ D'AZUR ET DE SABLE")).toEqual({
-      field: { type: DivisionType.bend, firstTincture: 'azur', secondTincture: 'sable' },
+      field: { type: DivisionType.bend, firstTincture: Colours.azure, secondTincture: Colours.sable },
     });
   });
 
@@ -46,13 +47,13 @@ describe('divided fields', () => {
     const decomposed = "Coupé d'or et de sable".normalize('NFD');
     expect(decomposed).not.toBe("Coupé d'or et de sable");
     expect(parseBlazon(decomposed)).toEqual({
-      field: { type: DivisionType.fess, firstTincture: 'or', secondTincture: 'sable' },
+      field: { type: DivisionType.fess, firstTincture: Metals.gold, secondTincture: Colours.sable },
     });
   });
 
   test('closes with the optional full stop', () => {
     expect(parseBlazon("Parti d'azur et d'or.")).toEqual({
-      field: { type: DivisionType.pale, firstTincture: 'azur', secondTincture: 'or' },
+      field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.gold },
     });
   });
 

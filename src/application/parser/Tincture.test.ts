@@ -1,19 +1,23 @@
 import { describe, expect, test } from 'vitest';
+import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { nameOf } from '../../domain/translations/Translation';
+import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
+import { withArticle } from './FrenchGrammar';
 import { parseTincture } from './Parser';
-import { withArticle } from './Tincture';
-import {TINCTURES} from "../../domain/models/Tinctures";
+
+const inFrench = (tincture: (typeof TINCTURES)[number]) => nameOf(FrenchTinctures, tincture);
 
 describe('parseTincture', () => {
   test.each(TINCTURES)('parses %s bare', (tincture) => {
-    expect(parseTincture(tincture)).toBe(tincture);
+    expect(parseTincture(inFrench(tincture))).toBe(tincture);
   });
 
   test.each(TINCTURES)('parses %s with its article', (tincture) => {
-    expect(parseTincture(withArticle(tincture))).toBe(tincture);
+    expect(parseTincture(withArticle(inFrench(tincture)))).toBe(tincture);
   });
 
   test('is case insensitive', () => {
-    expect(parseTincture('  Azur ')).toBe('azur');
+    expect(parseTincture('  Azur ')).toBe(Colours.azure);
   });
 
   test('rejects an unknown tincture', () => {
@@ -22,11 +26,11 @@ describe('parseTincture', () => {
 
   describe('articles', () => {
     test('accepts a typographic apostrophe', () => {
-      expect(parseTincture('d’or')).toBe('or');
+      expect(parseTincture('d’or')).toBe(Metals.gold);
     });
 
     test('ignores the spacing after "de"', () => {
-      expect(parseTincture('De   Gueules')).toBe('gueules');
+      expect(parseTincture('De   Gueules')).toBe(Colours.gules);
     });
 
     test('rejects "de" where the vowel calls for an elision', () => {
@@ -45,14 +49,14 @@ describe('parseTincture', () => {
 
 describe('withArticle', () => {
   test('elides before a vowel', () => {
-    expect(withArticle('or')).toBe("d'or");
-    expect(withArticle('argent')).toBe("d'argent");
-    expect(withArticle('azur')).toBe("d'azur");
+    expect(withArticle(inFrench(Metals.gold))).toBe("d'or");
+    expect(withArticle(inFrench(Metals.silver))).toBe("d'argent");
+    expect(withArticle(inFrench(Colours.azure))).toBe("d'azur");
   });
 
   test('keeps "de" before a consonant', () => {
-    expect(withArticle('gueules')).toBe('de gueules');
-    expect(withArticle('sable')).toBe('de sable');
-    expect(withArticle('sinople')).toBe('de sinople');
+    expect(withArticle(inFrench(Colours.gules))).toBe('de gueules');
+    expect(withArticle(inFrench(Colours.sable))).toBe('de sable');
+    expect(withArticle(inFrench(Colours.vert))).toBe('de sinople');
   });
 });

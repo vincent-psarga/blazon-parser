@@ -1,14 +1,14 @@
 import { alt, apply, rule, seq } from 'typescript-parsec';
 import { Division, Field } from '../../domain/models/Field';
 import { TokenKind } from '../lexer/Lexer';
-import { keyword } from './Combinators';
+import { AND } from './FrenchGrammar';
 import { DIVISION } from './Division';
 import { TINCTURE } from './Tincture';
 
 const PLAIN_FIELD = apply(TINCTURE, (tincture): Field => ({ tincture }));
 
 const DIVIDED_FIELD = apply(
-  seq(DIVISION, TINCTURE, keyword('et'), TINCTURE),
+  seq(DIVISION, TINCTURE, AND, TINCTURE),
   ([type, firstTincture, , secondTincture]): Division => ({ type, firstTincture, secondTincture })
 );
 

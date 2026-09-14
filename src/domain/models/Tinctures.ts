@@ -1,10 +1,18 @@
-export const METALS = ['or', 'argent'] as const;
+export enum Metals {
+  gold = 'Metals.gold',
+  silver = 'Metals.silver',
+}
 
-export const COLOURS = ['azur', 'gueules', 'sable', 'sinople'] as const;
+export enum Colours {
+  azure = 'Colours.azure',
+  gules = 'Colours.gules',
+  sable = 'Colours.sable',
+  vert = 'Colours.vert',
+}
 
-export const TINCTURES = [...METALS, ...COLOURS] as const;
+export type Tincture = Metals | Colours;
 
-export type Tincture = (typeof TINCTURES)[number];
+export const TINCTURES: readonly Tincture[] = [...Object.values(Metals), ...Object.values(Colours)];
 
 export function isTincture(value: string): value is Tincture {
   return (TINCTURES as readonly string[]).includes(value);

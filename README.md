@@ -22,18 +22,25 @@ npm install
 
 ```
 src/
-  domain/models/            what a blazon is, free of parsing concerns
-    Blazon.ts               a blazon: its field
-    Field.ts                a plain or divided field
-    Tinctures.ts            the vocabulary of tinctures
+  domain/
+    models/                 what a blazon is, in English
+      Blazon.ts             a blazon: its field
+      Field.ts              a plain or divided field; DivisionType
+      Tinctures.ts          Metals, Colours, and the Tincture union
+    translations/
+      Translation.ts        Translation<T>, and reading a term back from a spelling
+      fr/
+        Tinctures.ts        FrenchMetals, FrenchColours, FrenchTinctures
+        Divisions.ts        FrenchDivisionType
 
   application/
     lexer/
       Lexer.ts              token kinds, the tokenizer, and NFC normalisation
     parser/
       Combinators.ts        combinators missing from typescript-parsec
+      FrenchGrammar.ts      articles, elision, conjunctions — grammar, not heraldry
       Tincture.ts           TINCTURE: a tincture and its article
-      Division.ts           DIVISION: parti, coupé, tranché, taillé
+      Division.ts           DIVISION: the partitions
       Field.ts              FIELD: a plain field or a divided one
       Blazon.ts             BLAZON: the whole sentence
       Parser.ts             parseBlazon / parseTincture
@@ -41,6 +48,17 @@ src/
 
   index.ts                  public API
 ```
+
+Heraldic terms are enums named in English, and each value carries its own enum
+name (`DivisionType.fess = 'DivisionType.fess'`) so a value is never mistaken for
+a term of another kind. What a term is *called* is a translation: `Translation<T>`
+is keyed on the enum's values, so adding a term breaks any language that has not
+caught up. A term may be spelled several ways — `['mantelé-versé',
+'mantelé-renversé']` — with the first spelling used for writing it back out.
+
+The parser therefore holds no heraldic vocabulary. It reads words through
+`bySpelling(FrenchTinctures)` and keeps only what is genuinely French grammar:
+the articles, the elision of "de" before a vowel, and the conjunction.
 
 Each rule file names one grammar concept and exports the parser for it, so the
 grammar reads down the dependency chain: `Blazon` → `Field` → `Tincture` and

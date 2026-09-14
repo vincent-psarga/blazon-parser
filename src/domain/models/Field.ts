@@ -5,11 +5,10 @@ export type Field = {
 } | Division
 
 export enum DivisionType {
-    fess = 'fess',
-    pale = 'pale',
-    bend = 'bend',
-    bendSinister = 'bendSinister',
-
+    fess = 'DivisionType.fess',
+    pale = 'DivisionType.pale',
+    bend = 'DivisionType.bend',
+    bendSinister = 'DivisionType.bendSinister',
 }
 
 export type Division = {

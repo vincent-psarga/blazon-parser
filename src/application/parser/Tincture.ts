@@ -1,22 +1,12 @@
 import { alt, apply, opt_sc, rule, seq, tok } from 'typescript-parsec';
-import { isTincture, Tincture } from '../../domain/models/Tinctures';
+import { Tincture } from '../../domain/models/Tinctures';
+import { bySpelling } from '../../domain/translations/Translation';
+import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
 import { guard } from './Combinators';
+import { expectedArticle, withArticle } from './FrenchGrammar';
 
-// "de" elides to "d'" before a vowel. Should a fur with a mute h ever join the
-// vocabulary ("hermine" takes "d'hermine"), it needs listing as an exception here.
-function elides(name: string): boolean {
-  return /^[aeiouyàâäéèêëîïôöùûü]/.test(name);
-}
-
-function expectedArticle(name: Tincture): TokenKind.Elision | TokenKind.Article {
-  return elides(name) ? TokenKind.Elision : TokenKind.Article;
-}
-
-/** Renders a tincture as it is spoken in a blazon: "d'or", "de gueules". */
-export function withArticle(tincture: Tincture): string {
-  return elides(tincture) ? `d'${tincture}` : `de ${tincture}`;
-}
+const TINCTURES = bySpelling(FrenchTinctures);
 
 // A tincture may be named bare ("or") or introduced by an article ("d'or"), so
 // the article is part of the grammar rather than part of the vocabulary.
@@ -30,11 +20,12 @@ const ARTICLED_WORD = apply(seq(opt_sc(ARTICLE), tok(TokenKind.Word)), ([article
 const NAMED_TINCTURE = apply(
   guard(
     ARTICLED_WORD,
-    ({ name }) => isTincture(name),
+    ({ name }) => TINCTURES.has(name),
     ({ name }) => `Unknown tincture: ${name}`
   ),
-  // The guard above has established the name is one of the vocabulary.
-  ({ name, article }) => ({ name: name as Tincture, article })
+  // The guard above has established the word names a tincture. The word is kept
+  // alongside the term it names, because the article agrees with how it is spelled.
+  ({ name, article }) => ({ tincture: TINCTURES.get(name) as Tincture, name, article })
 );
 
 export const TINCTURE = rule<TokenKind, Tincture>();
@@ -46,6 +37,6 @@ TINCTURE.setPattern(
       ({ name, article }) => article === undefined || article === expectedArticle(name),
       ({ name }) => `Wrong elision: expected "${withArticle(name)}"`
     ),
-    ({ name }) => name
+    ({ tincture }) => tincture
   )
 );
