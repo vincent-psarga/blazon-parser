@@ -4,6 +4,7 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "tsc",
+    "build:demo": "vite build demo --outDir dist --emptyOutDir",
     "clean": "rm -rf lib",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.test.json",
