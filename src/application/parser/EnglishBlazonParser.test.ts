@@ -18,7 +18,7 @@ describe('EnglishBlazonParser', () => {
       field: {
         type: DivisionType.pale,
         firstTincture: Colours.azure,
-        secondTincture: Metals.gold,
+        secondTincture: Metals.or,
       },
     });
   });
@@ -29,7 +29,7 @@ describe('EnglishBlazonParser', () => {
     ['Per bend sinister', DivisionType.bendSinister],
   ])('reads "%s" as a field divided per that line', (name, type) => {
     expect(parser.parse(`${name} gules and argent`)).toEqual({
-      field: { type, firstTincture: Colours.gules, secondTincture: Metals.silver },
+      field: { type, firstTincture: Colours.gules, secondTincture: Metals.argent },
     });
   });
 
@@ -40,7 +40,7 @@ describe('EnglishBlazonParser', () => {
 
   test('is case insensitive', () => {
     expect(parser.parse('PER PALE AZURE AND OR')).toEqual({
-      field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.gold },
+      field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.or },
     });
   });
 

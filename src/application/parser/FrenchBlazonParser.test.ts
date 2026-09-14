@@ -15,7 +15,7 @@ describe('FrenchBlazonParser', () => {
       field: {
         type: DivisionType.pale,
         firstTincture: Colours.azure,
-        secondTincture: Metals.gold,
+        secondTincture: Metals.or,
       },
     });
   });

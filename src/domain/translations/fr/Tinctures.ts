@@ -2,8 +2,8 @@ import { Colours, Metals, Tincture } from '../../models/Tinctures';
 import { Translation } from '../Translation';
 
 export const FrenchMetals: Translation<Metals> = {
-  [Metals.gold]: 'or',
-  [Metals.silver]: 'argent',
+  [Metals.or]: 'or',
+  [Metals.argent]: 'argent',
 };
 
 export const FrenchColours: Translation<Colours> = {

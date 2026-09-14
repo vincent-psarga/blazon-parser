@@ -19,7 +19,7 @@ describe('FrenchBlazonWriter', () => {
         field: {
           type: DivisionType.pale,
           firstTincture: Colours.azure,
-          secondTincture: Metals.gold,
+          secondTincture: Metals.or,
         },
       })
     ).toBe("Parti d'azur et d'or.");
@@ -31,13 +31,13 @@ describe('FrenchBlazonWriter', () => {
     [DivisionType.bendSinister, 'Taillé'],
   ])('names %s in French', (type, name) => {
     const written = writer.write({
-      field: { type, firstTincture: Colours.gules, secondTincture: Metals.silver },
+      field: { type, firstTincture: Colours.gules, secondTincture: Metals.argent },
     });
     expect(written).toBe(`${name} de gueules et d'argent.`);
   });
 
   test('agrees the article with the tincture it introduces', () => {
-    expect(writer.write({ field: { tincture: Metals.gold } })).toBe("D'or.");
+    expect(writer.write({ field: { tincture: Metals.or } })).toBe("D'or.");
     expect(writer.write({ field: { tincture: Colours.gules } })).toBe('De gueules.');
   });
 
@@ -58,7 +58,7 @@ describe('round trip', () => {
 
   test.each(Object.values(DivisionType))('a field divided per %s survives the round trip', (type) => {
     const blazon: Blazon = {
-      field: { type, firstTincture: Colours.sable, secondTincture: Metals.gold },
+      field: { type, firstTincture: Colours.sable, secondTincture: Metals.or },
     };
     expect(roundTrip(blazon)).toEqual(blazon);
   });

@@ -29,7 +29,7 @@ describe('parseTincture', () => {
 
   describe('articles', () => {
     test('accepts a typographic apostrophe', () => {
-      expect(parseTincture('d’or')).toBe(Metals.gold);
+      expect(parseTincture('d’or')).toBe(Metals.or);
     });
 
     test('ignores the spacing after "de"', () => {
@@ -52,8 +52,8 @@ describe('parseTincture', () => {
 
 describe('withArticle', () => {
   test('elides before a vowel', () => {
-    expect(withArticle(inFrench(Metals.gold))).toBe("d'or");
-    expect(withArticle(inFrench(Metals.silver))).toBe("d'argent");
+    expect(withArticle(inFrench(Metals.or))).toBe("d'or");
+    expect(withArticle(inFrench(Metals.argent))).toBe("d'argent");
     expect(withArticle(inFrench(Colours.azure))).toBe("d'azur");
   });
 

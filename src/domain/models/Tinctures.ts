@@ -1,6 +1,6 @@
 export enum Metals {
-  gold = 'Metals.gold',
-  silver = 'Metals.silver',
+  or = 'Metals.or',
+  argent = 'Metals.argent',
 }
 
 export enum Colours {

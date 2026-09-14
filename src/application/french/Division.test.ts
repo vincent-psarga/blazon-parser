@@ -11,7 +11,7 @@ describe('divided fields', () => {
       field: {
         type: DivisionType.pale,
         firstTincture: Colours.azure,
-        secondTincture: Metals.gold,
+        secondTincture: Metals.or,
       },
     });
   });
@@ -23,19 +23,19 @@ describe('divided fields', () => {
     ['taillé', DivisionType.bendSinister],
   ])('%s divides the field per %s', (name, type) => {
     expect(parser.parse(`${name} de gueules et d'argent`)).toEqual({
-      field: { type, firstTincture: Colours.gules, secondTincture: Metals.silver },
+      field: { type, firstTincture: Colours.gules, secondTincture: Metals.argent },
     });
   });
 
   test('accepts tinctures named without their article', () => {
     expect(parser.parse('Parti azur et or')).toEqual({
-      field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.gold },
+      field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.or },
     });
   });
 
   test('accepts the same tincture on both sides', () => {
     expect(parser.parse("Coupé d'or et d'or")).toEqual({
-      field: { type: DivisionType.fess, firstTincture: Metals.gold, secondTincture: Metals.gold },
+      field: { type: DivisionType.fess, firstTincture: Metals.or, secondTincture: Metals.or },
     });
   });
 
@@ -49,13 +49,13 @@ describe('divided fields', () => {
     const decomposed = "Coupé d'or et de sable".normalize('NFD');
     expect(decomposed).not.toBe("Coupé d'or et de sable");
     expect(parser.parse(decomposed)).toEqual({
-      field: { type: DivisionType.fess, firstTincture: Metals.gold, secondTincture: Colours.sable },
+      field: { type: DivisionType.fess, firstTincture: Metals.or, secondTincture: Colours.sable },
     });
   });
 
   test('closes with the optional full stop', () => {
     expect(parser.parse("Parti d'azur et d'or.")).toEqual({
-      field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.gold },
+      field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.or },
     });
   });
 

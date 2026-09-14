@@ -17,7 +17,7 @@ describe('parseBlazon', () => {
   });
 
   test('accepts the capitalisation a blazon is written with', () => {
-    expect(parser.parse("D'Or")).toEqual({ field: { tincture: Metals.gold } });
+    expect(parser.parse("D'Or")).toEqual({ field: { tincture: Metals.or } });
   });
 
   test('rejects an unknown tincture', () => {
