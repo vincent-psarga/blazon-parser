@@ -1,50 +1,52 @@
 import { describe, expect, test } from 'vitest';
-import { parseBlazon } from './Parser';
-import { withArticle } from '../french/FrenchGrammar';
+import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
+import { withArticle } from './FrenchGrammar';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 
+const parser = new FrenchBlazonParser();
+
 describe('parseBlazon', () => {
   test.each(TINCTURES)('reads a field %s into the blazon', (tincture) => {
-    expect(parseBlazon(withArticle(nameOf(FrenchTinctures, tincture)))).toEqual({ field: { tincture } });
+    expect(parser.parse(withArticle(nameOf(FrenchTinctures, tincture)))).toEqual({ field: { tincture } });
   });
 
   test('accepts a field named without its article', () => {
-    expect(parseBlazon('azur')).toEqual({ field: { tincture: Colours.azure } });
+    expect(parser.parse('azur')).toEqual({ field: { tincture: Colours.azure } });
   });
 
   test('accepts the capitalisation a blazon is written with', () => {
-    expect(parseBlazon("D'Or")).toEqual({ field: { tincture: Metals.gold } });
+    expect(parser.parse("D'Or")).toEqual({ field: { tincture: Metals.gold } });
   });
 
   test('rejects an unknown tincture', () => {
-    expect(() => parseBlazon('de fuchsia')).toThrow(/Unknown tincture: fuchsia/);
+    expect(() => parser.parse('de fuchsia')).toThrow(/Unknown tincture: fuchsia/);
   });
 
   test('rejects a wrong elision', () => {
-    expect(() => parseBlazon('de or')).toThrow(/expected "d'or"/);
+    expect(() => parser.parse('de or')).toThrow(/expected "d'or"/);
   });
 
   describe('the closing full stop', () => {
     test('accepts a blazon that ends with one', () => {
-      expect(parseBlazon("D'azur.")).toEqual({ field: { tincture: Colours.azure } });
+      expect(parser.parse("D'azur.")).toEqual({ field: { tincture: Colours.azure } });
     });
 
     test('accepts a blazon that omits it', () => {
-      expect(parseBlazon("D'azur")).toEqual({ field: { tincture: Colours.azure } });
+      expect(parser.parse("D'azur")).toEqual({ field: { tincture: Colours.azure } });
     });
 
     test('rejects a doubled stop', () => {
-      expect(() => parseBlazon("D'azur..")).toThrow();
+      expect(() => parser.parse("D'azur..")).toThrow();
     });
 
     test('rejects a stop on its own', () => {
-      expect(() => parseBlazon('.')).toThrow();
+      expect(() => parser.parse('.')).toThrow();
     });
 
     test('rejects a stop before the field', () => {
-      expect(() => parseBlazon(".D'azur")).toThrow();
+      expect(() => parser.parse(".D'azur")).toThrow();
     });
   });
 });

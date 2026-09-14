@@ -23,34 +23,40 @@ npm install
 ```
 src/
   domain/
-    models/                 what a blazon is, in English
-      Blazon.ts             a blazon: its field
-      Field.ts              a plain or divided field; DivisionType
-      Tinctures.ts          Metals, Colours, and the Tincture union
-    services/               what the library offers, as interfaces
-      IBlazonParser.ts      text -> Blazon
-      IBlazonWriter.ts      Blazon -> text
+    models/                   what a blazon is, in English
+      Blazon.ts               a blazon: its field
+      Field.ts                a plain or divided field; DivisionType
+      Tinctures.ts            Metals, Colours, and the Tincture union
+    services/                 what the library offers, as interfaces
+      IBlazonParser.ts        text -> Blazon
+      IBlazonWriter.ts        Blazon -> text
     translations/
-      Translation.ts        Translation<T>, and reading a term back from a spelling
-      fr/                   the French name of every term
+      Translation.ts          Translation<T>, and reading a term back from a spelling
+      fr/  en/                the name of every term, per language
 
   application/
-    french/
-      FrenchGrammar.ts      articles, elision, conjunction — grammar, not heraldry
     lexer/
-      Lexer.ts              token kinds, the tokenizer, and NFC normalisation
+      Lexer.ts                token kinds, the tokenizer, and NFC normalisation
     parser/
-      Combinators.ts        combinators missing from typescript-parsec
-      Tincture.ts           TINCTURE: a tincture and its article
-      Division.ts           DIVISION: the partitions
-      Field.ts              FIELD: a plain field or a divided one
-      Blazon.ts             BLAZON: the whole sentence
-      Parser.ts             running a rule over some text
-      FrenchBlazonParser.ts implements IBlazonParser
+      Combinators.ts          guard, optional, keyword, term
+      BlazonGrammar.ts        what a language contributes; the shared rule
+      Parser.ts               running a rule over some text
+      FrenchBlazonParser.ts   implements IBlazonParser
+      EnglishBlazonParser.ts  implements IBlazonParser
+    french/
+      FrenchGrammar.ts        articles, elision, conjunction — grammar, not heraldry
+      FrenchBlazonGrammar.ts  the French BlazonGrammar
+      FrenchBlazonWording.ts  the French BlazonWording
+    english/
+      EnglishGrammar.ts       the conjunction; English needs no article
+      EnglishBlazonGrammar.ts the English BlazonGrammar
+      EnglishBlazonWording.ts the English BlazonWording
     writer/
-      FrenchBlazonWriter.ts implements IBlazonWriter
+      BlazonWording.ts        what a language contributes; the shared sentence
+      FrenchBlazonWriter.ts   implements IBlazonWriter
+      EnglishBlazonWriter.ts  implements IBlazonWriter
 
-  index.ts                  public API
+  index.ts                    public API
 ```
 
 Heraldic terms are enums named in English, and each value carries its own enum
@@ -60,22 +66,25 @@ is keyed on the enum's values, so adding a term breaks any language that has not
 caught up. A term may be spelled several ways — `['mantelé-versé',
 'mantelé-renversé']` — with the first spelling used for writing it back out.
 
+A blazon has the same shape in every language — a field, plain or divided between
+two tinctures — so one rule reads them all and one sentence writes them all. A
+language supplies a `BlazonGrammar` for reading and a `BlazonWording` for writing:
+its tinctures, its partitions, and its conjunction. French wraps its tinctures in
+an article that has to agree with the word it introduces; English names them bare.
+
 Reading and writing are separate services over that shared vocabulary, so
-translating is parsing in one language and writing in another. Adding a language
-means a folder under `domain/translations/` and its own grammar and writer; no
-rule and no model changes.
+translating is parsing in one language and writing in another:
+`englishParser.parse(text)` then `frenchWriter.write(blazon)`. Nothing between the
+two services knows that more than one language exists.
+
+A term may be spelled across several words — English says "per bend sinister"
+where French says "taillé" — so `term` offers every prefix that names a term as a
+candidate and lets the surrounding grammar choose; the longest reading is not
+always the right one.
 
 Neither the parser nor the writer holds any heraldic word. They reach terms
-through the translations and keep only what is genuinely French: the articles,
-the elision of "de" before a vowel, and the conjunction.
-
-Each rule file names one grammar concept and exports the parser for it, so the
-grammar reads down the dependency chain: `Blazon` → `Field` → `Tincture` and
-`Division`. The rules build domain models as they reduce — `TINCTURE` yields a
-`Tincture`, `FIELD` a `Field`, `BLAZON` a `Blazon` — so there is no separate
-assembly step. Vocabulary and elision are checked by `guard` (see
-`Combinators.ts`) so that a rejection fails one branch of the grammar instead of
-throwing out of the parse.
+through the translations and keep only what is genuinely the language's own: its
+articles, its elisions, its conjunction.
 
 ## Toolchain notes
 

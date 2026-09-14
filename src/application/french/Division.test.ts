@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'vitest';
-import { parseBlazon } from './Parser';
+import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { DivisionType } from '../../domain/models/Field';
 import { Colours, Metals } from '../../domain/models/Tinctures';
 
+const parser = new FrenchBlazonParser();
+
 describe('divided fields', () => {
   test('reads "Parti d\'azur et d\'or" as a field divided per pale', () => {
-    expect(parseBlazon("Parti d'azur et d'or")).toEqual({
+    expect(parser.parse("Parti d'azur et d'or")).toEqual({
       field: {
         type: DivisionType.pale,
         firstTincture: Colours.azure,
@@ -20,25 +22,25 @@ describe('divided fields', () => {
     ['tranché', DivisionType.bend],
     ['taillé', DivisionType.bendSinister],
   ])('%s divides the field per %s', (name, type) => {
-    expect(parseBlazon(`${name} de gueules et d'argent`)).toEqual({
+    expect(parser.parse(`${name} de gueules et d'argent`)).toEqual({
       field: { type, firstTincture: Colours.gules, secondTincture: Metals.silver },
     });
   });
 
   test('accepts tinctures named without their article', () => {
-    expect(parseBlazon('Parti azur et or')).toEqual({
+    expect(parser.parse('Parti azur et or')).toEqual({
       field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.gold },
     });
   });
 
   test('accepts the same tincture on both sides', () => {
-    expect(parseBlazon("Coupé d'or et d'or")).toEqual({
+    expect(parser.parse("Coupé d'or et d'or")).toEqual({
       field: { type: DivisionType.fess, firstTincture: Metals.gold, secondTincture: Metals.gold },
     });
   });
 
   test('is case insensitive', () => {
-    expect(parseBlazon("TRANCHÉ D'AZUR ET DE SABLE")).toEqual({
+    expect(parser.parse("TRANCHÉ D'AZUR ET DE SABLE")).toEqual({
       field: { type: DivisionType.bend, firstTincture: Colours.azure, secondTincture: Colours.sable },
     });
   });
@@ -46,36 +48,36 @@ describe('divided fields', () => {
   test('reads an accent that arrives decomposed', () => {
     const decomposed = "Coupé d'or et de sable".normalize('NFD');
     expect(decomposed).not.toBe("Coupé d'or et de sable");
-    expect(parseBlazon(decomposed)).toEqual({
+    expect(parser.parse(decomposed)).toEqual({
       field: { type: DivisionType.fess, firstTincture: Metals.gold, secondTincture: Colours.sable },
     });
   });
 
   test('closes with the optional full stop', () => {
-    expect(parseBlazon("Parti d'azur et d'or.")).toEqual({
+    expect(parser.parse("Parti d'azur et d'or.")).toEqual({
       field: { type: DivisionType.pale, firstTincture: Colours.azure, secondTincture: Metals.gold },
     });
   });
 
   describe('rejections', () => {
     test('rejects a division naming only one tincture', () => {
-      expect(() => parseBlazon("Parti d'azur")).toThrow();
+      expect(() => parser.parse("Parti d'azur")).toThrow();
     });
 
     test('rejects two tinctures without "et"', () => {
-      expect(() => parseBlazon("Parti d'azur d'or")).toThrow();
+      expect(() => parser.parse("Parti d'azur d'or")).toThrow();
     });
 
     test('rejects an unknown division', () => {
-      expect(() => parseBlazon("Écartelé d'azur et d'or")).toThrow();
+      expect(() => parser.parse("Écartelé d'azur et d'or")).toThrow();
     });
 
     test('still reports an unknown tincture rather than an unknown division', () => {
-      expect(() => parseBlazon('de fuchsia')).toThrow(/Unknown tincture: fuchsia/);
+      expect(() => parser.parse('de fuchsia')).toThrow(/Unknown tincture: fuchsia/);
     });
 
     test('carries the elision rule into both halves', () => {
-      expect(() => parseBlazon("Parti d'azur et de or")).toThrow(/expected "d'or"/);
+      expect(() => parser.parse("Parti d'azur et de or")).toThrow(/expected "d'or"/);
     });
   });
 });
