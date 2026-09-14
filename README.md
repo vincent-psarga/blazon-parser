@@ -22,15 +22,31 @@ npm install
 
 ```
 src/
-  domain/models/      Blazon, Field, Tinctures — the parser's output, free of parsing concerns
-  Lexer.ts            tokenizer (typescript-parsec buildLexer)
-  Combinators.ts      combinators missing from typescript-parsec
-  Parser.ts           grammar rules, producing domain models directly
-  index.ts            public API
-  Test*.test.ts       tests
+  domain/models/            what a blazon is, free of parsing concerns
+    Blazon.ts               a blazon: its field
+    Field.ts                a plain or divided field
+    Tinctures.ts            the vocabulary of tinctures
+
+  application/
+    lexer/
+      Lexer.ts              token kinds, the tokenizer, and NFC normalisation
+    parser/
+      Combinators.ts        combinators missing from typescript-parsec
+      Tincture.ts           TINCTURE: a tincture and its article
+      Division.ts           DIVISION: parti, coupé, tranché, taillé
+      Field.ts              FIELD: a plain field or a divided one
+      Blazon.ts             BLAZON: the whole sentence
+      Parser.ts             parseBlazon / parseTincture
+      *.test.ts             tests, each beside the rule it exercises
+
+  index.ts                  public API
 ```
 
-The grammar builds domain models as it reduces — `TINCTURE` yields a `Tincture`,
+Each rule file names one grammar concept and exports the parser for it, so the
+grammar reads down the dependency chain: `Blazon` → `Field` → `Tincture` and
+`Division`. `Parser.ts` holds only the entry points.
+
+The rules build domain models as they reduce — `TINCTURE` yields a `Tincture`,
 `FIELD` a `Field`, `BLAZON` a `Blazon` — so there is no separate assembly step.
 Vocabulary and elision are checked by `guard` (see `Combinators.ts`) so that a
 rejection fails one branch of the grammar instead of throwing out of the parse.

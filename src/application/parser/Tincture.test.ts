@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { parseTincture, withArticle } from './Parser';
-import {TINCTURES} from "./domain/models/Tinctures";
+import { parseTincture } from './Parser';
+import { withArticle } from './Tincture';
+import {TINCTURES} from "../../domain/models/Tinctures";
 
 describe('parseTincture', () => {
   test.each(TINCTURES)('parses %s bare', (tincture) => {

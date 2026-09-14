@@ -1,5 +1,6 @@
-export { TokenKind, lexer } from './Lexer';
-export { parseBlazon, parseTincture, withArticle } from './Parser';
+export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
+export { parseBlazon, parseTincture } from './application/parser/Parser';
+export { withArticle } from './application/parser/Tincture';
 export type { Blazon } from './domain/models/Blazon';
 export { DivisionType } from './domain/models/Field';
 export type { Division, Field } from './domain/models/Field';

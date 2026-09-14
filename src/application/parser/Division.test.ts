@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { parseBlazon } from './Parser';
-import { DivisionType } from './domain/models/Field';
+import { DivisionType } from '../../domain/models/Field';
 
 describe('divided fields', () => {
   test('reads "Parti d\'azur et d\'or" as a field divided per pale', () => {

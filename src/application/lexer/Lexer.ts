@@ -1,4 +1,4 @@
-import { buildLexer } from 'typescript-parsec';
+import { Token, buildLexer } from 'typescript-parsec';
 
 export enum TokenKind {
   Elision,
@@ -18,3 +18,9 @@ export const lexer = buildLexer<TokenKind>([
   [true, /^\./g, TokenKind.Period],
   [false, /^\s+/g, TokenKind.Space],
 ]);
+
+// An accent can arrive decomposed ("e" followed by a combining acute), which the
+// letter pattern above does not cover, so input is composed before tokenising.
+export function tokenise(input: string): Token<TokenKind> | undefined {
+  return lexer.parse(input.normalize('NFC'));
+}

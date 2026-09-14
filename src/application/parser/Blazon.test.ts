@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { parseBlazon, withArticle } from './Parser';
-import { TINCTURES } from './domain/models/Tinctures';
+import { parseBlazon } from './Parser';
+import { withArticle } from './Tincture';
+import { TINCTURES } from '../../domain/models/Tinctures';
 
 describe('parseBlazon', () => {
   test.each(TINCTURES)('reads a field %s into the blazon', (tincture) => {

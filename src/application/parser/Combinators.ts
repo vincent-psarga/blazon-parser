@@ -1,4 +1,5 @@
-import { ParseError, ParseResult, Parser, ParserOutput, Token, resultOrError } from 'typescript-parsec';
+import { ParseError, ParseResult, Parser, ParserOutput, Token, resultOrError, tok } from 'typescript-parsec';
+import { TokenKind } from '../lexer/Lexer';
 
 /**
  * Keeps only the candidates a predicate accepts, reporting a rejection as a
@@ -37,4 +38,13 @@ export function guard<TKind, TResult>(
       return rejection === undefined ? output : resultOrError(kept, rejection, kept.length !== 0);
     },
   };
+}
+
+/** Matches one keyword whatever its casing: "et", "parti". */
+export function keyword(expected: string): Parser<TokenKind, Token<TokenKind>> {
+  return guard(
+    tok(TokenKind.Word),
+    (token) => token.text.toLowerCase() === expected,
+    (token) => `Expected "${expected}", found "${token.text}"`
+  );
 }
