@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
-import { withArticle } from './FrenchGrammar';
+import { withArticle } from '../french/FrenchGrammar';
 import { parseTincture } from './Parser';
 
 const inFrench = (tincture: (typeof TINCTURES)[number]) => nameOf(FrenchTinctures, tincture);

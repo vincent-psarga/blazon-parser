@@ -27,24 +27,28 @@ src/
       Blazon.ts             a blazon: its field
       Field.ts              a plain or divided field; DivisionType
       Tinctures.ts          Metals, Colours, and the Tincture union
+    services/               what the library offers, as interfaces
+      IBlazonParser.ts      text -> Blazon
+      IBlazonWriter.ts      Blazon -> text
     translations/
       Translation.ts        Translation<T>, and reading a term back from a spelling
-      fr/
-        Tinctures.ts        FrenchMetals, FrenchColours, FrenchTinctures
-        Divisions.ts        FrenchDivisionType
+      fr/                   the French name of every term
 
   application/
+    french/
+      FrenchGrammar.ts      articles, elision, conjunction — grammar, not heraldry
     lexer/
       Lexer.ts              token kinds, the tokenizer, and NFC normalisation
     parser/
       Combinators.ts        combinators missing from typescript-parsec
-      FrenchGrammar.ts      articles, elision, conjunctions — grammar, not heraldry
       Tincture.ts           TINCTURE: a tincture and its article
       Division.ts           DIVISION: the partitions
       Field.ts              FIELD: a plain field or a divided one
       Blazon.ts             BLAZON: the whole sentence
-      Parser.ts             parseBlazon / parseTincture
-      *.test.ts             tests, each beside the rule it exercises
+      Parser.ts             running a rule over some text
+      FrenchBlazonParser.ts implements IBlazonParser
+    writer/
+      FrenchBlazonWriter.ts implements IBlazonWriter
 
   index.ts                  public API
 ```
@@ -56,18 +60,22 @@ is keyed on the enum's values, so adding a term breaks any language that has not
 caught up. A term may be spelled several ways — `['mantelé-versé',
 'mantelé-renversé']` — with the first spelling used for writing it back out.
 
-The parser therefore holds no heraldic vocabulary. It reads words through
-`bySpelling(FrenchTinctures)` and keeps only what is genuinely French grammar:
-the articles, the elision of "de" before a vowel, and the conjunction.
+Reading and writing are separate services over that shared vocabulary, so
+translating is parsing in one language and writing in another. Adding a language
+means a folder under `domain/translations/` and its own grammar and writer; no
+rule and no model changes.
+
+Neither the parser nor the writer holds any heraldic word. They reach terms
+through the translations and keep only what is genuinely French: the articles,
+the elision of "de" before a vowel, and the conjunction.
 
 Each rule file names one grammar concept and exports the parser for it, so the
 grammar reads down the dependency chain: `Blazon` → `Field` → `Tincture` and
-`Division`. `Parser.ts` holds only the entry points.
-
-The rules build domain models as they reduce — `TINCTURE` yields a `Tincture`,
-`FIELD` a `Field`, `BLAZON` a `Blazon` — so there is no separate assembly step.
-Vocabulary and elision are checked by `guard` (see `Combinators.ts`) so that a
-rejection fails one branch of the grammar instead of throwing out of the parse.
+`Division`. The rules build domain models as they reduce — `TINCTURE` yields a
+`Tincture`, `FIELD` a `Field`, `BLAZON` a `Blazon` — so there is no separate
+assembly step. Vocabulary and elision are checked by `guard` (see
+`Combinators.ts`) so that a rejection fails one branch of the grammar instead of
+throwing out of the parse.
 
 ## Toolchain notes
 

@@ -16,3 +16,7 @@ export type Division = {
     firstTincture: Tincture,
     secondTincture: Tincture,
 }
+
+export function isDivision(field: Field): field is Division {
+    return 'type' in field;
+}

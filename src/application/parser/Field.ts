@@ -1,7 +1,7 @@
 import { alt, apply, rule, seq } from 'typescript-parsec';
 import { Division, Field } from '../../domain/models/Field';
 import { TokenKind } from '../lexer/Lexer';
-import { AND } from './FrenchGrammar';
+import { AND } from '../french/FrenchGrammar';
 import { DIVISION } from './Division';
 import { TINCTURE } from './Tincture';
 

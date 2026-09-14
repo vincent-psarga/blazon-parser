@@ -1,8 +1,9 @@
 import { TokenKind } from '../lexer/Lexer';
-import { keyword } from './Combinators';
+import { keyword } from '../parser/Combinators';
 
 // French plumbing, not heraldry: the articles and conjunctions that hold a
-// blazon together. Every heraldic term itself comes from domain/translations.
+// blazon together, whether it is being read or written. Every heraldic term
+// itself comes from domain/translations.
 
 // "de" elides to "d'" before a vowel. Should a term with a mute h ever need
 // blazoning ("hermine" takes "d'hermine"), it needs listing as an exception here.
@@ -20,4 +21,6 @@ export function withArticle(word: string): string {
 }
 
 /** The conjunction joining the halves of a divided field. */
-export const AND = keyword('et');
+export const CONJUNCTION = 'et';
+
+export const AND = keyword(CONJUNCTION);

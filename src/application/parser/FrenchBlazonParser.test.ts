@@ -1,0 +1,26 @@
+import { describe, expect, test } from 'vitest';
+import { DivisionType } from '../../domain/models/Field';
+import { Colours, Metals } from '../../domain/models/Tinctures';
+import { FrenchBlazonParser } from './FrenchBlazonParser';
+
+const parser = new FrenchBlazonParser();
+
+describe('FrenchBlazonParser', () => {
+  test('reads a plain field', () => {
+    expect(parser.parse("D'azur.")).toEqual({ field: { tincture: Colours.azure } });
+  });
+
+  test('reads a divided field', () => {
+    expect(parser.parse("Parti d'azur et d'or.")).toEqual({
+      field: {
+        type: DivisionType.pale,
+        firstTincture: Colours.azure,
+        secondTincture: Metals.gold,
+      },
+    });
+  });
+
+  test('refuses a blazon it cannot read', () => {
+    expect(() => parser.parse('De fuchsia')).toThrow(/Unknown tincture/);
+  });
+});

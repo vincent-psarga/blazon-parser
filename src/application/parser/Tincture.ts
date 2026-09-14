@@ -4,7 +4,7 @@ import { bySpelling } from '../../domain/translations/Translation';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
 import { guard } from './Combinators';
-import { expectedArticle, withArticle } from './FrenchGrammar';
+import { expectedArticle, withArticle } from '../french/FrenchGrammar';
 
 const TINCTURES = bySpelling(FrenchTinctures);
 
