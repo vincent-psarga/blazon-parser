@@ -10,13 +10,20 @@ npm install
 
 ## Scripts
 
-| Script | Description |
-| --- | --- |
-| `npm run build` | Compile `src/` to `lib/` (declarations + source maps) |
-| `npm test` | Run the Vitest suite once |
-| `npm run test:watch` | Run Vitest in watch mode |
-| `npm run typecheck` | Type-check everything, tests included, without emitting |
-| `npm run clean` | Remove `lib/` |
+| Script                 | Description                                             |
+| ---------------------- | ------------------------------------------------------- |
+| `npm run build`        | Compile `src/` to `lib/` (declarations + source maps)   |
+| `npm test`             | Run the Vitest suite once                               |
+| `npm run test:watch`   | Run Vitest in watch mode                                |
+| `npm run typecheck`    | Type-check everything, tests included, without emitting |
+| `npm run format`       | Format the tree with Prettier                           |
+| `npm run format:check` | Report anything Prettier would reformat                 |
+| `npm run clean`        | Remove `lib/`                                           |
+
+A Husky pre-commit hook formats the staged files with `pretty-quick`, then runs
+`npm run typecheck` and `npm test`. What lands is therefore always formatted,
+type-clean and green. It is installed by `npm install`, through the `prepare`
+script.
 
 ## Layout
 
@@ -61,7 +68,7 @@ src/
 
 Heraldic terms are enums named in English, and each value carries its own enum
 name (`DivisionType.fess = 'DivisionType.fess'`) so a value is never mistaken for
-a term of another kind. What a term is *called* is a translation: `Translation<T>`
+a term of another kind. What a term is _called_ is a translation: `Translation<T>`
 is keyed on the enum's values, so adding a term breaks any language that has not
 caught up. A term may be spelled several ways — `['mantelé-versé',
 'mantelé-renversé']` — with the first spelling used for writing it back out.

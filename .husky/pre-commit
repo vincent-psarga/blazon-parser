@@ -1,0 +1,8 @@
+set -e
+
+# Format what is about to be committed, and commit the formatted version.
+npx pretty-quick --staged
+
+# A commit that does not typecheck or does not pass its tests is not worth having.
+npm run typecheck
+npm test
