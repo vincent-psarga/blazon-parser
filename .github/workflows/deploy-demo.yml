@@ -36,6 +36,12 @@ jobs:
       - name: Build demo
         run: npm run build:demo -- --base="${{ steps.pages.outputs.base_path }}/"
 
+      # Pages serves files, not routes, so a deep link opened from the address
+      # bar would meet a 404. Answering with the app itself hands those
+      # addresses back to the demo's own routing.
+      - name: Answer deep links with the app
+        run: cp demo/dist/index.html demo/dist/404.html
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:

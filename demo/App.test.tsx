@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { afterEach, beforeEach, describe, expect, test } from 'vitest';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { App } from './App';
 
 beforeEach(() => window.history.pushState(null, '', '/'));
@@ -113,5 +113,42 @@ describe('a path no page answers to', () => {
     window.history.pushState(null, '', '/doc/charges');
     render(<App />);
     expect(heading()).toBe('Nothing here');
+  });
+});
+
+describe('served from a subdirectory, as on GitHub Pages', () => {
+  beforeEach(() => {
+    vi.stubEnv('BASE_URL', '/blazon-parser/');
+    window.history.pushState(null, '', '/blazon-parser/');
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  test('shows the demo at the base itself rather than claiming nothing answers', () => {
+    render(<App />);
+    expect(heading()).toBe('Blazon');
+  });
+
+  test('reads a page below the base', () => {
+    window.history.pushState(null, '', '/blazon-parser/doc/tinctures');
+    render(<App />);
+    expect(heading()).toBe('Tinctures');
+  });
+
+  test('keeps the base in the address when navigating', async () => {
+    render(<App />);
+    await openDoc();
+    await userEvent.setup().click(inMenu('Divisions')!);
+    expect(heading()).toBe('Divisions');
+    expect(window.location.pathname).toBe('/blazon-parser/doc/divisions');
+  });
+
+  test('points the links themselves below the base, for whoever opens one in a new tab', async () => {
+    render(<App />);
+    expect(within(rail()).getByRole('link', { name: 'Demo' })).toHaveAttribute(
+      'href',
+      '/blazon-parser/'
+    );
+    await openDoc();
+    expect(inMenu('Tinctures')).toHaveAttribute('href', '/blazon-parser/doc/tinctures');
   });
 });

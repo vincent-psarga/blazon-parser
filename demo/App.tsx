@@ -2,12 +2,29 @@ import { ReactNode, useEffect, useRef, useState } from 'react';
 import { BlazonPage, DivisionsPage, DocIndexPage, TincturesPage } from '../src/infra/react';
 
 /**
+ * The demo is served from the root in development and from a subdirectory on
+ * GitHub Pages, so the routes below are written without that prefix and it is
+ * added back the moment an address reaches the browser.
+ */
+const base = () => import.meta.env.BASE_URL.replace(/\/$/, '');
+
+function address(to: string): string {
+  return base() + to;
+}
+
+function route(pathname: string): string {
+  const prefix = base();
+  const path = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname;
+  return path === '' ? '/' : path;
+}
+
+/**
  * Routing belongs to whatever mounts the pages, not to the library, so the demo
  * keeps its own — small enough not to need a router, and honest about the fact
  * that a real application would bring its own.
  */
 function useRoute(): [string, string, (to: string) => void] {
-  const read = () => window.location.pathname + window.location.search;
+  const read = () => route(window.location.pathname) + window.location.search;
   const [href, setHref] = useState(read);
 
   useEffect(() => {
@@ -21,7 +38,7 @@ function useRoute(): [string, string, (to: string) => void] {
     path,
     query,
     (to: string) => {
-      window.history.pushState(null, '', to);
+      window.history.pushState(null, '', address(to));
       setHref(to);
       window.scrollTo(0, 0);
     },
@@ -52,7 +69,11 @@ export function App() {
   return (
     <>
       <nav className="rail">
-        <a href="/" aria-current={path === '/' ? 'page' : undefined} onClick={go(navigate, '/')}>
+        <a
+          href={address('/')}
+          aria-current={path === '/' ? 'page' : undefined}
+          onClick={go(navigate, '/')}
+        >
           Demo
         </a>
         <RailMenu label="Doc" docs={docs} path={path} navigate={navigate} />
@@ -123,7 +144,7 @@ function RailMenu({
         <ul>
           <li>
             <a
-              href="/doc"
+              href={address('/doc')}
               aria-current={path === '/doc' ? 'page' : undefined}
               onClick={(event) => {
                 event.preventDefault();
@@ -137,7 +158,7 @@ function RailMenu({
           {docs.map((doc) => (
             <li key={doc.path}>
               <a
-                href={doc.path}
+                href={address(doc.path)}
                 aria-current={doc.path === path ? 'page' : undefined}
                 onClick={(event) => {
                   event.preventDefault();

@@ -2,7 +2,12 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-    "rootDir": "."
+    "rootDir": ".",
+    // Vitest and Vite both load these files as modules, unlike the CommonJS the
+    // published library is built into, so import.meta is available here.
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["node", "vite/client"]
   },
   "include": [
     "src/**/*.ts",
