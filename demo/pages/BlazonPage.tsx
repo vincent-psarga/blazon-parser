@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Blazon } from '../../domain/models/Blazon';
-import { BlazonShield } from './BlazonShield';
-import { COLOURINGS, Colouring, OUTLINE } from './Colourings';
-import { LANGUAGES, LanguageCode, otherThan } from './Languages';
+import { Blazon } from '../../src/domain/models/Blazon';
+import { BlazonShield } from '../components/BlazonShield';
+import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
+import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
 
 export interface BlazonPageProps {
   /** The language the blazon is written in to begin with. */

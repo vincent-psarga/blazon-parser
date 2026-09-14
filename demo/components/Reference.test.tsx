@@ -2,9 +2,9 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { Colours, Metals } from '../../domain/models/Tinctures';
-import { HatchingColours } from '../colours/HatchingColours';
-import { WikipediaColours } from '../colours/WikipediaColours';
+import { Colours, Metals } from '../../src/domain/models/Tinctures';
+import { HatchingColours } from '../../src/infra/colours/HatchingColours';
+import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 import { Reference, ReferenceRank } from './Reference';
 
 afterEach(cleanup);

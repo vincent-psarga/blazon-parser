@@ -1,11 +1,11 @@
 import { useMemo } from 'react';
-import { readArmorial } from '../../application/armorial/ArmorialReading';
-import { Armorial } from '../../domain/models/Armorial';
-import { ColorModel } from '../../domain/services/IBlazonDrawer';
-import { BlazonShield } from './BlazonShield';
-import { COLOURINGS, OUTLINE } from './Colourings';
-import { LANGUAGES, codeOf } from './Languages';
-import { tally } from './Tally';
+import { readArmorial } from '../../src/application/armorial/ArmorialReading';
+import { Armorial } from '../../src/domain/models/Armorial';
+import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
+import { BlazonShield } from '../components/BlazonShield';
+import { COLOURINGS, OUTLINE } from '../utils/Colourings';
+import { LANGUAGES, codeOf } from '../utils/Languages';
+import { tally } from '../utils/Tally';
 
 /** Small enough to read a row by, large enough to tell two shields apart. */
 const ARMS = 72;

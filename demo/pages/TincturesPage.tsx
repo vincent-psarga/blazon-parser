@@ -1,11 +1,11 @@
-import { Colours, Furs, Metals, Tincture } from '../../domain/models/Tinctures';
-import { nameOf } from '../../domain/translations/Translation';
-import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
-import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
-import { EnglishBlazonWriter } from '../../application/writer/EnglishBlazonWriter';
-import { FrenchBlazonWriter } from '../../application/writer/FrenchBlazonWriter';
-import { Colouring } from './Colourings';
-import { Reference, ReferenceEntry, ReferenceRank } from './Reference';
+import { Colours, Furs, Metals, Tincture } from '../../src/domain/models/Tinctures';
+import { nameOf } from '../../src/domain/translations/Translation';
+import { EnglishTinctures } from '../../src/domain/translations/en/Tinctures';
+import { FrenchTinctures } from '../../src/domain/translations/fr/Tinctures';
+import { EnglishBlazonWriter } from '../../src/application/writer/EnglishBlazonWriter';
+import { FrenchBlazonWriter } from '../../src/application/writer/FrenchBlazonWriter';
+import { Colouring } from '../utils/Colourings';
+import { Reference, ReferenceEntry, ReferenceRank } from '../components/Reference';
 
 const inFrench = new FrenchBlazonWriter();
 const inEnglish = new EnglishBlazonWriter();

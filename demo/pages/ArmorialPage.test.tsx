@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
-import { Armorial } from '../../domain/models/Armorial';
-import { Metals } from '../../domain/models/Tinctures';
-import { WikipediaColours } from '../colours/WikipediaColours';
+import { Armorial } from '../../src/domain/models/Armorial';
+import { Metals } from '../../src/domain/models/Tinctures';
+import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 import { ArmorialPage } from './ArmorialPage';
 
 afterEach(cleanup);

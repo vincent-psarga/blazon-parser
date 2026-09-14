@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
-import { Blazon } from '../../domain/models/Blazon';
+import { Blazon } from '../../src/domain/models/Blazon';
 import { BlazonShield } from './BlazonShield';
-import { COLOURINGS, Colouring, OUTLINE } from './Colourings';
+import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 
 /** One term of the vocabulary, everything a reader or a caller needs of it. */
 export interface ReferenceEntry {

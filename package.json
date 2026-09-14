@@ -43,21 +43,9 @@
     ".": {
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"
-    },
-    "./react": {
-      "types": "./lib/infra/react/index.d.ts",
-      "default": "./lib/infra/react/index.js"
     }
   },
   "files": [
     "lib"
-  ],
-  "peerDependencies": {
-    "react": ">=18"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    }
-  }
+  ]
 }

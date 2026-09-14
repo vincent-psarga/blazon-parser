@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { SvgBlazonDrawer } from '../../application/drawer/SvgBlazonDrawer';
-import { Blazon } from '../../domain/models/Blazon';
-import { ColorModel } from '../../domain/services/IBlazonDrawer';
-import { WikipediaColours } from '../colours/WikipediaColours';
+import { SvgBlazonDrawer } from '../../src/application/drawer/SvgBlazonDrawer';
+import { Blazon } from '../../src/domain/models/Blazon';
+import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
+import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 
 const SHIELD_RATIO = 240 / 200;
 

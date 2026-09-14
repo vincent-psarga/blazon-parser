@@ -1,6 +1,6 @@
-import { ColorModel } from '../../domain/services/IBlazonDrawer';
-import { HatchingColours } from '../colours/HatchingColours';
-import { WikipediaColours } from '../colours/WikipediaColours';
+import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
+import { HatchingColours } from '../../src/infra/colours/HatchingColours';
+import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 
 /** One way of painting the tinctures, under the name it goes by. */
 export interface Colouring {

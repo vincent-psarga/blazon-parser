@@ -1,13 +1,10 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import {
-  ArmorialPage,
-  ArmorialsPage,
-  BlazonPage,
-  DivisionsPage,
-  DocIndexPage,
-  TincturesPage,
-  armorialPath,
-} from '../src/infra/react';
+import { ArmorialPage } from './pages/ArmorialPage';
+import { ArmorialsPage, armorialPath } from './pages/ArmorialsPage';
+import { BlazonPage } from './pages/BlazonPage';
+import { DivisionsPage } from './pages/DivisionsPage';
+import { DocIndexPage } from './pages/DocIndexPage';
+import { TincturesPage } from './pages/TincturesPage';
 import { ARMORIALS } from './armorials';
 
 /**

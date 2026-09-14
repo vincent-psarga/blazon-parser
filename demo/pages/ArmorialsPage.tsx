@@ -1,6 +1,6 @@
-import { Armorial } from '../../domain/models/Armorial';
-import { LANGUAGES, codeOf } from './Languages';
-import { tally } from './Tally';
+import { Armorial } from '../../src/domain/models/Armorial';
+import { LANGUAGES, codeOf } from '../utils/Languages';
+import { tally } from '../utils/Tally';
 
 /**
  * Where one armorial is read. The index and whatever routes the host keeps have

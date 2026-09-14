@@ -2,13 +2,13 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test } from 'vitest';
-import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
-import { isPattern } from '../../domain/services/IBlazonDrawer';
-import { nameOf } from '../../domain/translations/Translation';
-import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
-import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
-import { HatchingColours } from '../colours/HatchingColours';
-import { WikipediaColours } from '../colours/WikipediaColours';
+import { Colours, Furs, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
+import { isPattern } from '../../src/domain/services/IBlazonDrawer';
+import { nameOf } from '../../src/domain/translations/Translation';
+import { EnglishTinctures } from '../../src/domain/translations/en/Tinctures';
+import { FrenchTinctures } from '../../src/domain/translations/fr/Tinctures';
+import { HatchingColours } from '../../src/infra/colours/HatchingColours';
+import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 import { TincturesPage } from './TincturesPage';
 
 afterEach(cleanup);

@@ -1,12 +1,12 @@
-import { DivisionType } from '../../domain/models/Field';
-import { Colours, Metals } from '../../domain/models/Tinctures';
-import { nameOf } from '../../domain/translations/Translation';
-import { EnglishDivisionType } from '../../domain/translations/en/Divisions';
-import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
-import { EnglishBlazonWriter } from '../../application/writer/EnglishBlazonWriter';
-import { FrenchBlazonWriter } from '../../application/writer/FrenchBlazonWriter';
-import { Colouring } from './Colourings';
-import { Reference, ReferenceEntry, ReferenceRank } from './Reference';
+import { DivisionType } from '../../src/domain/models/Field';
+import { Colours, Metals } from '../../src/domain/models/Tinctures';
+import { nameOf } from '../../src/domain/translations/Translation';
+import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions';
+import { FrenchDivisionType } from '../../src/domain/translations/fr/Divisions';
+import { EnglishBlazonWriter } from '../../src/application/writer/EnglishBlazonWriter';
+import { FrenchBlazonWriter } from '../../src/application/writer/FrenchBlazonWriter';
+import { Colouring } from '../utils/Colourings';
+import { Reference, ReferenceEntry, ReferenceRank } from '../components/Reference';
 
 // Every partition is cut from the same two tinctures, so that what changes from
 // one to the next is the line of division and nothing else.

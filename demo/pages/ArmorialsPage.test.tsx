@@ -2,7 +2,7 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test, vi } from 'vitest';
-import { Armorial } from '../../domain/models/Armorial';
+import { Armorial } from '../../src/domain/models/Armorial';
 import { ArmorialsPage, armorialPath } from './ArmorialsPage';
 
 afterEach(cleanup);

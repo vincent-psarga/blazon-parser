@@ -1,10 +1,10 @@
-import { DivisionType } from '../../domain/models/Field';
-import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
-import { nameOf } from '../../domain/translations/Translation';
-import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
-import { EnglishDivisionType } from '../../domain/translations/en/Divisions';
-import { BlazonShield } from './BlazonShield';
-import { COLOURINGS, OUTLINE } from './Colourings';
+import { DivisionType } from '../../src/domain/models/Field';
+import { Colours, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
+import { nameOf } from '../../src/domain/translations/Translation';
+import { EnglishTinctures } from '../../src/domain/translations/en/Tinctures';
+import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions';
+import { BlazonShield } from '../components/BlazonShield';
+import { COLOURINGS, OUTLINE } from '../utils/Colourings';
 
 export interface DocIndexPageProps {
   /** How the host routes to a documentation page. */

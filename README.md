@@ -75,18 +75,29 @@ src/
       WikipediaColours.ts     the shades Wikipedia paints its tinctures with
       HatchingColours.ts      the marks that stand in for colour in monochrome
       Furs.ts                 ermine and vair, built from whichever two tinctures
-    react/
-      BlazonPage.tsx          type a blazon, read its translation, see the arms
-      Reference.tsx           the anatomy both vocabulary pages are built on
-      TincturesPage.tsx       every tincture, named, painted and hatched
-      DivisionsPage.tsx       every partition, named and drawn
-      DocIndexPage.tsx        what a blazon may be, and what it may not
-      BlazonShield.tsx        one blazon, drawn
-      Colourings.ts           the paintings a page offers: colour, hatching
-      Languages.ts            the languages offered, and what each translates into
-      index.ts                the blazon-parser/react entry point
 
   index.ts                    public API
+
+demo/
+  index.html  main.tsx        where the demo is mounted
+  App.tsx                     the rail, and the routing that serves the pages
+  styles.css                  the look, which the library does not impose
+  pages/
+    BlazonPage.tsx            type a blazon, read its translation, see the arms
+    TincturesPage.tsx         every tincture, named, painted and hatched
+    DivisionsPage.tsx         every partition, named and drawn
+    DocIndexPage.tsx          what a blazon may be, and what it may not
+    ArmorialsPage.tsx         the armorials on offer, and how much each parses
+    ArmorialPage.tsx          one armorial, read entry by entry
+  components/
+    Reference.tsx             the anatomy both vocabulary pages are built on
+    BlazonShield.tsx          one blazon, drawn
+  utils/
+    Colourings.ts             the paintings a page offers: colour, hatching
+    Languages.ts              the languages offered, and what each translates into
+    Tally.ts                  a count with its noun, singular or plural
+  armorials/                  the armorials the demo carries
+  fonts/                      Archivo Narrow, self-hosted
 ```
 
 Heraldic terms are enums named in English, and each value carries its own enum
@@ -135,40 +146,43 @@ Neither the parser nor the writer holds any heraldic word. They reach terms
 through the translations and keep only what is genuinely the language's own: its
 articles, its elisions, its conjunction.
 
-## The React page
+## The demo
+
+Everything React lives in `demo/`, and nothing else does. The library reads,
+writes and draws blazons; it holds no component, imports no React, and ships a
+single entry point — `require('blazon-parser')` pulls in no view layer at all.
 
 `BlazonPage` takes a blazon, shows it translated, and draws the arms — in colour
 and in hatching, since both are ways of saying the same tinctures.
-
-```tsx
-import { BlazonPage, TincturesPage, DivisionsPage } from 'blazon-parser/react';
-
-createRoot(document.getElementById('root')!).render(<BlazonPage />);
-```
-
 `TincturesPage` and `DivisionsPage` document the vocabulary on one shared
 anatomy: the whole closed set hangs present at once, and the term being read is
-struck forward at full measure in both languages and both paintings. They are
-components and nothing more — routing belongs to whatever mounts them, so the
-demo carries its own and serves them at `/doc`, `/doc/tinctures` and
-`/doc/divisions`.
+struck forward at full measure in both languages and both paintings.
+`ArmorialsPage` and `ArmorialPage` read a real armorial and own up to how much of
+it parses.
 
-It lives behind its own entry point, and React is an optional peer dependency, so
-installing the library on a backend never pulls React in — `require('blazon-parser')`
-loads no React module at all. Only `blazon-parser/react` needs it.
+The pages are components and nothing more — routing belongs to whatever mounts
+them, so `App.tsx` carries its own, small enough not to need a router and honest
+about the fact that a real application would bring one. It serves `/`, `/doc`,
+`/doc/tinctures`, `/doc/divisions`, `/armorials` and `/armorial/<slug>`.
 
-The page ships unstyled, offering `.blazon-page` and `.blazon-shield` to hang a
-look on; a library should not impose one, and a stylesheet imported from the
-component would break `require()` on a backend. `demo/` mounts it with a
-stylesheet of its own — `npm run dev` — and stays out of the published build.
+`pages/` holds what answers to an address, `components/` what more than one page
+is built from, and `utils/` the small things neither of those should carry: the
+paintings on offer, the languages, a tally. The armorials sit in `armorials/`
+because they are the demo's data — the library reads an armorial, it holds none.
+
+Run it with `npm run dev`. It has a stylesheet of its own and stays out of the
+published build, which ships `lib` alone.
 
 ## Toolchain notes
 
 - TypeScript 7 — `tsconfig.json` uses `module`/`moduleResolution: nodenext`; the `node10`
   resolution mode was removed in TS 7.
 - Vitest transforms TS with esbuild and does **not** type-check. `tsconfig.json` excludes
-  test files so they stay out of `lib/`; `tsconfig.test.json` adds them back so
-  `npm run typecheck` still covers them. Run it in CI alongside `npm test`.
+  test files so they stay out of `lib/`; `tsconfig.test.json` adds them back, along with
+  `demo/`, so `npm run typecheck` still covers them. Run it in CI alongside `npm test`.
+- `tsconfig.json` builds `src/` alone and compiles no JSX, but it keeps `jsx: react-jsx`:
+  Vite and Vitest read that setting from the nearest tsconfig when transforming the demo,
+  and there is no `tsconfig.json` under `demo/`.
 
 ## Licence
 

@@ -1,10 +1,10 @@
-import { Armorial } from '../../domain/models/Armorial';
-import { EnglishBlazonParser } from '../../application/parser/EnglishBlazonParser';
-import { FrenchBlazonParser } from '../../application/parser/FrenchBlazonParser';
-import { EnglishBlazonWriter } from '../../application/writer/EnglishBlazonWriter';
-import { FrenchBlazonWriter } from '../../application/writer/FrenchBlazonWriter';
-import { IBlazonParser } from '../../domain/services/IBlazonParser';
-import { IBlazonWriter } from '../../domain/services/IBlazonWriter';
+import { Armorial } from '../../src/domain/models/Armorial';
+import { EnglishBlazonParser } from '../../src/application/parser/EnglishBlazonParser';
+import { FrenchBlazonParser } from '../../src/application/parser/FrenchBlazonParser';
+import { EnglishBlazonWriter } from '../../src/application/writer/EnglishBlazonWriter';
+import { FrenchBlazonWriter } from '../../src/application/writer/FrenchBlazonWriter';
+import { IBlazonParser } from '../../src/domain/services/IBlazonParser';
+import { IBlazonWriter } from '../../src/domain/services/IBlazonWriter';
 
 export type LanguageCode = 'fr' | 'en';
 

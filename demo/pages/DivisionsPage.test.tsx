@@ -2,12 +2,12 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test } from 'vitest';
-import { DivisionType } from '../../domain/models/Field';
-import { Colours, Metals } from '../../domain/models/Tinctures';
-import { nameOf } from '../../domain/translations/Translation';
-import { EnglishDivisionType } from '../../domain/translations/en/Divisions';
-import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
-import { WikipediaColours } from '../colours/WikipediaColours';
+import { DivisionType } from '../../src/domain/models/Field';
+import { Colours, Metals } from '../../src/domain/models/Tinctures';
+import { nameOf } from '../../src/domain/translations/Translation';
+import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions';
+import { FrenchDivisionType } from '../../src/domain/translations/fr/Divisions';
+import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 import { DivisionsPage } from './DivisionsPage';
 
 afterEach(cleanup);
