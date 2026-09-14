@@ -1,6 +1,9 @@
 # blazon-parser
 
 A parser for heraldic blazons, built on [typescript-parsec](https://github.com/microsoft/ts-parsec).
+A demo is available at [vincent-psarga.github.io/blazon-parser/](https://vincent-psarga.github.io/blazon-parser/)
+
+This is more a side-project than a library really meant to be used. It will not cover all heraldic language and is not meant to replace tools such as [DrawShield](https://drawshield.net/) (which does a way better work)
 
 ## Setup
 

@@ -1,0 +1,3 @@
+- Fix rendering of furs
+- Handle armorials
+- Handle line modifications (indented, embattled etc)
