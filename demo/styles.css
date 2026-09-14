@@ -105,3 +105,137 @@ body {
 .blazon-shield {
   justify-self: start;
 }
+
+.demo-nav {
+  display: flex;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--edge);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.demo-nav a,
+.demo-nav button {
+  color: var(--quiet);
+  text-decoration: none;
+  font: inherit;
+  /* A button inherits neither of these from the nav on its own. */
+  text-transform: inherit;
+  letter-spacing: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.demo-nav [aria-current='page'] {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.4em;
+}
+
+.demo-menu {
+  position: relative;
+}
+
+.demo-menu button::after {
+  content: ' \25BE';
+}
+
+.demo-menu ul {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  left: -0.9rem;
+  z-index: 1;
+  margin: 0;
+  padding: 0.5rem 0;
+  list-style: none;
+  min-width: 9rem;
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 12%);
+}
+
+.demo-menu li a {
+  display: block;
+  padding: 0.4rem 0.9rem;
+}
+
+.demo-menu li a:hover {
+  color: var(--ink);
+}
+
+.blazon-doc {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.blazon-doc h1 {
+  margin: 0 0 0.75rem;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.blazon-doc h2 {
+  margin: 2.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--quiet);
+}
+
+.blazon-doc-lead {
+  margin: 0 0 1rem;
+  max-width: 34rem;
+  color: var(--quiet);
+}
+
+.blazon-gallery {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: 2rem 1.5rem;
+}
+
+.blazon-gallery li {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.blazon-gallery dl {
+  margin: 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+.blazon-gallery dt {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--quiet);
+}
+
+.blazon-gallery dd {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.blazon-doc-example {
+  margin: 0;
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.75rem;
+  color: var(--quiet);
+}

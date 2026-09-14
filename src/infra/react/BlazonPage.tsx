@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Blazon } from '../../domain/models/Blazon';
 import { ColorModel } from '../../domain/services/IBlazonDrawer';
-import { SvgBlazonDrawer } from '../../application/drawer/SvgBlazonDrawer';
-import { WikipediaColours } from '../colours/WikipediaColours';
+import { BlazonShield } from './BlazonShield';
 import { LANGUAGES, LanguageCode, otherThan } from './Languages';
 
 export interface BlazonPageProps {
@@ -29,7 +28,6 @@ export function BlazonPage({ initialLanguage = 'fr', colours }: BlazonPageProps)
   const [language, setLanguage] = useState<LanguageCode>(initialLanguage);
   const [text, setText] = useState(LANGUAGES[initialLanguage].example);
 
-  const drawer = useMemo(() => new SvgBlazonDrawer(colours ?? WikipediaColours), [colours]);
   const reading = useMemo(() => read(text, language), [text, language]);
   const blazon = reading !== undefined && 'blazon' in reading ? reading.blazon : undefined;
 
@@ -83,20 +81,10 @@ export function BlazonPage({ initialLanguage = 'fr', colours }: BlazonPageProps)
 
       <section aria-labelledby="blazon-arms-heading">
         <h2 id="blazon-arms-heading">Arms</h2>
-        {blazon !== undefined && <BlazonShield svg={drawer.draw(blazon)} alt={translation} />}
+        {blazon !== undefined && (
+          <BlazonShield blazon={blazon} alt={translation} colours={colours} />
+        )}
       </section>
     </main>
   );
-}
-
-/**
- * Shows a drawn shield.
- *
- * The SVG travels as an image rather than being inlined, which keeps its clip
- * path in a document of its own — two shields inlined on one page would
- * otherwise share an id space and the second would take the first one's shape.
- */
-function BlazonShield({ svg, alt }: { readonly svg: string; readonly alt: string }) {
-  const source = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-  return <img className="blazon-shield" src={source} alt={alt} width={200} height={240} />;
 }

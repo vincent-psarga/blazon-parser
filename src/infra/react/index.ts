@@ -1,4 +1,10 @@
 export { BlazonPage } from './BlazonPage';
 export type { BlazonPageProps } from './BlazonPage';
+export { BlazonShield } from './BlazonShield';
+export type { BlazonShieldProps } from './BlazonShield';
+export { TincturesPage } from './TincturesPage';
+export type { TincturesPageProps } from './TincturesPage';
+export { DivisionsPage } from './DivisionsPage';
+export type { DivisionsPageProps } from './DivisionsPage';
 export { LANGUAGES, otherThan } from './Languages';
 export type { Language, LanguageCode } from './Languages';

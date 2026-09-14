@@ -72,6 +72,9 @@ src/
       WikipediaColours.ts     the shades Wikipedia paints its tinctures with
     react/
       BlazonPage.tsx          type a blazon, read its translation, see the arms
+      TincturesPage.tsx       every tincture, named and painted
+      DivisionsPage.tsx       every partition, named and drawn
+      BlazonShield.tsx        one blazon, drawn
       Languages.ts            the languages offered, and what each translates into
       index.ts                the blason-parser/react entry point
 
@@ -115,10 +118,15 @@ articles, its elisions, its conjunction.
 `BlazonPage` takes a blazon, shows it translated, and draws the arms.
 
 ```tsx
-import { BlazonPage } from 'blason-parser/react';
+import { BlazonPage, TincturesPage, DivisionsPage } from 'blason-parser/react';
 
 createRoot(document.getElementById('root')!).render(<BlazonPage />);
 ```
+
+`TincturesPage` and `DivisionsPage` document the vocabulary, each term named in
+both languages beside the shield it draws. They are components and nothing more —
+routing belongs to whatever mounts them, so the demo carries its own and serves
+them at `/doc/tinctures` and `/doc/divisions`.
 
 It lives behind its own entry point, and React is an optional peer dependency, so
 installing the library on a backend never pulls React in — `require('blason-parser')`
