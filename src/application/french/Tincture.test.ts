@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { parseWith } from '../parser/Parser';
@@ -61,5 +61,25 @@ describe('withArticle', () => {
     expect(withArticle(inFrench(Colours.gules))).toBe('de gueules');
     expect(withArticle(inFrench(Colours.sable))).toBe('de sable');
     expect(withArticle(inFrench(Colours.vert))).toBe('de sinople');
+  });
+});
+
+describe('the furs', () => {
+  test('elides before the mute h of hermine', () => {
+    expect(withArticle('hermine')).toBe("d'hermine");
+    expect(parseTincture("d'hermine")).toBe(Furs.ermine);
+  });
+
+  test('keeps "de" before vair, which begins with a plain consonant', () => {
+    expect(withArticle('vair')).toBe('de vair');
+    expect(parseTincture('de vair')).toBe(Furs.vair);
+  });
+
+  test('rejects "de hermine", the h being mute', () => {
+    expect(() => parseTincture('de hermine')).toThrow(/expected "d'hermine"/);
+  });
+
+  test('rejects "d\'vair"', () => {
+    expect(() => parseTincture("d'vair")).toThrow(/expected "de vair"/);
   });
 });

@@ -22,6 +22,10 @@ describe('translating a blazon', () => {
     ["Parti d'azur et d'or.", 'Per pale azure and or.'],
     ["Coupé de gueules et d'argent.", 'Per fess gules and argent.'],
     ['Taillé de sable et de sinople.', 'Per bend sinister sable and vert.'],
+    ["D'hermine.", 'Ermine.'],
+    ['De vair.', 'Vair.'],
+    ["Parti d'hermine et de vair.", 'Per pale ermine and vair.'],
+    ["Coupé de gueules et d'hermine.", 'Per fess gules and ermine.'],
   ])('%s becomes %s', (inFrench, inEnglish) => {
     expect(intoEnglish(inFrench)).toBe(inEnglish);
     expect(intoFrench(inEnglish)).toBe(inFrench);

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { DivisionType } from '../../domain/models/Field';
-import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
-import { ColorModel } from '../../domain/services/IBlazonDrawer';
+import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { ColorModel, isPattern } from '../../domain/services/IBlazonDrawer';
 import { HatchingColours } from '../../infra/colours/HatchingColours';
 import { WikipediaColours } from '../../infra/colours/WikipediaColours';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
@@ -27,8 +27,18 @@ describe('SvgBlazonDrawer', () => {
     }
   });
 
-  test.each(TINCTURES)('paints a plain field of %s with its own colour', (tincture) => {
+  const PLAIN = TINCTURES.filter((tincture) => !isPattern(WikipediaColours[tincture]));
+
+  test.each(PLAIN)('paints a plain field of %s with its own colour', (tincture) => {
     expect(fills(drawer.draw({ field: { tincture } }))).toEqual([WikipediaColours[tincture]]);
+  });
+
+  test.each(Object.values(Furs))('covers a field of %s with its own pelt', (fur) => {
+    const paint = WikipediaColours[fur];
+    const svg = drawer.draw({ field: { tincture: fur } });
+    expect(isPattern(paint)).toBe(true);
+    expect(svg).toContain(isPattern(paint) ? paint.fill : '');
+    expect(svg).toContain('<pattern');
   });
 
   test('clips the field to the shield and outlines it', () => {
@@ -155,12 +165,16 @@ describe('painting with patterns rather than colours', () => {
 });
 
 describe('WikipediaColours', () => {
-  test.each(TINCTURES)('gives %s a colour', (tincture) => {
-    expect(WikipediaColours[tincture]).toMatch(/^#[0-9a-f]{6}$/);
+  test.each(TINCTURES)('paints %s', (tincture) => {
+    const paint = WikipediaColours[tincture];
+    expect(isPattern(paint) ? paint.fill : paint).toMatch(/^(#[0-9a-f]{6}|url\(#.+\))$/);
   });
 
-  test('gives no two tinctures the same colour', () => {
-    const used = TINCTURES.map((tincture) => WikipediaColours[tincture]);
+  test('paints no two tinctures alike', () => {
+    const used = TINCTURES.map((tincture) => {
+      const paint = WikipediaColours[tincture];
+      return isPattern(paint) ? paint.fill : paint;
+    });
     expect(new Set(used).size).toBe(used.length);
   });
 });

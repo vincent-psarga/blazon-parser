@@ -1,4 +1,4 @@
-import { Colours, Metals, Tincture } from '../../domain/models/Tinctures';
+import { Colours, Furs, Metals, Tincture } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
@@ -6,12 +6,14 @@ import { BlazonShield } from './BlazonShield';
 import { COLOURINGS, Colouring } from './Colourings';
 
 /**
- * The two ranks of tincture are kept apart because heraldry keeps them apart:
- * the rule of tincture forbids laying a metal on a metal, or a colour on a colour.
+ * The ranks are kept apart because heraldry keeps them apart: the rule of tincture
+ * forbids laying a metal on a metal, or a colour on a colour. The furs answer to
+ * neither, being reckoned to hold something of both.
  */
 const RANKS: readonly { readonly heading: string; readonly tinctures: readonly Tincture[] }[] = [
   { heading: 'Metals', tinctures: Object.values(Metals) },
   { heading: 'Colours', tinctures: Object.values(Colours) },
+  { heading: 'Furs', tinctures: Object.values(Furs) },
 ];
 
 export interface TincturesPageProps {

@@ -1,5 +1,6 @@
-import { Colours, Metals } from '../../domain/models/Tinctures';
+import { Colours, Furs, Metals } from '../../domain/models/Tinctures';
 import { ColorModel, Pattern } from '../../domain/services/IBlazonDrawer';
+import { ermine, vair } from './Furs';
 
 /**
  * Hatching: the convention for standing in for the tinctures where colour cannot
@@ -40,4 +41,19 @@ export const HatchingColours: ColorModel = {
   [Colours.sable]: hatch('sable', HORIZONTAL + VERTICAL),
   // Ruled lines turned onto the diagonal a bend runs along.
   [Colours.vert]: hatch('vert', HORIZONTAL, ' patternTransform="rotate(45)"'),
+  // Ermine is blank paper and solid spots, both of which hatching already has.
+  [Furs.ermine]: ermine('ermine-hatched', PAPER, INK),
+  // Vair needs its azure ruled, so it carries the ruling it refers to with it.
+  [Furs.vair]: vairHatched(),
 };
+
+/**
+ * A pattern may carry more than one definition, so vair brings along the ruling
+ * its bells are filled with. The ruling is given a name of its own rather than
+ * sharing azure's, since a shield bearing both would otherwise define it twice.
+ */
+function vairHatched(): Pattern {
+  const ruling = hatch('vair-azure', HORIZONTAL);
+  const bells = vair('vair-hatched', PAPER, ruling.fill, INK);
+  return { fill: bells.fill, definition: ruling.definition + bells.definition };
+}

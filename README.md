@@ -34,7 +34,7 @@ src/
     models/                   what a blazon is, in English
       Blazon.ts               a blazon: its field
       Field.ts                a plain or divided field; DivisionType
-      Tinctures.ts            Metals, Colours, and the Tincture union
+      Tinctures.ts            Metals, Colours, Furs, and the Tincture union
     services/                 what the library offers, as interfaces
       IBlazonParser.ts        text -> Blazon
       IBlazonWriter.ts        Blazon -> text
@@ -71,6 +71,7 @@ src/
     colours/
       WikipediaColours.ts     the shades Wikipedia paints its tinctures with
       HatchingColours.ts      the marks that stand in for colour in monochrome
+      Furs.ts                 ermine and vair, built from whichever two tinctures
     react/
       BlazonPage.tsx          type a blazon, read its translation, see the arms
       Colourings.ts           the paintings a page offers: colour, hatching
@@ -106,7 +107,14 @@ A tincture is not always a flat colour. A `Paint` is either a colour or a
 refers to; the drawing carries the patterns its own tinctures call for and no
 others. `HatchingColours` is the monochrome convention — argent left blank, or
 dotted, azure ruled horizontally, gules vertically, sable both ways, vert along
-the diagonal a bend runs — and it is the same mechanism the furs will need.
+the diagonal a bend runs — and the furs are the same mechanism again: ermine is a
+field strewn with spots, vair a lattice of bells, each built from whichever two
+tinctures the colouring paints it with, so one pair of shapes serves both.
+
+The furs answer to neither rank, being reckoned to hold something of both metal
+and colour, and they bring French grammar with them: an h is mute or aspirated by
+the word rather than by its spelling, so "hermine" takes `d'` where "hérisson"
+would not. The mute ones are named in `FrenchGrammar`.
 
 Reading and writing are separate services over that shared vocabulary, so
 translating is parsing in one language and writing in another:

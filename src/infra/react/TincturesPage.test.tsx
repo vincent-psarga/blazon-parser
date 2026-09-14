@@ -20,6 +20,9 @@ const itemFor = (tincture: (typeof TINCTURES)[number]) =>
     .getAllByRole('listitem')
     .find((candidate) => candidate.textContent?.includes(nameOf(FrenchTinctures, tincture)))!;
 
+const fillOf = (paint: (typeof WikipediaColours)[keyof typeof WikipediaColours]) =>
+  isPattern(paint) ? paint.fill : paint;
+
 const shield = (item: HTMLElement, colouring: string) =>
   decodeURIComponent(
     within(item)
@@ -57,9 +60,16 @@ describe('TincturesPage', () => {
     test.each(TINCTURES)('paints %s with its own colour', (tincture) => {
       render(<TincturesPage />);
       const svg = shield(itemFor(tincture), 'colour');
-      expect(svg).toContain(`fill="${WikipediaColours[tincture]}"`);
-      expect(svg).not.toContain('<pattern');
+      expect(svg).toContain(`fill="${fillOf(WikipediaColours[tincture])}"`);
     });
+
+    test.each(TINCTURES.filter((tincture) => !isPattern(WikipediaColours[tincture])))(
+      'needs no pattern to paint %s',
+      (tincture) => {
+        render(<TincturesPage />);
+        expect(shield(itemFor(tincture), 'colour')).not.toContain('<pattern');
+      }
+    );
 
     test.each(TINCTURES.filter((tincture) => tincture !== Metals.argent))(
       'hatches %s with its own marks',
@@ -68,7 +78,7 @@ describe('TincturesPage', () => {
         const paint = HatchingColours[tincture];
         const svg = shield(itemFor(tincture), 'hatching');
         expect(isPattern(paint)).toBe(true);
-        expect(svg).toContain(isPattern(paint) ? paint.fill : '');
+        expect(svg).toContain(fillOf(paint));
         expect(svg).toContain('<pattern');
       }
     );

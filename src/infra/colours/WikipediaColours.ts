@@ -1,5 +1,6 @@
-import { Colours, Metals } from '../../domain/models/Tinctures';
+import { Colours, Furs, Metals } from '../../domain/models/Tinctures';
 import { ColorModel } from '../../domain/services/IBlazonDrawer';
+import { ermine, vair } from './Furs';
 
 /**
  * The shades Wikipedia paints its tincture table with, at
@@ -16,4 +17,8 @@ export const WikipediaColours: ColorModel = {
   [Colours.gules]: '#ff0000', // red
   [Colours.sable]: '#000000', // black
   [Colours.vert]: '#008000', // green
+  // The furs are not shades but pelts: ermine is argent strewn with sable, vair
+  // a lattice of azure and argent, so each is built from the tinctures above.
+  [Furs.ermine]: ermine('ermine-colour', '#ffffff', '#000000'),
+  [Furs.vair]: vair('vair-colour', '#ffffff', '#0000ff'),
 };

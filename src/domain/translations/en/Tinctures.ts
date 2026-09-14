@@ -1,4 +1,4 @@
-import { Colours, Metals, Tincture } from '../../models/Tinctures';
+import { Colours, Furs, Metals, Tincture } from '../../models/Tinctures';
 import { Translation } from '../Translation';
 
 export const EnglishMetals: Translation<Metals> = {
@@ -13,4 +13,13 @@ export const EnglishColours: Translation<Colours> = {
   [Colours.vert]: 'vert',
 };
 
-export const EnglishTinctures: Translation<Tincture> = { ...EnglishMetals, ...EnglishColours };
+export const EnglishFurs: Translation<Furs> = {
+  [Furs.ermine]: 'ermine',
+  [Furs.vair]: 'vair',
+};
+
+export const EnglishTinctures: Translation<Tincture> = {
+  ...EnglishMetals,
+  ...EnglishColours,
+  ...EnglishFurs,
+};
