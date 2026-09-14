@@ -47,9 +47,11 @@ describe('index', () => {
   });
 
   test('folds spellings to lower case', () => {
-    expect(bySpelling({ [Partition.mantled]: 'Mantelé' } as Translation<Partition.mantled>).get('mantelé')).toBe(
-      Partition.mantled
-    );
+    expect(
+      bySpelling({ [Partition.mantled]: 'Mantelé' } as Translation<Partition.mantled>).get(
+        'mantelé'
+      )
+    ).toBe(Partition.mantled);
   });
 
   test('does not know a spelling no term claims', () => {

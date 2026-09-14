@@ -11,7 +11,10 @@ import { AND, expectedArticle, withArticle } from './FrenchGrammar';
 const ARTICLE = alt(tok(TokenKind.Elision), tok(TokenKind.Article));
 
 const ARTICLED_TINCTURE = apply(
-  seq(optional(ARTICLE), spelledTerm(FrenchTinctures, (words) => `Unknown tincture: ${words}`)),
+  seq(
+    optional(ARTICLE),
+    spelledTerm(FrenchTinctures, (words) => `Unknown tincture: ${words}`)
+  ),
   ([article, match]) => ({ ...match, article: article?.kind })
 );
 

@@ -1,4 +1,13 @@
-import { ParseError, ParseResult, Parser, ParserOutput, Token, apply, resultOrError, tok } from 'typescript-parsec';
+import {
+  ParseError,
+  ParseResult,
+  Parser,
+  ParserOutput,
+  Token,
+  apply,
+  resultOrError,
+  tok,
+} from 'typescript-parsec';
 import { Translation, bySpelling } from '../../domain/translations/Translation';
 import { TokenKind } from '../lexer/Lexer';
 
@@ -96,7 +105,9 @@ export function spelledTerm<T extends string>(
         error: {
           kind: 'Error',
           pos: token?.pos,
-          message: describe(spelling === '' ? (token?.text ?? '<end of input>') : spelling.split(' ')[0]),
+          message: describe(
+            spelling === '' ? (token?.text ?? '<end of input>') : spelling.split(' ')[0]
+          ),
         },
       };
     },

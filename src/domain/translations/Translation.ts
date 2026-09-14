@@ -10,7 +10,10 @@
 export type Translation<T extends string> = Record<T, string | string[]>;
 
 /** Every spelling a term accepts, the canonical one first. */
-export function spellingsOf<T extends string>(translation: Translation<T>, term: T): readonly string[] {
+export function spellingsOf<T extends string>(
+  translation: Translation<T>,
+  term: T
+): readonly string[] {
   const spellings = translation[term];
   return typeof spellings === 'string' ? [spellings] : spellings;
 }

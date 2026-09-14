@@ -9,7 +9,9 @@ const parser = new FrenchBlazonParser();
 
 describe('parseBlazon', () => {
   test.each(TINCTURES)('reads a field %s into the blazon', (tincture) => {
-    expect(parser.parse(withArticle(nameOf(FrenchTinctures, tincture)))).toEqual({ field: { tincture } });
+    expect(parser.parse(withArticle(nameOf(FrenchTinctures, tincture)))).toEqual({
+      field: { tincture },
+    });
   });
 
   test('accepts a field named without its article', () => {

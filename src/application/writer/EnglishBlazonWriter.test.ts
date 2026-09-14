@@ -50,10 +50,13 @@ describe('round trip', () => {
     expect(roundTrip(blazon)).toEqual(blazon);
   });
 
-  test.each(Object.values(DivisionType))('a field divided per %s survives the round trip', (type) => {
-    const blazon: Blazon = {
-      field: { type, firstTincture: Colours.sable, secondTincture: Metals.or },
-    };
-    expect(roundTrip(blazon)).toEqual(blazon);
-  });
+  test.each(Object.values(DivisionType))(
+    'a field divided per %s survives the round trip',
+    (type) => {
+      const blazon: Blazon = {
+        field: { type, firstTincture: Colours.sable, secondTincture: Metals.or },
+      };
+      expect(roundTrip(blazon)).toEqual(blazon);
+    }
+  );
 });

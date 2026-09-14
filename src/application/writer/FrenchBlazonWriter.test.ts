@@ -56,20 +56,21 @@ describe('round trip', () => {
     expect(roundTrip(blazon)).toEqual(blazon);
   });
 
-  test.each(Object.values(DivisionType))('a field divided per %s survives the round trip', (type) => {
-    const blazon: Blazon = {
-      field: { type, firstTincture: Colours.sable, secondTincture: Metals.or },
-    };
-    expect(roundTrip(blazon)).toEqual(blazon);
-  });
+  test.each(Object.values(DivisionType))(
+    'a field divided per %s survives the round trip',
+    (type) => {
+      const blazon: Blazon = {
+        field: { type, firstTincture: Colours.sable, secondTincture: Metals.or },
+      };
+      expect(roundTrip(blazon)).toEqual(blazon);
+    }
+  );
 
-  test.each([
-    "d'azur",
-    'DE GUEULES',
-    "parti d'azur et d'or.",
-    'Coupé de sinople et de sable',
-  ])('normalises %s without changing what it means', (text) => {
-    const once = parser.parse(text);
-    expect(parser.parse(writer.write(once))).toEqual(once);
-  });
+  test.each(["d'azur", 'DE GUEULES', "parti d'azur et d'or.", 'Coupé de sinople et de sable'])(
+    'normalises %s without changing what it means',
+    (text) => {
+      const once = parser.parse(text);
+      expect(parser.parse(writer.write(once))).toEqual(once);
+    }
+  );
 });

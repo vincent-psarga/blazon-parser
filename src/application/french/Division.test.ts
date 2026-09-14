@@ -41,7 +41,11 @@ describe('divided fields', () => {
 
   test('is case insensitive', () => {
     expect(parser.parse("TRANCHÉ D'AZUR ET DE SABLE")).toEqual({
-      field: { type: DivisionType.bend, firstTincture: Colours.azure, secondTincture: Colours.sable },
+      field: {
+        type: DivisionType.bend,
+        firstTincture: Colours.azure,
+        secondTincture: Colours.sable,
+      },
     });
   });
 

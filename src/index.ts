@@ -14,7 +14,11 @@ export type { Tincture } from './domain/models/Tinctures';
 export { bySpelling, nameOf, spellingsOf } from './domain/translations/Translation';
 export type { Translation } from './domain/translations/Translation';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';
-export { EnglishColours, EnglishMetals, EnglishTinctures } from './domain/translations/en/Tinctures';
+export {
+  EnglishColours,
+  EnglishMetals,
+  EnglishTinctures,
+} from './domain/translations/en/Tinctures';
 export { FrenchDivisionType } from './domain/translations/fr/Divisions';
 export { FrenchColours, FrenchMetals, FrenchTinctures } from './domain/translations/fr/Tinctures';
 

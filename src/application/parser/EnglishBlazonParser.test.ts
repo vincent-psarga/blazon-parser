@@ -79,7 +79,7 @@ describe('reading the same arms in either language', () => {
     expect(parser.parse('Per pale azure and or')).toEqual(french.parse("Parti d'azur et d'or"));
     expect(parser.parse('Vert')).toEqual(french.parse('De sinople'));
     expect(parser.parse('Per fess gules and argent')).toEqual(
-      french.parse('Coupé de gueules et d\'argent')
+      french.parse("Coupé de gueules et d'argent")
     );
   });
 });

@@ -1,5 +1,5 @@
-import { Blazon } from "../models/Blazon";
+import { Blazon } from '../models/Blazon';
 
 export interface IBlazonParser {
-    parse(text: string): Blazon;
+  parse(text: string): Blazon;
 }
