@@ -1,3 +1,4 @@
+import { Armorial } from '../../domain/models/Armorial';
 import { EnglishBlazonParser } from '../../application/parser/EnglishBlazonParser';
 import { FrenchBlazonParser } from '../../application/parser/FrenchBlazonParser';
 import { EnglishBlazonWriter } from '../../application/writer/EnglishBlazonWriter';
@@ -32,4 +33,12 @@ export const LANGUAGES: Record<LanguageCode, Language> = {
 /** The language a blazon gets translated into. With two, it is simply the other. */
 export function otherThan(language: LanguageCode): LanguageCode {
   return language === 'fr' ? 'en' : 'fr';
+}
+
+/**
+ * An armorial names its language in full, being a record rather than a control,
+ * so the code it answers to is read from it rather than stored twice.
+ */
+export function codeOf(language: Armorial['language']): LanguageCode {
+  return language === 'french' ? 'fr' : 'en';
 }

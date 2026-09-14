@@ -15,6 +15,9 @@ export { EnglishBlazonWriter } from './application/writer/EnglishBlazonWriter';
 export { FrenchBlazonWriter } from './application/writer/FrenchBlazonWriter';
 
 export type { Blazon } from './domain/models/Blazon';
+export type { Armorial, ArmorialEntry, ArmorialSource } from './domain/models/Armorial';
+export { readArmorial } from './application/armorial/ArmorialReading';
+export type { ArmorialReading, ReadEntry } from './application/armorial/ArmorialReading';
 export { DivisionType, isDivision } from './domain/models/Field';
 export type { Division, Field } from './domain/models/Field';
 export { Colours, Furs, Metals, TINCTURES, isTincture } from './domain/models/Tinctures';

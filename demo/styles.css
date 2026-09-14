@@ -604,6 +604,116 @@ body {
   filter: brightness(1) saturate(1);
 }
 
+/* ─ the roll ─────────────────────────────────────────────────────────────── */
+
+/*
+ * An armorial is a roll, so it is set as one. A table is the one place a ruled
+ * grid would be expected, and there is none: the columns are held apart by air
+ * and by how quietly each one speaks, the same way the ranks are.
+ */
+.roll__hold {
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+  /* A roll wider than the screen scrolls itself rather than the document. */
+  overflow-x: auto;
+}
+
+.roll {
+  border-collapse: collapse;
+  width: 100%;
+  text-align: left;
+}
+
+.roll caption {
+  text-align: left;
+  margin-bottom: 1.1rem;
+  max-width: var(--measure);
+  font-size: 0.9375rem;
+  color: var(--bone-quiet);
+}
+
+.roll thead th {
+  font-family: var(--display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+  padding: 0 1.25rem 0.75rem 0;
+  vertical-align: bottom;
+}
+
+.roll tbody th,
+.roll td {
+  /* The row is held by air alone: generous above and below, nothing drawn. */
+  padding: 1.1rem 1.25rem 1.1rem 0;
+  vertical-align: middle;
+  font-weight: 400;
+}
+
+.roll tbody th {
+  font-family: var(--display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--bone);
+  white-space: nowrap;
+}
+
+/* The blazon is the payload, so it is set in the hand a caller would copy. */
+.roll__blazon {
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  color: var(--bone);
+  min-width: 18ch;
+}
+
+.roll td:last-child,
+.roll thead th:last-child {
+  padding-right: 0;
+}
+
+.roll__arms,
+.roll .blazon-shield {
+  display: block;
+  height: auto;
+}
+
+.roll__score {
+  margin: 1.4rem 0 0;
+  max-width: var(--measure);
+  font-family: var(--display);
+  font-size: 1.1875rem;
+  letter-spacing: 0.02em;
+  color: var(--bone-quiet);
+}
+
+/* The one number the page exists to report is struck, and nothing else is. */
+.roll__score b {
+  font-weight: 700;
+  color: var(--strike);
+  text-shadow: 0 0 16px rgb(251 247 238 / 0.3);
+}
+
+/*
+ * The page is achromatic, so a link cannot be left to the browser's blue: every
+ * chromatic pixel here is a tincture. It is marked by its rule, not its hue.
+ */
+.plane__lead a,
+.roll a {
+  color: var(--bone);
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--gauze) / 0.9);
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+  transition: color 140ms linear;
+}
+
+.plane__lead a:hover,
+.roll a:hover {
+  color: var(--strike);
+  text-decoration-color: var(--strike);
+}
+
 /* ─ narrow ───────────────────────────────────────────────────────────────── */
 
 @media (max-width: 64rem) {

@@ -1,5 +1,14 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { BlazonPage, DivisionsPage, DocIndexPage, TincturesPage } from '../src/infra/react';
+import {
+  ArmorialPage,
+  ArmorialsPage,
+  BlazonPage,
+  DivisionsPage,
+  DocIndexPage,
+  TincturesPage,
+  armorialPath,
+} from '../src/infra/react';
+import { ARMORIALS } from './armorials';
 
 /**
  * The demo is served from the root in development and from a subdirectory on
@@ -64,7 +73,12 @@ export function App() {
     '/doc': <DocIndexPage onGo={navigate} />,
     '/doc/tinctures': <TincturesPage onTry={readThis} />,
     '/doc/divisions': <DivisionsPage onTry={readThis} />,
+    '/armorials': <ArmorialsPage armorials={ARMORIALS} onGo={navigate} />,
   };
+
+  // One armorial answers to its own slug, which is the only part of the demo's
+  // addresses that is data rather than a route.
+  const armorial = ARMORIALS.find((candidate) => armorialPath(candidate) === path);
 
   return (
     <>
@@ -77,8 +91,16 @@ export function App() {
           Demo
         </a>
         <RailMenu label="Doc" docs={docs} path={path} navigate={navigate} />
+        <a
+          href={address('/armorials')}
+          aria-current={path.startsWith('/armorial') ? 'page' : undefined}
+          onClick={go(navigate, '/armorials')}
+        >
+          Armorials
+        </a>
       </nav>
-      {pages[path] ?? <NotFound path={path} />}
+      {pages[path] ??
+        (armorial !== undefined ? <ArmorialPage armorial={armorial} /> : <NotFound path={path} />)}
     </>
   );
 }

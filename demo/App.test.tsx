@@ -17,12 +17,13 @@ const heading = () => screen.getByRole('heading', { level: 1 }).textContent;
 const openDoc = () => userEvent.setup().click(doc());
 
 describe('the rail', () => {
-  test('carries the demo and the documentation, and names each once', () => {
+  test('carries the demo, the documentation and the armorials, and names each once', () => {
     render(<App />);
     expect(within(rail()).getByRole('link', { name: 'Demo' })).toBeInTheDocument();
+    expect(within(rail()).getByRole('link', { name: 'Armorials' })).toBeInTheDocument();
     expect(doc()).toBeInTheDocument();
     // Two entries pointing at the same page is one entry too many.
-    expect(within(rail()).getAllByRole('link')).toHaveLength(1);
+    expect(within(rail()).getAllByRole('link')).toHaveLength(2);
   });
 
   test('keeps the documentation behind the menu until it is opened', () => {
@@ -108,6 +109,45 @@ describe('handing a term to the translator', () => {
   });
 });
 
+describe('the armorials', () => {
+  const armorials = () => within(rail()).getByRole('link', { name: 'Armorials' });
+
+  test('are reached from the rail', async () => {
+    render(<App />);
+    await userEvent.setup().click(armorials());
+    expect(heading()).toBe('Armorials');
+    expect(window.location.pathname).toBe('/armorials');
+  });
+
+  test('lead from the index to the armorial itself', async () => {
+    window.history.pushState(null, '', '/armorials');
+    render(<App />);
+    const index = screen.getByRole('navigation', { name: 'Armorials' });
+    await userEvent.setup().click(within(index).getByRole('link', { name: /A sample armorial/ }));
+    expect(heading()).toBe('A sample armorial');
+    expect(window.location.pathname).toBe('/armorial/sample');
+  });
+
+  test('read the armorial named in the address on arrival', () => {
+    window.history.pushState(null, '', '/armorial/sample');
+    render(<App />);
+    expect(heading()).toBe('A sample armorial');
+    expect(screen.getByText(/was able to parse/)).toBeInTheDocument();
+  });
+
+  test('mark the rail entry as where the reader is, index and armorial alike', async () => {
+    window.history.pushState(null, '', '/armorial/sample');
+    render(<App />);
+    expect(armorials()).toHaveAttribute('aria-current', 'page');
+  });
+
+  test('say so rather than showing nothing when no armorial answers to the slug', () => {
+    window.history.pushState(null, '', '/armorial/nowhere');
+    render(<App />);
+    expect(heading()).toBe('Nothing here');
+  });
+});
+
 describe('a path no page answers to', () => {
   test('says so rather than showing nothing', () => {
     window.history.pushState(null, '', '/doc/charges');
@@ -142,11 +182,21 @@ describe('served from a subdirectory, as on GitHub Pages', () => {
     expect(window.location.pathname).toBe('/blazon-parser/doc/divisions');
   });
 
+  test('reads an armorial below the base', () => {
+    window.history.pushState(null, '', '/blazon-parser/armorial/sample');
+    render(<App />);
+    expect(heading()).toBe('A sample armorial');
+  });
+
   test('points the links themselves below the base, for whoever opens one in a new tab', async () => {
     render(<App />);
     expect(within(rail()).getByRole('link', { name: 'Demo' })).toHaveAttribute(
       'href',
       '/blazon-parser/'
+    );
+    expect(within(rail()).getByRole('link', { name: 'Armorials' })).toHaveAttribute(
+      'href',
+      '/blazon-parser/armorials'
     );
     await openDoc();
     expect(inMenu('Tinctures')).toHaveAttribute('href', '/blazon-parser/doc/tinctures');
