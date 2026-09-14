@@ -37,6 +37,7 @@ src/
     services/                 what the library offers, as interfaces
       IBlazonParser.ts        text -> Blazon
       IBlazonWriter.ts        Blazon -> text
+      IBlazonDrawer.ts        Blazon -> SVG; ColorModel
     translations/
       Translation.ts          Translation<T>, and reading a term back from a spelling
       fr/  en/                the name of every term, per language
@@ -58,10 +59,16 @@ src/
       EnglishGrammar.ts       the conjunction; English needs no article
       EnglishBlazonGrammar.ts the English BlazonGrammar
       EnglishBlazonWording.ts the English BlazonWording
+    drawer/
+      SvgBlazonDrawer.ts      implements IBlazonDrawer
     writer/
       BlazonWording.ts        what a language contributes; the shared sentence
       FrenchBlazonWriter.ts   implements IBlazonWriter
       EnglishBlazonWriter.ts  implements IBlazonWriter
+
+  infra/
+    colours/
+      WikipediaColours.ts     the shades Wikipedia paints its tinctures with
 
   index.ts                    public API
 ```
@@ -78,6 +85,11 @@ two tinctures — so one rule reads them all and one sentence writes them all. A
 language supplies a `BlazonGrammar` for reading and a `BlazonWording` for writing:
 its tinctures, its partitions, and its conjunction. French wraps its tinctures in
 an article that has to agree with the word it introduces; English names them bare.
+
+Drawing is a third service over the same models, and needs no language at all: a
+`ColorModel` says what each tincture is painted with, so the shades stay out of
+the drawer. Heraldry fixes no shade, which is why they are supplied rather than
+assumed — `WikipediaColours` is one convention among many.
 
 Reading and writing are separate services over that shared vocabulary, so
 translating is parsing in one language and writing in another:
