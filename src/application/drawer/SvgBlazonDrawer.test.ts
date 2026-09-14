@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { DivisionType } from '../../domain/models/Field';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { ColorModel } from '../../domain/services/IBlazonDrawer';
+import { HatchingColours } from '../../infra/colours/HatchingColours';
 import { WikipediaColours } from '../../infra/colours/WikipediaColours';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { SvgBlazonDrawer } from './SvgBlazonDrawer';
@@ -94,6 +95,62 @@ describe('SvgBlazonDrawer', () => {
   test('draws what was read from a blazon', () => {
     const svg = drawer.draw(parser.parse("Parti d'azur et d'or"));
     expect(fills(svg)).toEqual(['#0000ff', '#ffd700']);
+  });
+});
+
+describe('painting with patterns rather than colours', () => {
+  const hatched = new SvgBlazonDrawer(HatchingColours);
+
+  const defs = (svg: string) => svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'));
+
+  test('fills the field by referring to the pattern', () => {
+    const svg = hatched.draw({ field: { tincture: Colours.azure } });
+    expect(svg).toContain('fill="url(#hatch-azure)"');
+  });
+
+  test('carries the definition the fill refers to', () => {
+    const svg = hatched.draw({ field: { tincture: Colours.azure } });
+    expect(defs(svg)).toContain('<pattern id="hatch-azure"');
+  });
+
+  test('carries only the patterns the field is painted with', () => {
+    const svg = hatched.draw({ field: { tincture: Colours.azure } });
+    expect(defs(svg)).not.toContain('hatch-gules');
+    expect(defs(svg)).not.toContain('hatch-vert');
+  });
+
+  test('carries both patterns of a divided field', () => {
+    const svg = hatched.draw({
+      field: {
+        type: DivisionType.pale,
+        firstTincture: Colours.azure,
+        secondTincture: Colours.gules,
+      },
+    });
+    expect(defs(svg)).toContain('<pattern id="hatch-azure"');
+    expect(defs(svg)).toContain('<pattern id="hatch-gules"');
+  });
+
+  test('carries a shared pattern once, not twice', () => {
+    const svg = hatched.draw({
+      field: {
+        type: DivisionType.fess,
+        firstTincture: Colours.sable,
+        secondTincture: Colours.sable,
+      },
+    });
+    expect(svg.split('<pattern id="hatch-sable"').length - 1).toBe(1);
+  });
+
+  test('still paints a tincture that wants a plain colour', () => {
+    const svg = hatched.draw({ field: { tincture: Metals.argent } });
+    expect(svg).toContain('fill="#ffffff"');
+    expect(defs(svg)).not.toContain('<pattern');
+  });
+
+  test('needs no pattern at all for a colour model that has none', () => {
+    const svg = drawer.draw({ field: { tincture: Colours.azure } });
+    expect(defs(svg)).not.toContain('<pattern');
   });
 });
 

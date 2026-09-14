@@ -1,14 +1,14 @@
 import { useMemo, useState } from 'react';
 import { Blazon } from '../../domain/models/Blazon';
-import { ColorModel } from '../../domain/services/IBlazonDrawer';
 import { BlazonShield } from './BlazonShield';
+import { COLOURINGS, Colouring } from './Colourings';
 import { LANGUAGES, LanguageCode, otherThan } from './Languages';
 
 export interface BlazonPageProps {
   /** The language the blazon is written in to begin with. */
   readonly initialLanguage?: LanguageCode;
-  /** What each tincture is painted with. Heraldry fixes no shade. */
-  readonly colours?: ColorModel;
+  /** The paintings to show the arms in. */
+  readonly colourings?: readonly Colouring[];
 }
 
 type Reading = { readonly blazon: Blazon } | { readonly error: string };
@@ -24,7 +24,7 @@ function read(text: string, language: LanguageCode): Reading | undefined {
   }
 }
 
-export function BlazonPage({ initialLanguage = 'fr', colours }: BlazonPageProps) {
+export function BlazonPage({ initialLanguage = 'fr', colourings = COLOURINGS }: BlazonPageProps) {
   const [language, setLanguage] = useState<LanguageCode>(initialLanguage);
   const [text, setText] = useState(LANGUAGES[initialLanguage].example);
 
@@ -82,7 +82,19 @@ export function BlazonPage({ initialLanguage = 'fr', colours }: BlazonPageProps)
       <section aria-labelledby="blazon-arms-heading">
         <h2 id="blazon-arms-heading">Arms</h2>
         {blazon !== undefined && (
-          <BlazonShield blazon={blazon} alt={translation} colours={colours} />
+          <div className="blazon-colourings">
+            {colourings.map(({ label, colours }) => (
+              <figure key={label}>
+                <BlazonShield
+                  blazon={blazon}
+                  alt={`${translation} (${label.toLowerCase()})`}
+                  colours={colours}
+                  width={160}
+                />
+                <figcaption>{label}</figcaption>
+              </figure>
+            ))}
+          </div>
         )}
       </section>
     </main>

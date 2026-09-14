@@ -2,6 +2,9 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test } from 'vitest';
+import { HatchingColours } from '../colours/HatchingColours';
+import { WikipediaColours } from '../colours/WikipediaColours';
+import { Colours, Metals } from '../../domain/models/Tinctures';
 import { BlazonPage } from './BlazonPage';
 
 afterEach(cleanup);
@@ -11,7 +14,10 @@ const selector = () => screen.getByLabelText('Language');
 const translation = () =>
   screen.getByRole('heading', { level: 2, name: /Français|English/ }).nextElementSibling
     ?.textContent;
-const shield = () => screen.queryByRole('img');
+const shields = () => screen.queryAllByRole('img');
+const shield = (colouring = 'colour') =>
+  screen.queryByAltText(new RegExp(`\\(${colouring}\\)$`, 'i'));
+const svgOf = (image: HTMLElement | null) => decodeURIComponent(image?.getAttribute('src') ?? '');
 
 async function type(text: string) {
   const user = userEvent.setup();
@@ -37,16 +43,42 @@ describe('BlazonPage', () => {
   test('draws the shield of what is typed', async () => {
     render(<BlazonPage />);
     await type("Coupé d'argent et de sable");
-    const source = decodeURIComponent(shield()!.getAttribute('src') ?? '');
+    const source = svgOf(shield());
     expect(source.startsWith('data:image/svg+xml')).toBe(true);
-    expect(source).toContain('fill="#ffffff"');
-    expect(source).toContain('fill="#000000"');
+    expect(source).toContain(`fill="${WikipediaColours[Metals.argent]}"`);
+    expect(source).toContain(`fill="${WikipediaColours[Colours.sable]}"`);
   });
 
-  test('describes the shield with the translated blazon', async () => {
-    render(<BlazonPage />);
-    await type("Parti d'azur et d'or");
-    expect(shield()).toHaveAttribute('alt', 'Per pale azure and or.');
+  describe('showing both ways of painting the arms', () => {
+    test('draws one shield for each', async () => {
+      render(<BlazonPage />);
+      await type("Parti d'azur et d'or");
+      expect(shields()).toHaveLength(2);
+      expect(screen.getByText('Colour')).toBeInTheDocument();
+      expect(screen.getByText('Hatching')).toBeInTheDocument();
+    });
+
+    test('hatches the second rather than colouring it', async () => {
+      render(<BlazonPage />);
+      await type("Parti d'azur et d'or");
+      const hatched = svgOf(shield('hatching'));
+      const azure = HatchingColours[Colours.azure];
+      expect(hatched).toContain('<pattern');
+      expect(hatched).toContain(typeof azure === 'string' ? azure : azure.fill);
+    });
+
+    test('describes each with the translated blazon', async () => {
+      render(<BlazonPage />);
+      await type("Parti d'azur et d'or");
+      expect(shield('colour')).toHaveAttribute('alt', 'Per pale azure and or. (colour)');
+      expect(shield('hatching')).toHaveAttribute('alt', 'Per pale azure and or. (hatching)');
+    });
+
+    test('shows whatever paintings it is given instead', async () => {
+      render(<BlazonPage colourings={[{ label: 'Hatching', colours: HatchingColours }]} />);
+      expect(shields()).toHaveLength(1);
+      expect(screen.queryByText('Colour')).toBeNull();
+    });
   });
 
   describe('choosing a language', () => {
@@ -76,14 +108,14 @@ describe('BlazonPage', () => {
       render(<BlazonPage />);
       await type('De fuchsia');
       expect(screen.getByRole('alert').textContent).toMatch(/Unknown tincture: fuchsia/);
-      expect(shield()).toBeNull();
+      expect(shields()).toHaveLength(0);
     });
 
     test('says nothing at all until something is typed', async () => {
       render(<BlazonPage />);
       await type('');
       expect(screen.queryByRole('alert')).toBeNull();
-      expect(shield()).toBeNull();
+      expect(shields()).toHaveLength(0);
     });
 
     test('recovers once the blazon makes sense again', async () => {

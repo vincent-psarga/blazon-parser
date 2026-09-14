@@ -70,9 +70,11 @@ src/
   infra/
     colours/
       WikipediaColours.ts     the shades Wikipedia paints its tinctures with
+      HatchingColours.ts      the marks that stand in for colour in monochrome
     react/
       BlazonPage.tsx          type a blazon, read its translation, see the arms
-      TincturesPage.tsx       every tincture, named and painted
+      Colourings.ts           the paintings a page offers: colour, hatching
+      TincturesPage.tsx       every tincture, named, painted and hatched
       DivisionsPage.tsx       every partition, named and drawn
       BlazonShield.tsx        one blazon, drawn
       Languages.ts            the languages offered, and what each translates into
@@ -99,6 +101,13 @@ Drawing is a third service over the same models, and needs no language at all: a
 the drawer. Heraldry fixes no shade, which is why they are supplied rather than
 assumed — `WikipediaColours` is one convention among many.
 
+A tincture is not always a flat colour. A `Paint` is either a colour or a
+`Pattern`, which pairs the fill a shape asks for with the definition that fill
+refers to; the drawing carries the patterns its own tinctures call for and no
+others. `HatchingColours` is the monochrome convention — argent left blank, or
+dotted, azure ruled horizontally, gules vertically, sable both ways, vert along
+the diagonal a bend runs — and it is the same mechanism the furs will need.
+
 Reading and writing are separate services over that shared vocabulary, so
 translating is parsing in one language and writing in another:
 `englishParser.parse(text)` then `frenchWriter.write(blazon)`. Nothing between the
@@ -115,7 +124,8 @@ articles, its elisions, its conjunction.
 
 ## The React page
 
-`BlazonPage` takes a blazon, shows it translated, and draws the arms.
+`BlazonPage` takes a blazon, shows it translated, and draws the arms — in colour
+and in hatching, since both are ways of saying the same tinctures.
 
 ```tsx
 import { BlazonPage, TincturesPage, DivisionsPage } from 'blason-parser/react';

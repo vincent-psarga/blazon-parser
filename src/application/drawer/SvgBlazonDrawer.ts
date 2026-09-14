@@ -1,6 +1,12 @@
 import { Blazon } from '../../domain/models/Blazon';
 import { DivisionType, Field, isDivision } from '../../domain/models/Field';
-import { ColorModel, DrawOptions, IBlazonDrawer } from '../../domain/services/IBlazonDrawer';
+import { Tincture } from '../../domain/models/Tinctures';
+import {
+  ColorModel,
+  DrawOptions,
+  IBlazonDrawer,
+  isPattern,
+} from '../../domain/services/IBlazonDrawer';
 
 const WIDTH = 200;
 const HEIGHT = 240;
@@ -52,7 +58,9 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
     return [
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${WIDTH} ${HEIGHT}"`,
       ` width="${WIDTH}" height="${HEIGHT}">`,
-      `<defs><clipPath id="${SHIELD_CLIP}"><path d="${SHIELD}"/></clipPath></defs>`,
+      `<defs><clipPath id="${SHIELD_CLIP}"><path d="${SHIELD}"/></clipPath>`,
+      patternsFor(blazon.field, colours),
+      `</defs>`,
       `<g clip-path="url(#${SHIELD_CLIP})">${this.paintField(blazon.field, colours)}</g>`,
       `<path d="${SHIELD}" fill="none" stroke="${OUTLINE}" stroke-width="${OUTLINE_WIDTH}"/>`,
       `</svg>`,
@@ -72,8 +80,31 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
   }
 }
 
-function colourOf(colours: ColorModel, tincture: keyof ColorModel): string {
-  return escapeAttribute(colours[tincture]);
+function colourOf(colours: ColorModel, tincture: Tincture): string {
+  const paint = colours[tincture];
+  return escapeAttribute(isPattern(paint) ? paint.fill : paint);
+}
+
+function tincturesOf(field: Field): readonly Tincture[] {
+  return isDivision(field) ? [field.firstTincture, field.secondTincture] : [field.tincture];
+}
+
+/**
+ * The definitions the field's own tinctures call for, and no others — a shield
+ * carries the patterns it is painted with, not every pattern that exists.
+ *
+ * A definition is markup, so it is placed as it stands rather than escaped. A
+ * colour model is written in code alongside the drawer, not taken from a reader.
+ */
+function patternsFor(field: Field, colours: ColorModel): string {
+  const definitions = new Map<string, string>();
+  for (const tincture of tincturesOf(field)) {
+    const paint = colours[tincture];
+    if (isPattern(paint)) {
+      definitions.set(paint.fill, paint.definition);
+    }
+  }
+  return [...definitions.values()].join('');
 }
 
 function escapeAttribute(value: string): string {

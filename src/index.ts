@@ -1,4 +1,11 @@
-export type { IBlazonDrawer, ColorModel, DrawOptions } from './domain/services/IBlazonDrawer';
+export type {
+  IBlazonDrawer,
+  ColorModel,
+  DrawOptions,
+  Paint,
+  Pattern,
+} from './domain/services/IBlazonDrawer';
+export { isPattern } from './domain/services/IBlazonDrawer';
 export type { IBlazonParser } from './domain/services/IBlazonParser';
 export type { IBlazonWriter } from './domain/services/IBlazonWriter';
 export { SvgBlazonDrawer } from './application/drawer/SvgBlazonDrawer';
@@ -27,4 +34,5 @@ export { FrenchColours, FrenchMetals, FrenchTinctures } from './domain/translati
 export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
 export { withArticle } from './application/french/FrenchGrammar';
 
+export { HatchingColours } from './infra/colours/HatchingColours';
 export { WikipediaColours } from './infra/colours/WikipediaColours';

@@ -2,9 +2,11 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { isPattern } from '../../domain/services/IBlazonDrawer';
 import { nameOf } from '../../domain/translations/Translation';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
+import { HatchingColours } from '../colours/HatchingColours';
 import { WikipediaColours } from '../colours/WikipediaColours';
 import { TincturesPage } from './TincturesPage';
 
@@ -13,8 +15,17 @@ afterEach(cleanup);
 const rank = (heading: string) =>
   within(screen.getByRole('region', { name: heading })).getAllByRole('listitem');
 
-const svgOf = (item: HTMLElement) =>
-  decodeURIComponent(within(item).getByRole('img').getAttribute('src') ?? '');
+const itemFor = (tincture: (typeof TINCTURES)[number]) =>
+  screen
+    .getAllByRole('listitem')
+    .find((candidate) => candidate.textContent?.includes(nameOf(FrenchTinctures, tincture)))!;
+
+const shield = (item: HTMLElement, colouring: string) =>
+  decodeURIComponent(
+    within(item)
+      .getByAltText(new RegExp(`, ${colouring}$`, 'i'))
+      .getAttribute('src') ?? ''
+  );
 
 describe('TincturesPage', () => {
   test('separates the metals from the colours', () => {
@@ -28,32 +39,59 @@ describe('TincturesPage', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(TINCTURES.length);
   });
 
-  test.each(Object.values(Metals))('names %s in both languages under Metals', (metal) => {
+  test.each(TINCTURES)('names %s in both languages', (tincture) => {
     render(<TincturesPage />);
-    const item = rank('Metals').find((candidate) =>
-      candidate.textContent?.includes(nameOf(FrenchTinctures, metal))
-    );
-    expect(item).toBeDefined();
-    expect(item!.textContent).toContain(nameOf(EnglishTinctures, metal));
+    expect(itemFor(tincture).textContent).toContain(nameOf(FrenchTinctures, tincture));
+    expect(itemFor(tincture).textContent).toContain(nameOf(EnglishTinctures, tincture));
   });
 
-  test.each(Object.values(Colours))('names %s in both languages under Colours', (colour) => {
-    render(<TincturesPage />);
-    const item = rank('Colours').find((candidate) =>
-      candidate.textContent?.includes(nameOf(FrenchTinctures, colour))
+  describe('showing both ways of painting a tincture', () => {
+    test.each(TINCTURES)('gives %s a shield in each', (tincture) => {
+      render(<TincturesPage />);
+      const item = itemFor(tincture);
+      expect(within(item).getAllByRole('img')).toHaveLength(2);
+      expect(within(item).getByText('Colour')).toBeInTheDocument();
+      expect(within(item).getByText('Hatching')).toBeInTheDocument();
+    });
+
+    test.each(TINCTURES)('paints %s with its own colour', (tincture) => {
+      render(<TincturesPage />);
+      const svg = shield(itemFor(tincture), 'colour');
+      expect(svg).toContain(`fill="${WikipediaColours[tincture]}"`);
+      expect(svg).not.toContain('<pattern');
+    });
+
+    test.each(TINCTURES.filter((tincture) => tincture !== Metals.argent))(
+      'hatches %s with its own marks',
+      (tincture) => {
+        render(<TincturesPage />);
+        const paint = HatchingColours[tincture];
+        const svg = shield(itemFor(tincture), 'hatching');
+        expect(isPattern(paint)).toBe(true);
+        expect(svg).toContain(isPattern(paint) ? paint.fill : '');
+        expect(svg).toContain('<pattern');
+      }
     );
-    expect(item).toBeDefined();
-    expect(item!.textContent).toContain(nameOf(EnglishTinctures, colour));
+
+    test('leaves argent blank when hatched, as the convention does', () => {
+      render(<TincturesPage />);
+      const svg = shield(itemFor(Metals.argent), 'hatching');
+      expect(svg).toContain('fill="#ffffff"');
+      expect(svg).not.toContain('<pattern');
+    });
+
+    test('tells the two shields apart for anyone who cannot see them', () => {
+      render(<TincturesPage />);
+      const item = itemFor(Colours.azure);
+      expect(within(item).getByAltText('azure, colour')).toBeInTheDocument();
+      expect(within(item).getByAltText('azure, hatching')).toBeInTheDocument();
+    });
   });
 
-  test('draws each tincture as a plain shield of its own colour', () => {
-    render(<TincturesPage />);
-    const painted = screen.getAllByRole('listitem').map(svgOf);
-    for (const tincture of TINCTURES) {
-      const shield = painted.find((svg) => svg.includes(`fill="${WikipediaColours[tincture]}"`));
-      expect(shield, `no shield painted ${tincture}`).toBeDefined();
-      // A plain field is one colour, so only the shield path carries a fill.
-      expect(shield!.match(/fill="#[0-9a-f]{6}"/g)).toHaveLength(1);
-    }
+  test('shows whatever paintings it is given instead', () => {
+    render(<TincturesPage colourings={[{ label: 'Hatching', colours: HatchingColours }]} />);
+    const item = itemFor(Colours.gules);
+    expect(within(item).getAllByRole('img')).toHaveLength(1);
+    expect(within(item).queryByText('Colour')).toBeNull();
   });
 });

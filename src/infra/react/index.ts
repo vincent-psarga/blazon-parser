@@ -1,6 +1,8 @@
 export { BlazonPage } from './BlazonPage';
 export type { BlazonPageProps } from './BlazonPage';
 export { BlazonShield } from './BlazonShield';
+export { COLOURINGS } from './Colourings';
+export type { Colouring } from './Colourings';
 export type { BlazonShieldProps } from './BlazonShield';
 export { TincturesPage } from './TincturesPage';
 export type { TincturesPageProps } from './TincturesPage';
