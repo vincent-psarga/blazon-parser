@@ -13,6 +13,7 @@ npm install
 | Script                 | Description                                             |
 | ---------------------- | ------------------------------------------------------- |
 | `npm run build`        | Compile `src/` to `lib/` (declarations + source maps)   |
+| `npm run dev`          | Serve the demo page at http://localhost:5173            |
 | `npm test`             | Run the Vitest suite once                               |
 | `npm run test:watch`   | Run Vitest in watch mode                                |
 | `npm run typecheck`    | Type-check everything, tests included, without emitting |
@@ -69,6 +70,10 @@ src/
   infra/
     colours/
       WikipediaColours.ts     the shades Wikipedia paints its tinctures with
+    react/
+      BlazonPage.tsx          type a blazon, read its translation, see the arms
+      Languages.ts            the languages offered, and what each translates into
+      index.ts                the blason-parser/react entry point
 
   index.ts                    public API
 ```
@@ -104,6 +109,25 @@ always the right one.
 Neither the parser nor the writer holds any heraldic word. They reach terms
 through the translations and keep only what is genuinely the language's own: its
 articles, its elisions, its conjunction.
+
+## The React page
+
+`BlazonPage` takes a blazon, shows it translated, and draws the arms.
+
+```tsx
+import { BlazonPage } from 'blason-parser/react';
+
+createRoot(document.getElementById('root')!).render(<BlazonPage />);
+```
+
+It lives behind its own entry point, and React is an optional peer dependency, so
+installing the library on a backend never pulls React in — `require('blason-parser')`
+loads no React module at all. Only `blason-parser/react` needs it.
+
+The page ships unstyled, offering `.blazon-page` and `.blazon-shield` to hang a
+look on; a library should not impose one, and a stylesheet imported from the
+component would break `require()` on a backend. `demo/` mounts it with a
+stylesheet of its own — `npm run dev` — and stays out of the published build.
 
 ## Toolchain notes
 

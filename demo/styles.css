@@ -1,0 +1,107 @@
+/*
+ * The page ships unstyled — a library should not impose a look — so it offers
+ * class names to hang one on. This is the demo's own.
+ */
+:root {
+  color-scheme: light dark;
+  --ink: #1a1a1a;
+  --paper: #f7f5f0;
+  --edge: #cfc9bd;
+  --quiet: #6b6459;
+  --alarm: #9b1c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ece7dd;
+    --paper: #1b1a18;
+    --edge: #423e38;
+    --quiet: #a39a8c;
+    --alarm: #f08a8a;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font:
+    16px/1.5 ui-serif,
+    Georgia,
+    serif;
+}
+
+.blazon-page {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.blazon-page h1 {
+  margin: 0 0 1.5rem;
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.blazon-page h2 {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--quiet);
+}
+
+.blazon-page label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--quiet);
+}
+
+.blazon-page select,
+.blazon-page textarea {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--edge);
+  border-radius: 4px;
+  padding: 0.5rem 0.6rem;
+  margin-bottom: 1rem;
+}
+
+.blazon-page textarea {
+  resize: vertical;
+}
+
+.blazon-page select {
+  justify-self: start;
+}
+
+.blazon-page section {
+  display: grid;
+  gap: 0.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--edge);
+  margin-top: 0.5rem;
+}
+
+.blazon-page section p {
+  margin: 0;
+  min-height: 1.5rem;
+  font-size: 1.25rem;
+}
+
+.blazon-page [role='alert'] {
+  color: var(--alarm);
+  font-size: 0.9rem;
+  font-family: ui-monospace, monospace;
+}
+
+.blazon-shield {
+  justify-self: start;
+}
