@@ -4,7 +4,7 @@ import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
-import { nameOf } from '../../domain/translations/Translation';
+import { wordOf } from '../../domain/translations/Translation';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
@@ -38,7 +38,7 @@ describe('a field bearing an ordinary', () => {
 
   test.each(TINCTURES)('gives the ordinary a tincture of its own: %s', (tincture) => {
     const blazon = parser.parse(
-      `D'azur au chevron ${withArticle(nameOf(FrenchTinctures, tincture))}`
+      `D'azur au chevron ${withArticle(wordOf(FrenchTinctures, tincture))}`
     );
     expect(blazon.ordinary).toEqual({ type: OrdinaryType.chevron, tincture });
   });
@@ -71,21 +71,21 @@ describe('a field bearing an ordinary', () => {
 
   describe('the article agreeing with the ordinary it introduces', () => {
     test.each([
-      ['chef', 'au chef'],
-      ['pal', 'au pal'],
-      ['fasce', 'à la fasce'],
-      ['bande', 'à la bande'],
-      ['barre', 'à la barre'],
-      ['chevron', 'au chevron'],
-      ['croix', 'à la croix'],
-      ['sautoir', 'au sautoir'],
-    ])('bears %s as "%s"', (word, expected) => {
-      expect(bearing(word)).toBe(expected);
+      [OrdinaryType.chief, 'au chef'],
+      [OrdinaryType.pale, 'au pal'],
+      [OrdinaryType.fess, 'à la fasce'],
+      [OrdinaryType.bend, 'à la bande'],
+      [OrdinaryType.bendSinister, 'à la barre'],
+      [OrdinaryType.chevron, 'au chevron'],
+      [OrdinaryType.cross, 'à la croix'],
+      [OrdinaryType.saltire, 'au sautoir'],
+    ])('bears %s as "%s"', (type, expected) => {
+      expect(bearing(wordOf(FrenchOrdinaryType, type))).toBe(expected);
     });
 
     test('names every ordinary with an article the parser then accepts', () => {
       for (const type of Object.values(OrdinaryType)) {
-        const borne = bearing(nameOf(FrenchOrdinaryType, type));
+        const borne = bearing(wordOf(FrenchOrdinaryType, type));
         expect(parser.parse(`D'azur ${borne} d'or`).ordinary).toEqual({
           type,
           tincture: Metals.or,

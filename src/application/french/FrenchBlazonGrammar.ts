@@ -24,8 +24,8 @@ const ARTICLED_TINCTURE = apply(
 const TINCTURE = apply(
   guard(
     ARTICLED_TINCTURE,
-    ({ spelling, article }) => article === undefined || article === expectedArticle(spelling),
-    ({ spelling }, position) => new WrongTinctureArticle(spelling, withArticle(spelling), position)
+    ({ word, article }) => article === undefined || article === expectedArticle(word),
+    ({ word }, position) => new WrongTinctureArticle(word.value, withArticle(word), position)
   ),
   ({ term }) => term
 );
@@ -44,8 +44,8 @@ const borneAs = (article: Parser<TokenKind, unknown>, expected: string) =>
     apply(
       guard(
         spelledTerm(FrenchOrdinaryType, asOrdinary),
-        ({ spelling }) => `${expected} ${spelling}` === bearing(spelling),
-        ({ spelling }, position) => new WrongOrdinaryArticle(spelling, bearing(spelling), position)
+        ({ word }) => `${expected} ${word.value}` === bearing(word),
+        ({ word }, position) => new WrongOrdinaryArticle(word.value, bearing(word), position)
       ),
       ({ term }) => term
     )

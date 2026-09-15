@@ -39,8 +39,16 @@ export type { Ordinary } from './domain/models/Ordinary';
 export { Colours, Furs, Metals, TINCTURES, isTincture } from './domain/models/Tinctures';
 export type { Tincture } from './domain/models/Tinctures';
 
-export { bySpelling, nameOf, spellingsOf } from './domain/translations/Translation';
-export type { Translation } from './domain/translations/Translation';
+export {
+  bySpelling,
+  nameOf,
+  spellingsOf,
+  wordOf,
+  wordsOf,
+} from './domain/translations/Translation';
+export type { TermWord, Translation } from './domain/translations/Translation';
+export { Word } from './domain/translations/Word';
+export { FrenchWord } from './domain/translations/fr/FrenchWord';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';
 export { EnglishOrdinaryType } from './domain/translations/en/Ordinaries';
 export {

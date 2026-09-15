@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
-import { nameOf } from '../../domain/translations/Translation';
+import { wordOf } from '../../domain/translations/Translation';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { parseWith } from '../parser/Parser';
 import { FrenchBlazonGrammar } from './FrenchBlazonGrammar';
@@ -8,11 +8,11 @@ import { withArticle } from './FrenchGrammar';
 
 const parseTincture = (text: string) => parseWith(FrenchBlazonGrammar.tincture, text);
 
-const inFrench = (tincture: (typeof TINCTURES)[number]) => nameOf(FrenchTinctures, tincture);
+const inFrench = (tincture: (typeof TINCTURES)[number]) => wordOf(FrenchTinctures, tincture);
 
 describe('parseTincture', () => {
   test.each(TINCTURES)('parses %s bare', (tincture) => {
-    expect(parseTincture(inFrench(tincture))).toBe(tincture);
+    expect(parseTincture(inFrench(tincture).value)).toBe(tincture);
   });
 
   test.each(TINCTURES)('parses %s with its article', (tincture) => {
@@ -66,12 +66,12 @@ describe('withArticle', () => {
 
 describe('the furs', () => {
   test('elides before the mute h of hermine', () => {
-    expect(withArticle('hermine')).toBe("d'hermine");
+    expect(withArticle(inFrench(Furs.ermine))).toBe("d'hermine");
     expect(parseTincture("d'hermine")).toBe(Furs.ermine);
   });
 
   test('keeps "de" before vair, which begins with a plain consonant', () => {
-    expect(withArticle('vair')).toBe('de vair');
+    expect(withArticle(inFrench(Furs.vair))).toBe('de vair');
     expect(parseTincture('de vair')).toBe(Furs.vair);
   });
 

@@ -1,47 +1,26 @@
 import { seq } from 'typescript-parsec';
+import { FrenchWord } from '../../domain/translations/fr/FrenchWord';
 import { TokenKind } from '../lexer/Lexer';
 import { keyword } from '../parser/Combinators';
 
 // French plumbing, not heraldry: the articles and conjunctions that hold a
 // blazon together, whether it is being read or written. Every heraldic term
-// itself comes from domain/translations.
+// itself comes from domain/translations, and each word there carries the gender
+// and the elision its article has to agree with, so nothing here keeps a list of
+// which words are which.
 
-/**
- * Words that elide although they do not begin with a vowel.
- *
- * A French h is either mute, when the word behaves as though it began with the
- * vowel behind it, or aspirated, when it does not — "d'hermine", but "de
- * hérisson". Which of the two a word carries cannot be read off its spelling, so
- * the mute ones are named.
- */
-const MUTE_H = new Set(['hermine']);
-
-// "de" elides to "d'" before a vowel, and before a mute h.
-function elides(word: string): boolean {
-  return /^[aeiouyàâäéèêëîïôöùûü]/.test(word) || MUTE_H.has(word);
-}
-
-export function expectedArticle(word: string): TokenKind.Elision | TokenKind.Article {
-  return elides(word) ? TokenKind.Elision : TokenKind.Article;
+export function expectedArticle(word: FrenchWord): TokenKind.Elision | TokenKind.Article {
+  return word.needsElision ? TokenKind.Elision : TokenKind.Article;
 }
 
 /** Renders a term as it is spoken in a blazon: "d'or", "de gueules". */
-export function withArticle(word: string): string {
-  return elides(word) ? `d'${word}` : `de ${word}`;
+export function withArticle(word: FrenchWord): string {
+  return word.needsElision ? `d'${word.value}` : `de ${word.value}`;
 }
 
-/**
- * Ordinaries whose French name is feminine.
- *
- * The field bears "la fasce" but "le chevron", so "à" contracts to "au" for one
- * and stays "à la" for the other. Gender can no more be read off a spelling than
- * a mute h can, so the feminine ones are named, as the mute h's are above.
- */
-const FEMININE = new Set(['fasce', 'bande', 'barre', 'croix']);
-
 /** Renders an ordinary as the field bears it: "à la fasce", "au chevron". */
-export function bearing(word: string): string {
-  return FEMININE.has(word) ? `à la ${word}` : `au ${word}`;
+export function bearing(word: FrenchWord): string {
+  return word.isFeminine ? `à la ${word.value}` : `au ${word.value}`;
 }
 
 /** The conjunction joining the halves of a divided field. */

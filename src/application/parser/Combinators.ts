@@ -9,7 +9,8 @@ import {
   tok,
 } from 'typescript-parsec';
 import { BlazonParseError, TextPosition } from '../../domain/errors/parsing/BlazonParseError';
-import { Translation, bySpelling } from '../../domain/translations/Translation';
+import { TermWord, Translation, bySpelling } from '../../domain/translations/Translation';
+import { Word } from '../../domain/translations/Word';
 import { TokenKind } from '../lexer/Lexer';
 import { Vocabulary, complaining, owed, positionOf } from './Failures';
 
@@ -64,30 +65,24 @@ export function keyword(expected: string): Parser<TokenKind, Token<TokenKind>> {
   );
 }
 
-/** A term, together with the spelling the writer actually used for it. */
-export interface TermMatch<T extends string> {
-  readonly term: T;
-  readonly spelling: string;
-}
-
 /**
- * Matches the words spelling one of a vocabulary's terms, keeping the spelling
+ * Matches the words spelling one of a vocabulary's terms, keeping the word
  * alongside the term for grammars whose articles must agree with it.
  *
  * A term may run over several words — "per bend sinister" — so every prefix that
  * names a term is offered as a candidate rather than the longest one alone: it
  * is the surrounding grammar, not the vocabulary, that knows which reading fits.
  */
-export function spelledTerm<T extends string>(
-  translation: Translation<T>,
+export function spelledTerm<T extends string, W extends Word>(
+  translation: Translation<T, W>,
   vocabulary: Vocabulary
-): Parser<TokenKind, TermMatch<T>> {
+): Parser<TokenKind, TermWord<T, W>> {
   const terms = bySpelling(translation);
   const longest = Math.max(...Array.from(terms.keys(), (spelling) => spelling.split(' ').length));
 
   return {
-    parse(token: Token<TokenKind> | undefined): ParserOutput<TokenKind, TermMatch<T>> {
-      const candidates: ParseResult<TokenKind, TermMatch<T>>[] = [];
+    parse(token: Token<TokenKind> | undefined): ParserOutput<TokenKind, TermWord<T, W>> {
+      const candidates: ParseResult<TokenKind, TermWord<T, W>>[] = [];
       let current = token;
       let spelling = '';
 
@@ -95,9 +90,9 @@ export function spelledTerm<T extends string>(
         const word = current.text.toLowerCase();
         spelling = words === 0 ? word : `${spelling} ${word}`;
         const next = current.next;
-        const term = terms.get(spelling);
-        if (term !== undefined) {
-          candidates.push({ firstToken: token, nextToken: next, result: { term, spelling } });
+        const match = terms.get(spelling);
+        if (match !== undefined) {
+          candidates.push({ firstToken: token, nextToken: next, result: match });
         }
         current = next;
       }
@@ -121,8 +116,8 @@ export function spelledTerm<T extends string>(
 }
 
 /** Matches a term, keeping only which term it is. */
-export function term<T extends string>(
-  translation: Translation<T>,
+export function term<T extends string, W extends Word>(
+  translation: Translation<T, W>,
   vocabulary: Vocabulary
 ): Parser<TokenKind, T> {
   return apply(spelledTerm(translation, vocabulary), (match) => match.term);

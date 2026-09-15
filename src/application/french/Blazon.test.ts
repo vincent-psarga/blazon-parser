@@ -3,14 +3,14 @@ import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { withArticle } from './FrenchGrammar';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
-import { nameOf } from '../../domain/translations/Translation';
+import { wordOf } from '../../domain/translations/Translation';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 
 const parser = new FrenchBlazonParser();
 
 describe('parseBlazon', () => {
   test.each(TINCTURES)('reads a field %s into the blazon', (tincture) => {
-    expect(parser.parse(withArticle(nameOf(FrenchTinctures, tincture)))).toEqual({
+    expect(parser.parse(withArticle(wordOf(FrenchTinctures, tincture)))).toEqual({
       field: { tincture },
     });
   });

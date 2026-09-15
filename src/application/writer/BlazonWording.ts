@@ -2,21 +2,22 @@ import { Blazon } from '../../domain/models/Blazon';
 import { Division, DivisionType, Field, isDivision } from '../../domain/models/Field';
 import { Ordinary, OrdinaryType } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
-import { Translation, nameOf } from '../../domain/translations/Translation';
+import { Translation, nameOf, wordOf } from '../../domain/translations/Translation';
+import { Word } from '../../domain/translations/Word';
 
 /**
  * What one language contributes to writing a blazon — the counterpart of
  * BlazonGrammar. The sentence has the same shape in every language, so only the
  * words and whatever introduces them differ.
  */
-export interface BlazonWording {
-  readonly tinctures: Translation<Tincture>;
-  readonly divisions: Translation<DivisionType>;
-  readonly ordinaries: Translation<OrdinaryType>;
+export interface BlazonWording<W extends Word = Word> {
+  readonly tinctures: Translation<Tincture, W>;
+  readonly divisions: Translation<DivisionType, W>;
+  readonly ordinaries: Translation<OrdinaryType, W>;
   /** How a tincture is introduced: "d'or" in French, plain "or" in English. */
-  readonly introduce: (name: string) => string;
+  readonly introduce: (word: W) => string;
   /** How an ordinary is introduced: "à la fasce" in French, "a fess" in English. */
-  readonly bear: (name: string) => string;
+  readonly bear: (word: W) => string;
   /** The conjunction joining the halves of a divided field. */
   readonly conjunction: string;
 }
@@ -28,24 +29,24 @@ export interface BlazonWording {
  * blazon read from a synonym comes back out spelled differently. The blazon it
  * describes is the same, which is what the round trip preserves.
  */
-export function writeBlazon(wording: BlazonWording, blazon: Blazon): string {
+export function writeBlazon<W extends Word>(wording: BlazonWording<W>, blazon: Blazon): string {
   const field = capitalise(writeField(wording, blazon.field));
   const borne = blazon.ordinary === undefined ? '' : ` ${writeOrdinary(wording, blazon.ordinary)}`;
   return `${field}${borne}.`;
 }
 
-function writeOrdinary(wording: BlazonWording, ordinary: Ordinary): string {
+function writeOrdinary<W extends Word>(wording: BlazonWording<W>, ordinary: Ordinary): string {
   return [
-    wording.bear(nameOf(wording.ordinaries, ordinary.type)),
+    wording.bear(wordOf(wording.ordinaries, ordinary.type)),
     writeTincture(wording, ordinary.tincture),
   ].join(' ');
 }
 
-function writeField(wording: BlazonWording, field: Field): string {
+function writeField<W extends Word>(wording: BlazonWording<W>, field: Field): string {
   return isDivision(field) ? writeDivision(wording, field) : writeTincture(wording, field.tincture);
 }
 
-function writeDivision(wording: BlazonWording, division: Division): string {
+function writeDivision<W extends Word>(wording: BlazonWording<W>, division: Division): string {
   return [
     nameOf(wording.divisions, division.type),
     writeTincture(wording, division.firstTincture),
@@ -54,8 +55,8 @@ function writeDivision(wording: BlazonWording, division: Division): string {
   ].join(' ');
 }
 
-function writeTincture(wording: BlazonWording, tincture: Tincture): string {
-  return wording.introduce(nameOf(wording.tinctures, tincture));
+function writeTincture<W extends Word>(wording: BlazonWording<W>, tincture: Tincture): string {
+  return wording.introduce(wordOf(wording.tinctures, tincture));
 }
 
 function capitalise(sentence: string): string {

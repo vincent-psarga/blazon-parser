@@ -9,7 +9,7 @@ export const EnglishBlazonWording: BlazonWording = {
   divisions: EnglishDivisionType,
   ordinaries: EnglishOrdinaryType,
   // English names a tincture bare: "Azure.", "Per pale azure and or."
-  introduce: (name) => name,
-  bear: (name) => `${INDEFINITE_ARTICLE} ${name}`,
+  introduce: (word) => word.value,
+  bear: (word) => `${INDEFINITE_ARTICLE} ${word.value}`,
   conjunction: CONJUNCTION,
 };

@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { DivisionType } from '../models/Field';
 import { TINCTURES } from '../models/Tinctures';
-import { Translation, bySpelling, nameOf, spellingsOf } from './Translation';
+import { Translation, bySpelling, nameOf, spellingsOf, wordOf } from './Translation';
+import { Word } from './Word';
 import { FrenchDivisionType } from './fr/Divisions';
 import { FrenchTinctures } from './fr/Tinctures';
 
@@ -13,8 +14,12 @@ enum Partition {
 }
 
 const FrenchPartition: Translation<Partition> = {
-  [Partition.mantled]: 'mantelé',
-  [Partition.mantledReversed]: ['mantelé-versé', 'mantelé-renversé', 'mantelé versé'],
+  [Partition.mantled]: new Word('mantelé'),
+  [Partition.mantledReversed]: [
+    new Word('mantelé-versé'),
+    new Word('mantelé-renversé'),
+    new Word('mantelé versé'),
+  ],
 };
 
 describe('spellingsOf', () => {
@@ -37,21 +42,30 @@ describe('nameOf', () => {
   });
 });
 
+describe('wordOf', () => {
+  test('hands back the word itself, not only how it is spelled', () => {
+    expect(wordOf(FrenchPartition, Partition.mantledReversed)).toBe(
+      (FrenchPartition[Partition.mantledReversed] as Word[])[0]
+    );
+  });
+});
+
 describe('index', () => {
   const partitions = bySpelling(FrenchPartition);
 
   test('reads a term back from any of its synonyms', () => {
     for (const spelling of spellingsOf(FrenchPartition, Partition.mantledReversed)) {
-      expect(partitions.get(spelling)).toBe(Partition.mantledReversed);
+      expect(partitions.get(spelling)?.term).toBe(Partition.mantledReversed);
     }
   });
 
   test('folds spellings to lower case', () => {
-    expect(
-      bySpelling({ [Partition.mantled]: 'Mantelé' } as Translation<Partition.mantled>).get(
-        'mantelé'
-      )
-    ).toBe(Partition.mantled);
+    const partition: Translation<Partition.mantled> = { [Partition.mantled]: new Word('Mantelé') };
+    expect(bySpelling(partition).get('mantelé')?.term).toBe(Partition.mantled);
+  });
+
+  test('leads to the word a spelling was written with', () => {
+    expect(partitions.get('mantelé')?.word).toBe(FrenchPartition[Partition.mantled]);
   });
 
   test('does not know a spelling no term claims', () => {
@@ -61,11 +75,13 @@ describe('index', () => {
 
 describe('the French vocabulary', () => {
   test.each(TINCTURES)('reads %s back from its own name', (tincture) => {
-    expect(bySpelling(FrenchTinctures).get(nameOf(FrenchTinctures, tincture))).toBe(tincture);
+    expect(bySpelling(FrenchTinctures).get(nameOf(FrenchTinctures, tincture))?.term).toBe(tincture);
   });
 
   test.each(Object.values(DivisionType))('reads %s back from its own name', (division) => {
-    expect(bySpelling(FrenchDivisionType).get(nameOf(FrenchDivisionType, division))).toBe(division);
+    expect(bySpelling(FrenchDivisionType).get(nameOf(FrenchDivisionType, division))?.term).toBe(
+      division
+    );
   });
 
   test('names every term exactly once', () => {
