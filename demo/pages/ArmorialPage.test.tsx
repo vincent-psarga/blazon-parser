@@ -130,6 +130,20 @@ describe('ArmorialPage', () => {
     expect(drawn).toBeEmptyDOMElement();
   });
 
+  // On a screen too narrow for five columns the roll is laid out entry by entry
+  // and the headings go out of sight, so each drawing carries whose it is.
+  test('says whose each drawing is, for where the headings cannot be seen', () => {
+    render(<ArmorialPage armorial={ARMORIAL} />);
+    const { sourced, drawn } = cells('Halberstadt');
+    expect(sourced).toHaveAttribute('data-drawn', 'The source');
+    expect(drawn).toHaveAttribute('data-drawn', 'The parser');
+  });
+
+  test('says nothing where nothing is drawn', () => {
+    render(<ArmorialPage armorial={ARMORIAL} />);
+    expect(cells('France').drawn).not.toHaveAttribute('data-drawn');
+  });
+
   describe('the overview of what it could not read', () => {
     /** The words listed under one label, as the reader sees them. */
     const under = (label: string) => screen.getByText(label).nextElementSibling?.textContent ?? '';

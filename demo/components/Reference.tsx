@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Blazon } from '../../src/domain/models/Blazon';
 import { BlazonShield } from './BlazonShield';
@@ -75,6 +75,42 @@ export function Reference({ title, extent, lead, ranks, colourings = COLOURINGS 
   // No anchor means the head of the set, so the page is never empty.
   const struck = entries.find((entry) => isAnchored(entry.term, hash)) ?? entries[0];
 
+  const reading = useRef<HTMLDivElement>(null);
+  // What was last brought into view. A page opened without an anchor is opened
+  // at its beginning, so what it strikes of its own accord counts as read
+  // already; one opened at an anchor was opened at that term, and is answered
+  // with it.
+  const brought = useRef(hash === '' ? struck?.term : undefined);
+
+  /*
+   * Where the two columns hold, the reading stands beside the set and a struck
+   * term changes it in plain sight. Where they do not — a phone, and anything
+   * narrow enough to put the reading below the whole vocabulary — it changes
+   * out of sight, and the page answers a tap with nothing the reader can see.
+   *
+   * So the reading is brought into view when it is not in it, and the page is
+   * left exactly as it stands when it is. Which layout is in force is never
+   * asked: whether the thing can be seen is the only question that matters, and
+   * it is the one being put.
+   */
+  useEffect(() => {
+    if (brought.current === struck?.term) {
+      return;
+    }
+    brought.current = struck?.term;
+    const shown = reading.current;
+    if (shown === null) {
+      return;
+    }
+    const { top } = shown.getBoundingClientRect();
+    if (top >= 0 && top < window.innerHeight * 0.75) {
+      return;
+    }
+    // How gently it is brought is the stylesheet's to say, which is where the
+    // reader's own answer about motion is already honoured.
+    shown.scrollIntoView({ block: 'start' });
+  }, [struck?.term]);
+
   return (
     <main className="plane plane--reference">
       <div className="reference__read">
@@ -128,7 +164,7 @@ export function Reference({ title, extent, lead, ranks, colourings = COLOURINGS 
       {struck !== undefined && (
         /* The term's own anchor names this, the reading of it: what an address
            ending in #saltire promises is the saltire read at full size. */
-        <div className="showing" id={anchorOf(struck.term)} aria-live="polite">
+        <div className="showing" id={anchorOf(struck.term)} ref={reading} aria-live="polite">
           {/* Keyed on the term, so the strike replays each time one is struck. */}
           <div className="showing__fields" key={struck.term}>
             {colourings.map(({ label, colours }) => (

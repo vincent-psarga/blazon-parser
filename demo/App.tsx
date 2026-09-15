@@ -52,12 +52,24 @@ export function App() {
 }
 
 /**
- * A new page is read from its beginning. An anchor within one is not a new page,
- * which is why the term struck on a reference leaves the scroll where it was.
+ * A new page is read from its beginning — unless its address names a place
+ * within it, which is a request to be put at that place instead, and is
+ * answered by whatever holds it. An anchor is not a new page either way, which
+ * is why the term struck on a reference leaves the scroll where it was.
  */
 function ToTheTop() {
-  const { pathname } = useLocation();
-  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  const { pathname, hash } = useLocation();
+
+  // The page is the dependency and the anchor is not: a term struck on a
+  // reference changes the hash, and must leave the scroll where it stands.
+  useEffect(() => {
+    if (hash === '') {
+      // Instant, the page under it having changed outright: the stylesheet
+      // scrolls smoothly, which is for moving within one page and not between
+      // two.
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [pathname]);
   return null;
 }
 

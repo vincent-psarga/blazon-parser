@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
 import { HatchingColours } from '../../src/infra/colours/HatchingColours';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
@@ -195,6 +195,54 @@ describe('Reference', () => {
         'href',
         '/?b=De%20gueules.&lang=fr'
       );
+    });
+  });
+
+  /*
+   * On a screen too narrow to hold the reading beside the set, the reading
+   * stands below the whole vocabulary — so a struck term changes something the
+   * reader cannot see. Where it stands is all the page asks; which layout put
+   * it there it never asks at all.
+   */
+  describe('the reading a strike changes', () => {
+    const standing = (top: number) =>
+      vi
+        .spyOn(Element.prototype, 'getBoundingClientRect')
+        .mockReturnValue({ top, height: 400, bottom: top + 400 } as DOMRect);
+    const scrolling = () => vi.spyOn(Element.prototype, 'scrollIntoView');
+
+    afterEach(() => vi.restoreAllMocks());
+
+    test('is brought into view when the strike would change it out of sight', async () => {
+      standing(2400);
+      const scrolled = scrolling();
+      mount(subject());
+      await userEvent.setup().click(ghost('gules'));
+      expect(scrolled).toHaveBeenCalled();
+    });
+
+    test('leaves the page where it stands when it is already in sight', async () => {
+      standing(24);
+      const scrolled = scrolling();
+      mount(subject());
+      await userEvent.setup().click(ghost('gules'));
+      expect(scrolled).not.toHaveBeenCalled();
+    });
+
+    test('leaves a page opened at its beginning at its beginning', () => {
+      standing(2400);
+      const scrolled = scrolling();
+      mount(subject());
+      // Nothing was struck: the head of the set is what a reference shows for
+      // having been opened at all, and is no reason to move the page.
+      expect(scrolled).not.toHaveBeenCalled();
+    });
+
+    test('goes to the term where the address names one', () => {
+      standing(2400);
+      const scrolled = scrolling();
+      mount(subject(), '/doc/tinctures#gules');
+      expect(scrolled).toHaveBeenCalled();
     });
   });
 });

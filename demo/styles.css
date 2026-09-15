@@ -61,6 +61,9 @@ html {
   /* Full-bleed children are measured against the viewport, which includes a
      classic scrollbar; without this the document is wider than the page. */
   overflow-x: clip;
+  /* Moving within a page is shown rather than jumped to, so that the reader
+     sees where they have been taken. Reduced motion turns it off below. */
+  scroll-behavior: smooth;
   /* Relative, so the reader's own font size still governs the scale. */
   font-size: 100%;
 }
@@ -882,7 +885,92 @@ body {
   }
 }
 
+/*
+ * A phone is narrower than any five columns worth reading, and a roll that has
+ * to be dragged sideways is a roll nobody reads: below this the grid gives way
+ * and each entry becomes a block of its own, read downwards like everything
+ * else. The two drawings keep their place beside each other, because setting
+ * the source's against the parser's is the whole of what the page is for.
+ */
+@media (max-width: 48rem) {
+  .roll__hold {
+    overflow-x: visible;
+  }
+
+  .roll,
+  .roll caption,
+  .roll tbody,
+  .roll tbody th,
+  .roll td {
+    display: block;
+  }
+
+  /* The headings are gone from sight, not from the page: each cell that needs
+     naming carries its own name below, and the rest name themselves. */
+  .roll thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .roll tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: 0.5rem 1.5rem;
+    /* Air above and below as before, and a single hairline to part one entry
+       from the next: stacked blocks run together without it. */
+    padding: 1.4rem 0;
+    border-top: 1px solid rgb(var(--gauze) / 0.5);
+  }
+
+  .roll tbody tr:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .roll tbody th,
+  .roll td {
+    padding: 0;
+  }
+
+  /* The name, the citation and the blazon each take the width; the drawings
+     take what they need and so fall side by side on the line below. */
+  .roll tbody th,
+  .roll tbody td:nth-child(2),
+  .roll__blazon {
+    flex: 1 0 100%;
+  }
+
+  .roll tbody th {
+    /* Nothing is held on one line here: the line is too short to hold it. */
+    white-space: normal;
+  }
+
+  .roll td[data-drawn] {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .roll td[data-drawn]::after {
+    content: attr(data-drawn);
+    font-family: var(--display);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--bone-quiet);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {

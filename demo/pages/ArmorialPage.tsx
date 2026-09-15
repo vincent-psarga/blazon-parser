@@ -52,37 +52,60 @@ export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: Arm
 
       <Unknown words={unknown} language={language} />
 
-      {/* A roll wider than a narrow screen scrolls on its own rather than
-          dragging the whole page sideways, and is reachable by keyboard to do
-          it. */}
+      {/*
+        A roll wider than the screen scrolls on its own rather than dragging the
+        whole page sideways, and is reachable by keyboard to do it. Narrower
+        still — a phone — and it stops being a grid altogether: each entry is
+        laid out as a block of its own, the two drawings side by side within it.
+
+        Laying it out that way means taking the table's own display off the
+        rows, and a table told not to be one stops being one to a screen reader
+        as well. The roles it would lose are therefore given back by hand: what
+        is written here is what a table means anyway, so nothing is claimed that
+        was not already true.
+      */}
       <div
         className="roll__hold"
         role="region"
         aria-label={`${armorial.name}, entry by entry`}
         tabIndex={0}
       >
-        <table className="roll">
+        <table className="roll" role="table">
           <caption>Every entry as the source records it, and as the parser reads it.</caption>
-          <thead>
-            <tr>
-              <th scope="col">Name</th>
-              <th scope="col">Source</th>
-              <th scope="col">Blazon</th>
-              <th scope="col">As the source draws it</th>
-              <th scope="col">As the parser draws it</th>
+          <thead role="rowgroup">
+            <tr role="row">
+              <th scope="col" role="columnheader">
+                Name
+              </th>
+              <th scope="col" role="columnheader">
+                Source
+              </th>
+              <th scope="col" role="columnheader">
+                Blazon
+              </th>
+              <th scope="col" role="columnheader">
+                As the source draws it
+              </th>
+              <th scope="col" role="columnheader">
+                As the parser draws it
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {entries.map(({ entry, blazon }, index) => (
-              <tr key={`${index}-${entry.name}`}>
-                <th scope="row">{entry.name}</th>
-                <td>
+              <tr role="row" key={`${index}-${entry.name}`}>
+                <th scope="row" role="rowheader">
+                  {entry.name}
+                </th>
+                <td role="cell">
                   {entry.source !== undefined && <a href={entry.source.url}>{entry.source.name}</a>}
                 </td>
-                <td className="roll__blazon" lang={language}>
+                <td className="roll__blazon" role="cell" lang={language}>
                   {entry.blazon}
                 </td>
-                <td>
+                {/* Where the heading is out of sight the drawing says whose it
+                    is; an empty cell says nothing, which is the point of it. */}
+                <td role="cell" data-drawn={entry.image !== '' ? 'The source' : undefined}>
                   {entry.image !== '' && (
                     <img
                       className="roll__arms"
@@ -93,7 +116,7 @@ export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: Arm
                     />
                   )}
                 </td>
-                <td>
+                <td role="cell" data-drawn={blazon !== undefined ? 'The parser' : undefined}>
                   {blazon !== undefined && (
                     <BlazonShield
                       blazon={blazon}
