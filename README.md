@@ -243,7 +243,18 @@ and in hatching, since both are ways of saying the same tinctures.
 one shared anatomy: the whole closed set hangs present at once, and the term being read is
 struck forward at full measure in both languages and both paintings.
 `ArmorialsPage` and `ArmorialPage` read a real armorial and own up to how much of
-it parses.
+it parses — and to what stopped the rest. `readArmorial` keeps each refusal
+beside the entry it refused and gathers the words the parser does not hold into
+`unknown.tinctures`, `unknown.divisions` and `unknown.ordinaries`, which is the
+whole use the custom errors were made for: the page reads fields, never messages.
+
+A word is filed under the term the parser was expecting where it stopped, which
+is not always what the word itself is — a lion standing where an ordinary was due
+is counted an ordinary, an ordinary being what was owed there. A term named under
+an article that does not agree with it is left out altogether, the parser holding
+the word perfectly well. And only one reading is refused per blazon, so the list
+is what the armorial is blocked on first rather than everything it would go on to
+ask for: adding a word uncovers the next.
 
 The pages are components and nothing more — routing belongs to whatever mounts
 them, so `App.tsx` carries its own, small enough not to need a router and honest

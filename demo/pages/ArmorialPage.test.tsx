@@ -130,6 +130,79 @@ describe('ArmorialPage', () => {
     expect(drawn).toBeEmptyDOMElement();
   });
 
+  describe('the overview of what it could not read', () => {
+    /** The words listed under one label, as the reader sees them. */
+    const under = (label: string) => screen.getByText(label).nextElementSibling?.textContent ?? '';
+
+    const GAPS: Armorial = {
+      ...ARMORIAL,
+      entries: [
+        { ...HALBERSTADT, blazon: 'De fuchsia' },
+        { ...HALBERSTADT, name: 'Second', blazon: "Écartelé d'azur et d'or" },
+        { ...HALBERSTADT, name: 'Third', blazon: "D'azur à la bordure d'or" },
+      ],
+    };
+
+    test('lists each word under the term that was expected there', () => {
+      render(<ArmorialPage armorial={GAPS} />);
+      expect(under('Unknown tincture')).toBe('fuchsia');
+      expect(under('Unknown division')).toBe('écartelé');
+      expect(under('Unknown ordinary')).toBe('bordure');
+    });
+
+    test('names the words in the armorial’s own tongue', () => {
+      render(<ArmorialPage armorial={GAPS} />);
+      expect(screen.getByText('fuchsia')).toHaveAttribute('lang', 'fr');
+    });
+
+    test('speaks of one word in the singular and several in the plural', () => {
+      render(
+        <ArmorialPage
+          armorial={{
+            ...ARMORIAL,
+            entries: [
+              { ...HALBERSTADT, blazon: 'De fuchsia' },
+              { ...HALBERSTADT, name: 'Second', blazon: 'De mauve' },
+            ],
+          }}
+        />
+      );
+      expect(screen.getByText('Unknown tinctures')).toBeInTheDocument();
+      expect(screen.queryByText('Unknown tincture')).toBeNull();
+    });
+
+    test('leaves out a term it wants nothing under', () => {
+      render(
+        <ArmorialPage
+          armorial={{ ...ARMORIAL, entries: [{ ...HALBERSTADT, blazon: 'De fuchsia' }] }}
+        />
+      );
+      expect(screen.getByText('Unknown tincture')).toBeInTheDocument();
+      expect(screen.queryByText(/Unknown division/)).toBeNull();
+      expect(screen.queryByText(/Unknown ordinary/)).toBeNull();
+    });
+
+    test('says nothing at all of an armorial it read entire', () => {
+      render(
+        <ArmorialPage
+          armorial={{ ...ARMORIAL, entries: [{ ...HALBERSTADT, blazon: 'De gueules' }] }}
+        />
+      );
+      expect(screen.queryByText(/^Unknown /)).toBeNull();
+      expect(screen.queryByText(/Where it stopped/)).toBeNull();
+    });
+
+    test('owns up to reporting only the first refusal of each blazon', () => {
+      render(<ArmorialPage armorial={GAPS} />);
+      expect(screen.getByText(/One reading is refused per blazon/)).toBeInTheDocument();
+    });
+
+    test('warns that a word is filed under what was expected, not what it is', () => {
+      render(<ArmorialPage armorial={GAPS} />);
+      expect(screen.getByText(/counted an ordinary/)).toBeInTheDocument();
+    });
+  });
+
   test('paints the drawn arms in the colours it is given', () => {
     const colours = { ...WikipediaColours, [Metals.argent]: '#123456' };
     render(<ArmorialPage armorial={ARMORIAL} colours={colours} />);

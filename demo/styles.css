@@ -694,6 +694,59 @@ body {
   text-shadow: 0 0 16px rgb(251 247 238 / 0.3);
 }
 
+/* ─ the gaps: what the armorial asks for and the vocabulary has not got ──── */
+
+.gaps {
+  margin: 1.1rem 0 0;
+  max-width: var(--measure);
+}
+
+.gaps__law {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--bone-quiet);
+  text-wrap: pretty;
+}
+
+.gaps__kinds {
+  margin: 0.7rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+/* The label holds its own column where there is room for one, so the words line
+   up and can be read down as a list rather than hunted for. */
+.gaps__kind {
+  display: grid;
+  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+  gap: 0 0.75rem;
+}
+
+.gaps__kind dt {
+  font-family: var(--display);
+  letter-spacing: 0.04em;
+  color: var(--bone-quiet);
+}
+
+.gaps__kind dt::after {
+  content: ':';
+}
+
+/* The words themselves are the evidence, so they are set as the blazons are. */
+.gaps__kind dd {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.875rem;
+  color: var(--bone);
+}
+
+@media (max-width: 34rem) {
+  .gaps__kind {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.1rem;
+  }
+}
+
 /*
  * The page is achromatic, so a link cannot be left to the browser's blue: every
  * chromatic pixel here is a tincture. It is marked by its rule, not its hue.
