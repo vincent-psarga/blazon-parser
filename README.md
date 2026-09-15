@@ -45,7 +45,7 @@ src/
       MissingTincture.ts      no tincture at all, where one was owed
       MissingOrdinary.ts      no ordinary at all, where one was owed
     models/                   what a blazon is, in English
-      Blazon.ts               a blazon: its field, and what the field bears
+      Blazon.ts               a blazon: its field, and the ordinaries laid on it
       Field.ts                a plain or divided field; DivisionType
       Ordinary.ts             a band laid on the field; OrdinaryType
       Tinctures.ts            Metals, Colours, Furs, and the Tincture union
@@ -126,8 +126,8 @@ caught up. A term may be spelled several ways — `['mantelé-versé',
 'mantelé-renversé']` — with the first spelling used for writing it back out.
 
 A blazon has the same shape in every language — a field, plain or divided between
-two tinctures, bearing one kind of ordinary, once or several times over — so one
-rule reads them all and one
+two tinctures, bearing whatever ordinaries are laid on it, each once or several
+times over — so one rule reads them all and one
 sentence writes them all. A language supplies a `BlazonGrammar` for reading and a
 `BlazonWording` for writing: its tinctures, its partitions, its ordinaries, and
 its conjunction. French wraps its tinctures in an article that has to agree with
@@ -142,18 +142,22 @@ French article agrees in gender as well — `à la fasce` but `au chevron` — a
 gender can no more be read off a spelling than a mute h can, so the feminine ones
 are named in `FrenchGrammar` beside them.
 
-Nine ordinaries so far — chief, pale, fess, bar gemel, bend, bend sinister,
-chevron, cross and saltire — each a plain band of a plain tincture, or a pair of
-them. Three are single charges for all that they are drawn twice over: a cross is
-the pale and the fess crossing, a saltire the two diagonals, and a bar gemel two
-narrow bars set close, gemel being twinned. French names that one the `jumelle`,
-in the singular, however many bars it is drawn with. Nothing may be charged upon
-an ordinary, and no line but the straight one is read.
+Ten ordinaries so far — chief, pale, fess, bar gemel, bend, bend sinister,
+chevron, cross, saltire and bordure — each a plain band of a plain tincture, or a
+pair of them. Three are single charges for all that they are drawn twice over: a
+cross is the pale and the fess crossing, a saltire the two diagonals, and a bar
+gemel two narrow bars set close, gemel being twinned. French names that one the
+`jumelle`, in the singular, however many bars it is drawn with. The bordure
+crosses the field nowhere: it follows the whole edge of the shield, which is why
+the drawer strokes the shield's own outline for it rather than laying a band
+across. Nothing may be charged upon an ordinary, and no line but the straight one
+is read.
 
 A field may bear several of an ordinary — "De gueules à trois chevrons d'or",
 "Gules three chevrons or" — and the bands narrow and space themselves evenly to
-make room for each other. Three of the nine may not be borne in number, and
-`Ordinary.ts` says which: a chief is the top of the shield and a shield has one top, while a
+make room for each other. Four of the ten may not be borne in number, and
+`Ordinary.ts` says which: a chief is the top of the shield and a shield has one top, a
+bordure is its edge and a shield has one of those, while a
 cross and a saltire are each a single charge, repeated into crosslets that are
 charges rather than ordinaries. Asking for two of those is its own refusal:
 
@@ -162,6 +166,25 @@ frenchParser.parse("D'or à deux chefs de gueules");
 // RepeatedOrdinary: Borne but once: chefs, not 2 of them
 //   ordinary: 'chefs', count: 2
 ```
+
+A field may also bear more than one kind, which is how a bordure is usually
+borne: "D'or à trois bandes de sable ; à la bordure de gueules", "Or three bends
+sable, a bordure gules". They are read into `Blazon.ordinaries` in the order the
+blazon named them, and that order is the whole of what it says — what is named
+last is drawn last, and so over the rest:
+
+```ts
+frenchParser.parse("D'or à trois bandes de sable ; à la bordure de gueules");
+// the bordure covers the bends
+frenchParser.parse("D'or à la bordure de gueules ; à trois bandes de sable");
+// the bends cover the bordure
+```
+
+A blazon may set a comma or a semicolon between the phrases, or nothing at all —
+the article or the count says a new charge has begun — and a mark left standing
+at the end, where a blazon was copied out of an armorial row, is read as the full
+stop it stands in for. Writing puts a comma between them and nothing but a space
+before the first.
 
 The number is a word like any other, so each language spells its own — `deux`,
 `three` — in a `NumberWords`, which is a translation keyed on the number itself

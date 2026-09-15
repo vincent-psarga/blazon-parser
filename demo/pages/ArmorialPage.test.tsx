@@ -153,7 +153,7 @@ describe('ArmorialPage', () => {
       entries: [
         { ...HALBERSTADT, blazon: 'De fuchsia' },
         { ...HALBERSTADT, name: 'Second', blazon: "Écartelé d'azur et d'or" },
-        { ...HALBERSTADT, name: 'Third', blazon: "D'azur à la bordure d'or" },
+        { ...HALBERSTADT, name: 'Third', blazon: "D'azur à la champagne d'or" },
       ],
     };
 
@@ -161,7 +161,7 @@ describe('ArmorialPage', () => {
       render(<ArmorialPage armorial={GAPS} />);
       expect(under('Unknown tincture')).toBe('fuchsia');
       expect(under('Unknown division')).toBe('écartelé');
-      expect(under('Unknown ordinary')).toBe('bordure');
+      expect(under('Unknown ordinary')).toBe('champagne');
     });
 
     test('names the words in the armorial’s own tongue', () => {

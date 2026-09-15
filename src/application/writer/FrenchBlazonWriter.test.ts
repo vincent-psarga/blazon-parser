@@ -42,7 +42,7 @@ describe('FrenchBlazonWriter', () => {
       expect(
         writer.write({
           field: { tincture: Colours.azure },
-          ordinary: { type: OrdinaryType.fess, tincture: Metals.or },
+          ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
         })
       ).toBe("D'azur à la fasce d'or.");
     });
@@ -60,7 +60,7 @@ describe('FrenchBlazonWriter', () => {
       expect(
         writer.write({
           field: { tincture: Colours.gules },
-          ordinary: { type, tincture: Metals.argent },
+          ordinaries: [{ type, tincture: Metals.argent }],
         })
       ).toBe(`De gueules ${borne} d'argent.`);
     });
@@ -73,7 +73,7 @@ describe('FrenchBlazonWriter', () => {
             firstTincture: Colours.azure,
             secondTincture: Metals.or,
           },
-          ordinary: { type: OrdinaryType.saltire, tincture: Colours.gules },
+          ordinaries: [{ type: OrdinaryType.saltire, tincture: Colours.gules }],
         })
       ).toBe("Parti d'azur et d'or au sautoir de gueules.");
     });
@@ -81,7 +81,7 @@ describe('FrenchBlazonWriter', () => {
     test('closes the sentence after what the field bears, not before', () => {
       const written = writer.write({
         field: { tincture: Colours.vert },
-        ordinary: { type: OrdinaryType.chevron, tincture: Metals.or },
+        ordinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or }],
       });
       expect(written.endsWith("d'or.")).toBe(true);
       expect(written.slice(0, -1)).not.toContain('.');
@@ -121,7 +121,7 @@ describe('round trip', () => {
   test.each(Object.values(OrdinaryType))('a field bearing %s survives the round trip', (type) => {
     const blazon: Blazon = {
       field: { tincture: Colours.azure },
-      ordinary: { type, tincture: Metals.or },
+      ordinaries: [{ type, tincture: Metals.or }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);
   });
@@ -129,7 +129,7 @@ describe('round trip', () => {
   test.each(TINCTURES)('an ordinary of %s survives with its own tincture', (tincture) => {
     const blazon: Blazon = {
       field: { tincture: Colours.sable },
-      ordinary: { type: OrdinaryType.fess, tincture },
+      ordinaries: [{ type: OrdinaryType.fess, tincture }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);
   });
@@ -141,7 +141,7 @@ describe('round trip', () => {
         firstTincture: Colours.gules,
         secondTincture: Metals.argent,
       },
-      ordinary: { type: OrdinaryType.chevron, tincture: Colours.sable },
+      ordinaries: [{ type: OrdinaryType.chevron, tincture: Colours.sable }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);
   });
@@ -158,7 +158,7 @@ describe('round trip', () => {
     expect(
       writer.write({
         field: { tincture: Colours.azure },
-        ordinary: { type: OrdinaryType.bend, tincture: Metals.or },
+        ordinaries: [{ type: OrdinaryType.bend, tincture: Metals.or }],
       })
     ).toBe("D'azur à la bande d'or.");
     expect(
@@ -180,7 +180,7 @@ describe('several of one ordinary', () => {
     expect(
       writer.write({
         field: { tincture: Colours.gules },
-        ordinary: { type: OrdinaryType.chevron, tincture: Metals.or, count: 3 },
+        ordinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or, count: 3 }],
       })
     ).toBe("De gueules à trois chevrons d'or.");
   });
@@ -194,7 +194,7 @@ describe('several of one ordinary', () => {
     expect(
       writer.write({
         field: { tincture: Colours.azure },
-        ordinary: { type, tincture: Metals.or, count },
+        ordinaries: [{ type, tincture: Metals.or, count }],
       })
     ).toBe(expected);
   });
@@ -203,7 +203,7 @@ describe('several of one ordinary', () => {
     expect(
       writer.write({
         field: { tincture: Colours.azure },
-        ordinary: { type: OrdinaryType.chevron, tincture: Metals.or, count: 1 },
+        ordinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or, count: 1 }],
       })
     ).toBe("D'azur au chevron d'or.");
   });
@@ -212,7 +212,7 @@ describe('several of one ordinary', () => {
     expect(
       writer.write({
         field: { tincture: Colours.azure },
-        ordinary: { type: OrdinaryType.chief, tincture: Metals.or, count: 3 },
+        ordinaries: [{ type: OrdinaryType.chief, tincture: Metals.or, count: 3 }],
       })
     ).toBe("D'azur au chef d'or.");
   });
@@ -220,7 +220,7 @@ describe('several of one ordinary', () => {
   test('survives the round trip, count and all', () => {
     const blazon: Blazon = {
       field: { tincture: Metals.or },
-      ordinary: { type: OrdinaryType.fess, tincture: Colours.sable, count: 3 },
+      ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.sable, count: 3 }],
     };
     expect(parser.parse(writer.write(blazon))).toEqual(blazon);
   });
@@ -238,8 +238,65 @@ describe('several of one ordinary', () => {
     expect(
       writer.write({
         field: { tincture: Metals.or },
-        ordinary: { type: OrdinaryType.fess, tincture: Colours.gules, count: 17 },
+        ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.gules, count: 17 }],
       })
     ).toBe("D'or à 17 fasces de gueules.");
+  });
+});
+
+describe('a field bearing more than one ordinary', () => {
+  const ARMS: Blazon = {
+    field: { tincture: Metals.or },
+    ordinaries: [
+      { type: OrdinaryType.bend, tincture: Colours.sable, count: 3 },
+      { type: OrdinaryType.bordure, tincture: Colours.gules },
+    ],
+  };
+
+  test('writes them one after the other, a comma between', () => {
+    expect(writer.write(ARMS)).toBe("D'or à trois bandes de sable, à la bordure de gueules.");
+  });
+
+  test('writes them in the order they are laid, which says which covers which', () => {
+    expect(writer.write({ ...ARMS, ordinaries: [...ARMS.ordinaries!].reverse() })).toBe(
+      "D'or à la bordure de gueules, à trois bandes de sable."
+    );
+  });
+
+  test('sets nothing but a space between the field and the first of them', () => {
+    expect(writer.write(ARMS)).toContain("D'or à trois");
+  });
+
+  test('survives the round trip, the order and all', () => {
+    expect(parser.parse(writer.write(ARMS))).toEqual(ARMS);
+  });
+
+  test('writes the semicolon an armorial set as the comma it means', () => {
+    expect(
+      writer.write(parser.parse("D'or à trois bandes de sable ; à la bordure de gueules"))
+    ).toBe("D'or à trois bandes de sable, à la bordure de gueules.");
+  });
+
+  test('gives each one its own article, agreed with its own name', () => {
+    expect(
+      writer.write({
+        field: { tincture: Metals.argent },
+        ordinaries: [
+          { type: OrdinaryType.chevron, tincture: Metals.or },
+          { type: OrdinaryType.fess, tincture: Colours.gules },
+        ],
+      })
+    ).toBe("D'argent au chevron d'or, à la fasce de gueules.");
+  });
+});
+
+describe('the bordure', () => {
+  test('is borne under the feminine article', () => {
+    expect(
+      writer.write({
+        field: { tincture: Metals.argent },
+        ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+      })
+    ).toBe("D'argent à la bordure de gueules.");
   });
 });

@@ -9,6 +9,7 @@ import { EnglishOrdinaryType } from '../../src/domain/translations/en/Ordinaries
 import { FrenchOrdinaryType } from '../../src/domain/translations/fr/Ordinaries';
 import { FrenchBlazonParser } from '../../src/application/parser/FrenchBlazonParser';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
+import { OUTLINE } from '../utils/Colourings';
 import { mount } from '../testing/Mounting';
 import { OrdinariesPage } from './OrdinariesPage';
 
@@ -41,7 +42,7 @@ const BUT_ONCE = ORDINARIES.filter((type) => !bornInNumber(type));
 describe('OrdinariesPage', () => {
   test('states how many ordinaries there are', () => {
     mount(<OrdinariesPage />);
-    expect(screen.getByText(/Nine ordinaries/)).toBeInTheDocument();
+    expect(screen.getByText(/Ten ordinaries/)).toBeInTheDocument();
   });
 
   test.each(ORDINARIES)('keeps %s present in the stack', (type) => {
@@ -63,11 +64,16 @@ describe('OrdinariesPage', () => {
     mount(<OrdinariesPage />);
     await userEvent.setup().click(ghost(type));
     // The field first, then the band over it — and a saltire draws two limbs of
-    // the one charge, so the band's colour may repeat.
-    const [field, ...borne] = painting('colour').match(/fill="(#[0-9a-f]{6})"/g) ?? [];
+    // the one charge, so the band's colour may repeat. A bordure is a stroked
+    // line rather than a filled shape, which is why the paint is read from
+    // either attribute.
+    const painted = painting('colour').match(/(?:fill|stroke)="(#[0-9a-f]{6})"/g) ?? [];
+    const [field, ...borne] = painted.filter((paint) => !paint.includes(OUTLINE));
     expect(field).toBe(`fill="${WikipediaColours[Metals.argent]}"`);
     expect(borne.length).toBeGreaterThan(0);
-    expect(borne.every((fill) => fill === `fill="${WikipediaColours[Colours.gules]}"`)).toBe(true);
+    expect(borne.every((paint) => paint.endsWith(`"${WikipediaColours[Colours.gules]}"`))).toBe(
+      true
+    );
   });
 
   test('shows the struck ordinary inside a blazon a reader could type', async () => {
@@ -81,7 +87,7 @@ describe('OrdinariesPage', () => {
     mount(<OrdinariesPage />);
     await userEvent.setup().click(ghost(type));
     const written = showing().querySelector('.showing__usage [lang="fr"]')?.textContent ?? '';
-    expect(new FrenchBlazonParser().parse(written).ordinary).toMatchObject({ type });
+    expect(new FrenchBlazonParser().parse(written).ordinaries).toMatchObject([{ type }]);
   });
 
   test('separates bearing a fess from being divided per fess', async () => {
@@ -120,10 +126,10 @@ describe('whether an ordinary may be borne in number', () => {
   test.each(BUT_ONCE)('gives a reason for %s, which cannot be repeated', async (type) => {
     mount(<OrdinariesPage />);
     await userEvent.setup().click(ghost(type));
-    // Not merely that it may not, but why — a shield has one top, and a cross is
-    // one charge however many arms it is drawn with.
+    // Not merely that it may not, but why — a shield has one top and one edge,
+    // and a cross is one charge however many arms it is drawn with.
     expect(showing().querySelector('.showing__note')?.textContent ?? '').toMatch(
-      /one top|one charge/
+      /one top|one edge|one charge/
     );
   });
 
@@ -151,8 +157,8 @@ describe('whether an ordinary may be borne in number', () => {
       const written = borne().map(
         (figure) => figure.querySelector('[lang="fr"]')?.textContent ?? ''
       );
-      expect(parser.parse(written[0]).ordinary).toMatchObject({ type, count: 2 });
-      expect(parser.parse(written[1]).ordinary).toMatchObject({ type, count: 3 });
+      expect(parser.parse(written[0]).ordinaries).toMatchObject([{ type, count: 2 }]);
+      expect(parser.parse(written[1]).ordinaries).toMatchObject([{ type, count: 3 }]);
     }
   );
 

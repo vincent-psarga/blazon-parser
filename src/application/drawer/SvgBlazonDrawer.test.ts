@@ -13,6 +13,18 @@ const parser = new FrenchBlazonParser();
 
 const fills = (svg: string) => Array.from(svg.matchAll(/fill="(#[0-9a-f]{6})"/g), (m) => m[1]);
 
+/**
+ * Every paint laid inside the shield, in the order it is laid, whether the shape
+ * that carries it is filled or stroked: a bordure is drawn as a thick line
+ * following the shield's own edge, and is painted no less for that. The shield's
+ * outline is drawn outside the clipped group, so it is left out of the reckoning.
+ */
+const paints = (svg: string) =>
+  Array.from(
+    svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>')).matchAll(/="(#[0-9a-f]{6})"/g),
+    (m) => m[1]
+  );
+
 describe('SvgBlazonDrawer', () => {
   test('draws an SVG document', () => {
     const svg = drawer.draw({ field: { tincture: Colours.azure } });
@@ -85,12 +97,12 @@ describe('SvgBlazonDrawer', () => {
     test.each(Object.values(OrdinaryType))('lays %s over the field', (type) => {
       const svg = drawer.draw({
         field: { tincture: Colours.azure },
-        ordinary: { type, tincture: Metals.or },
+        ordinaries: [{ type, tincture: Metals.or }],
       });
       // The field is painted first and the ordinary over it, so the shield's own
       // colour comes before the band's in the document. A saltire contributes two
       // shapes rather than one, so what follows is counted rather than listed.
-      const [field, ...borne] = fills(svg);
+      const [field, ...borne] = paints(svg);
       expect(field).toBe(WikipediaColours[Colours.azure]);
       expect(borne.length).toBeGreaterThan(0);
       expect(borne.every((fill) => fill === WikipediaColours[Metals.or])).toBe(true);
@@ -99,7 +111,7 @@ describe('SvgBlazonDrawer', () => {
     test('draws a fess as a band across the middle of the shield', () => {
       const svg = drawer.draw({
         field: { tincture: Colours.azure },
-        ordinary: { type: OrdinaryType.fess, tincture: Metals.or },
+        ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
       });
       expect(svg).toContain('<rect x="0" y="80" width="200" height="80" fill="#ffd700"/>');
     });
@@ -107,7 +119,7 @@ describe('SvgBlazonDrawer', () => {
     test('draws a saltire as two limbs crossing, painted alike', () => {
       const svg = drawer.draw({
         field: { tincture: Colours.azure },
-        ordinary: { type: OrdinaryType.saltire, tincture: Metals.argent },
+        ordinaries: [{ type: OrdinaryType.saltire, tincture: Metals.argent }],
       });
       expect(svg.split('<polygon').length - 1).toBe(2);
       expect(fills(svg).slice(1)).toEqual(['#ffffff', '#ffffff']);
@@ -116,7 +128,7 @@ describe('SvgBlazonDrawer', () => {
     test('keeps the ordinary inside the shield', () => {
       const svg = drawer.draw({
         field: { tincture: Colours.azure },
-        ordinary: { type: OrdinaryType.chevron, tincture: Metals.or },
+        ordinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or }],
       });
       const arms = svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>'));
       expect(arms).toContain('<polygon');
@@ -129,7 +141,7 @@ describe('SvgBlazonDrawer', () => {
           firstTincture: Colours.azure,
           secondTincture: Metals.or,
         },
-        ordinary: { type: OrdinaryType.fess, tincture: Colours.gules },
+        ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.gules }],
       });
       expect(fills(svg)).toEqual(['#0000ff', '#ffd700', '#ff0000']);
     });
@@ -137,7 +149,7 @@ describe('SvgBlazonDrawer', () => {
     test('paints an ordinary of the same tincture as its field', () => {
       const svg = drawer.draw({
         field: { tincture: Colours.sable },
-        ordinary: { type: OrdinaryType.fess, tincture: Colours.sable },
+        ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.sable }],
       });
       expect(fills(svg)).toEqual(['#000000', '#000000']);
     });
@@ -146,7 +158,7 @@ describe('SvgBlazonDrawer', () => {
       const hatched = new SvgBlazonDrawer(HatchingColours);
       const svg = hatched.draw({
         field: { tincture: Metals.or },
-        ordinary: { type: OrdinaryType.fess, tincture: Colours.azure },
+        ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
       });
       const paint = HatchingColours[Colours.azure];
       expect(isPattern(paint)).toBe(true);
@@ -272,7 +284,7 @@ describe('a field bearing several of one ordinary', () => {
   test('draws as many bands as are borne, painted alike', () => {
     const svg = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.chevron, tincture: Metals.or, count: 3 },
+      ordinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or, count: 3 }],
     });
     expect(polygons(svg)).toBe(3);
     expect(fills(svg).slice(1)).toEqual(Array(3).fill(WikipediaColours[Metals.or]));
@@ -281,7 +293,7 @@ describe('a field bearing several of one ordinary', () => {
   test('draws two pales as two bands, evenly spaced across the field', () => {
     const svg = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.pale, tincture: Metals.or, count: 2 },
+      ordinaries: [{ type: OrdinaryType.pale, tincture: Metals.or, count: 2 }],
     });
     // A fifth apiece, with a fifth of the field between them and at either edge.
     expect(svg).toContain('<rect x="40" y="0" width="40" height="240" fill="#ffd700"/>');
@@ -291,11 +303,11 @@ describe('a field bearing several of one ordinary', () => {
   test('narrows the bands to make room for each other', () => {
     const one = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.fess, tincture: Metals.or },
+      ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
     });
     const three = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.fess, tincture: Metals.or, count: 3 },
+      ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or, count: 3 }],
     });
     const heights = (svg: string) =>
       Array.from(svg.matchAll(/<rect [^>]*height="(\d+)"/g), (match) => Number(match[1]));
@@ -307,11 +319,11 @@ describe('a field bearing several of one ordinary', () => {
   test('leaves a single band exactly where it was drawn before there could be two', () => {
     const counted = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.bend, tincture: Metals.or, count: 1 },
+      ordinaries: [{ type: OrdinaryType.bend, tincture: Metals.or, count: 1 }],
     });
     const plain = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.bend, tincture: Metals.or },
+      ordinaries: [{ type: OrdinaryType.bend, tincture: Metals.or }],
     });
     expect(counted).toBe(plain);
   });
@@ -319,7 +331,7 @@ describe('a field bearing several of one ordinary', () => {
   test('draws but one of an ordinary borne but once, whatever count it was handed', () => {
     const svg = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.chief, tincture: Metals.or, count: 3 },
+      ordinaries: [{ type: OrdinaryType.chief, tincture: Metals.or, count: 3 }],
     });
     expect(rects(svg)).toBe(1);
   });
@@ -327,7 +339,7 @@ describe('a field bearing several of one ordinary', () => {
   test('keeps every band inside the shield', () => {
     const svg = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.bendSinister, tincture: Metals.or, count: 4 },
+      ordinaries: [{ type: OrdinaryType.bendSinister, tincture: Metals.or, count: 4 }],
     });
     const arms = svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>'));
     expect(polygons(arms)).toBe(4);
@@ -336,7 +348,7 @@ describe('a field bearing several of one ordinary', () => {
   test('paints several bands with one pattern, not one apiece', () => {
     const svg = drawer.draw({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.fess, tincture: Furs.ermine, count: 3 },
+      ordinaries: [{ type: OrdinaryType.fess, tincture: Furs.ermine, count: 3 }],
     });
     expect(svg.split('<pattern').length - 1).toBe(1);
   });
@@ -353,7 +365,7 @@ describe('a bar gemel', () => {
     bars(
       drawer.draw({
         field: { tincture: Metals.argent },
-        ordinary: { type: OrdinaryType.barGemel, tincture: Colours.gules, count },
+        ordinaries: [{ type: OrdinaryType.barGemel, tincture: Colours.gules, count }],
       })
     );
 
@@ -379,5 +391,104 @@ describe('a bar gemel', () => {
     const inside = second.at - (first.at + first.across);
     const between = third.at - (second.at + second.across);
     expect(inside).toBeLessThan(between);
+  });
+});
+
+describe('a bordure', () => {
+  const armsOf = (svg: string) => svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>'));
+
+  const bordure = drawer.draw({
+    field: { tincture: Metals.argent },
+    ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+  });
+
+  test("follows the shield's own edge rather than crossing the field", () => {
+    // It is the shield's outline stroked thickly and clipped to itself, so it
+    // keeps the curve of the base that no band of rectangles would follow.
+    const band = armsOf(bordure);
+    expect(band).toContain('stroke="#ff0000"');
+    expect(band).not.toContain('<rect');
+    expect(band).not.toContain('<polygon');
+  });
+
+  test('lies inside the shield, an eighth of the field wide', () => {
+    // A stroke straddles the line it follows and the clip path takes the outer
+    // half away, so the width asked for is half of what is drawn.
+    expect(armsOf(bordure)).toContain('stroke-width="50"');
+  });
+
+  test('leaves the shield the parser drew it on visible around it', () => {
+    expect(fills(bordure)[0]).toBe(WikipediaColours[Metals.argent]);
+  });
+
+  test('is painted with a pattern as readily as with a colour', () => {
+    const hatched = new SvgBlazonDrawer(HatchingColours);
+    const svg = hatched.draw({
+      field: { tincture: Metals.or },
+      ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.azure }],
+    });
+    const paint = HatchingColours[Colours.azure];
+    expect(isPattern(paint)).toBe(true);
+    expect(svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'))).toContain('hatch-azure');
+    expect(armsOf(svg)).toContain(isPattern(paint) ? `stroke="${paint.fill}"` : '');
+  });
+
+  test('draws but one of it, whatever count it was handed', () => {
+    const twice = drawer.draw({
+      field: { tincture: Metals.argent },
+      ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules, count: 2 }],
+    });
+    expect(twice).toBe(bordure);
+  });
+});
+
+describe('a field bearing more than one ordinary', () => {
+  const ARMS = {
+    field: { tincture: Metals.or },
+    bends: { type: OrdinaryType.bend, tincture: Colours.sable, count: 3 },
+    bordure: { type: OrdinaryType.bordure, tincture: Colours.gules },
+  } as const;
+
+  test('paints every one of them, each in its own tincture', () => {
+    const svg = drawer.draw({ field: ARMS.field, ordinaries: [ARMS.bends, ARMS.bordure] });
+    expect(paints(svg)).toEqual([
+      WikipediaColours[Metals.or],
+      ...Array(3).fill(WikipediaColours[Colours.sable]),
+      WikipediaColours[Colours.gules],
+    ]);
+  });
+
+  test('paints them in the order they were blazoned, the last one over the rest', () => {
+    // The order is the whole of what it says: a bordure blazoned after the bends
+    // covers where they run out to the edge, and blazoned before them is covered.
+    const over = paints(drawer.draw({ field: ARMS.field, ordinaries: [ARMS.bends, ARMS.bordure] }));
+    const under = paints(
+      drawer.draw({ field: ARMS.field, ordinaries: [ARMS.bordure, ARMS.bends] })
+    );
+    expect(over.at(-1)).toBe(WikipediaColours[Colours.gules]);
+    expect(under.at(-1)).toBe(WikipediaColours[Colours.sable]);
+  });
+
+  test('carries the patterns all of them are painted with', () => {
+    const hatched = new SvgBlazonDrawer(HatchingColours);
+    const svg = hatched.draw({
+      field: { tincture: Metals.argent },
+      ordinaries: [
+        { type: OrdinaryType.fess, tincture: Colours.azure },
+        { type: OrdinaryType.bordure, tincture: Colours.gules },
+      ],
+    });
+    const defs = svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'));
+    expect(defs).toContain('hatch-azure');
+    expect(defs).toContain('hatch-gules');
+  });
+
+  test('draws what was read from a blazon that bears two', () => {
+    const svg = drawer.draw(parser.parse("D'or à trois bandes de sable ; à la bordure de gueules"));
+    expect(paints(svg)).toEqual([
+      WikipediaColours[Metals.or],
+      ...Array(3).fill(WikipediaColours[Colours.sable]),
+      WikipediaColours[Colours.gules],
+    ]);
   });
 });

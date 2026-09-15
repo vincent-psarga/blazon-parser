@@ -16,4 +16,7 @@ export const EnglishOrdinaryType: Translation<OrdinaryType> = {
   [OrdinaryType.chevron]: new Word('chevron'),
   [OrdinaryType.cross]: new Word('cross', { plural: 'crosses' }),
   [OrdinaryType.saltire]: new Word('saltire'),
+  // English blazon keeps the French spelling for this one, though the plain
+  // border is the same word and is read too — and written back as the bordure.
+  [OrdinaryType.bordure]: [new Word('bordure'), new Word('border')],
 };

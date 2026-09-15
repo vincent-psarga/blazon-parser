@@ -133,6 +133,21 @@ const RISE = 100;
 const LIMB = 26;
 const ARM = 28;
 
+/** How far a bordure reaches in from the edge: an eighth of the field, as armorials draw it. */
+const BORDURE = WIDTH / 8;
+
+/**
+ * The band a bordure lays round the whole edge of the shield.
+ *
+ * It is the shield's own outline drawn as a thick stroke, which the clip path
+ * then halves: a stroke straddles the line it follows, so the half outside the
+ * shield is cut away and what is left is a band of the asked-for width lying
+ * inside the edge — and following it round the curve of the base, which nothing
+ * built out of rectangles would do.
+ */
+const bordureBand: Shape = (fill) =>
+  `<path d="${SHIELD}" fill="none" stroke="${fill}" stroke-width="${BORDURE * 2}"/>`;
+
 /**
  * The band, or bands, each ordinary lays over the field, before the shield clips
  * them.
@@ -165,6 +180,9 @@ const ORDINARIES: Record<OrdinaryType, (count: number) => Shape> = {
     all([rect(WIDTH / 2 - ARM, 0, ARM * 2, HEIGHT), rect(0, HEIGHT / 2 - ARM, WIDTH, ARM * 2)]),
   [OrdinaryType.saltire]: () =>
     all([bendBand([-LIMB, LIMB * 2]), bendSinisterBand([-LIMB, LIMB * 2])]),
+  // The bordure crosses the field nowhere: it follows the edge, and a shield has
+  // one edge, so there is nothing for a count to narrow or space out.
+  [OrdinaryType.bordure]: () => bordureBand,
 };
 
 /** Draws a blazon as an SVG shield. */
@@ -194,10 +212,17 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
     ].join('');
   }
 
-  /** The field first, then whatever it bears: an ordinary is laid over, not under. */
+  /**
+   * The field first, then whatever it bears: an ordinary is laid over, not under.
+   *
+   * Several are painted in the order the blazon named them, each over the last,
+   * which is what that order is for — a bordure blazoned after three bends
+   * covers where they meet the edge, and blazoned before them is covered by them.
+   */
   private paintArms(blazon: Blazon, colours: ColorModel): string {
     const field = this.paintField(blazon.field, colours);
-    return blazon.ordinary === undefined ? field : field + paintOrdinary(blazon.ordinary, colours);
+    const borne = (blazon.ordinaries ?? []).map((ordinary) => paintOrdinary(ordinary, colours));
+    return field + borne.join('');
   }
 
   private paintField(field: Field, colours: ColorModel): string {
@@ -226,13 +251,14 @@ function tincturesOf(blazon: Blazon): readonly Tincture[] {
   const field = isDivision(blazon.field)
     ? [blazon.field.firstTincture, blazon.field.secondTincture]
     : [blazon.field.tincture];
-  return blazon.ordinary === undefined ? field : [...field, blazon.ordinary.tincture];
+  return [...field, ...(blazon.ordinaries ?? []).map((ordinary) => ordinary.tincture)];
 }
 
 /**
  * The definitions the blazon's own tinctures call for, and no others — a shield
  * carries the patterns it is painted with, not every pattern that exists. An
- * ordinary counts among them: it is painted with a tincture like anything else.
+ * An ordinary counts among them: it is painted with a tincture like anything
+ * else.
  *
  * A definition is markup, so it is placed as it stands rather than escaped. A
  * colour model is written in code alongside the drawer, not taken from a reader.

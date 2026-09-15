@@ -13,7 +13,7 @@ describe('an ordinary borne in number', () => {
     expect(bornInNumber(type)).toBe(true);
   });
 
-  test.each([OrdinaryType.chief, OrdinaryType.cross, OrdinaryType.saltire])(
+  test.each([OrdinaryType.chief, OrdinaryType.cross, OrdinaryType.saltire, OrdinaryType.bordure])(
     'a field bears but one %s',
     (type) => {
       expect(bornInNumber(type)).toBe(false);

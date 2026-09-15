@@ -42,7 +42,10 @@ const PAGES = [
     arms: ORDINARIES.map((type) => ({
       key: type,
       label: nameOf(EnglishOrdinaryType, type),
-      blazon: { field: { tincture: Metals.argent }, ordinary: { type, tincture: Colours.gules } },
+      blazon: {
+        field: { tincture: Metals.argent },
+        ordinaries: [{ type, tincture: Colours.gules }],
+      },
     })),
   },
 ];
@@ -57,8 +60,8 @@ export function DocIndexPage() {
       </p>
       <p className="plane__lead">
         Everything the parser reads, in French and in English. A blazon it accepts is a field — one
-        tincture, or two divided by a line — and at most one plain band laid over it. There are no
-        other charges yet, and nothing here promises any.
+        tincture, or two divided by a line — and whatever plain bands are laid over it, in the order
+        they were laid. There are no other charges yet, and nothing here promises any.
       </p>
 
       <nav className="index" aria-label="Documentation">

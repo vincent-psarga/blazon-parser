@@ -138,7 +138,7 @@ describe('a division the parser does not know', () => {
 
 describe('an ordinary the parser does not know', () => {
   test.each([
-    ['a band the parser does not hold', "D'azur à la bordure d'or"],
+    ['a band the parser does not hold', "D'azur à la champagne d'or"],
     ['a feminine ordinary under the masculine article', "D'azur au fasce d'or"],
     ['a masculine ordinary under the feminine article', "D'azur à la chevron d'or"],
   ])('%s', (_why, blazon) => {
@@ -146,13 +146,13 @@ describe('an ordinary the parser does not know', () => {
   });
 
   test('a band the parser does not hold, in English', () => {
-    expect(() => english.parse('Azure a bordure or')).toThrow(UnknownOrdinary);
+    expect(() => english.parse('Azure a gyron or')).toThrow(UnknownOrdinary);
   });
 
   test('carries the word itself', () => {
-    const refusal = refused(() => french.parse("D'azur à la bordure d'or")) as UnknownOrdinary;
-    expect(refusal.ordinary).toBe('bordure');
-    expect(refusal.message).toBe('Unknown ordinary: bordure');
+    const refusal = refused(() => french.parse("D'azur à la champagne d'or")) as UnknownOrdinary;
+    expect(refusal.ordinary).toBe('champagne');
+    expect(refusal.message).toBe('Unknown ordinary: champagne');
   });
 
   describe('an article that does not agree with it', () => {
@@ -197,7 +197,7 @@ describe('every refusal', () => {
   const REFUSED = [
     'de fuchsia',
     "Écartelé d'azur et d'or",
-    "D'azur à la bordure d'or",
+    "D'azur à la champagne d'or",
     "D'azur à la fasce",
     "Parti d'azur",
     "D'azur fasce d'or",
@@ -216,7 +216,7 @@ describe('every refusal', () => {
   test('carries its own name, so a log says which kind it was', () => {
     expect(refused(() => french.parse('de fuchsia')).name).toBe('UnknownTincture');
     expect(refused(() => french.parse("Écartelé d'azur et d'or")).name).toBe('UnknownDivision');
-    expect(refused(() => french.parse("D'azur à la bordure d'or")).name).toBe('UnknownOrdinary');
+    expect(refused(() => french.parse("D'azur à la champagne d'or")).name).toBe('UnknownOrdinary');
     expect(refused(() => french.parse("D'azur à la fasce")).name).toBe('MissingTincture');
     expect(refused(() => french.parse("D'azur à la")).name).toBe('MissingOrdinary');
     expect(refused(() => french.parse('de or')).name).toBe('WrongTinctureArticle');

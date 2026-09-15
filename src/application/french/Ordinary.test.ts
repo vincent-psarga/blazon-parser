@@ -17,7 +17,7 @@ describe('a field bearing an ordinary', () => {
   test('reads "D\'azur à la fasce d\'or" as a fess on an azure field', () => {
     expect(parser.parse("D'azur à la fasce d'or")).toEqual({
       field: { tincture: Colours.azure },
-      ordinary: { type: OrdinaryType.fess, tincture: Metals.or },
+      ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
     });
   });
 
@@ -34,7 +34,7 @@ describe('a field bearing an ordinary', () => {
   ])('reads "%s" as that ordinary', (borne, type) => {
     expect(parser.parse(`De gueules ${borne} d'argent`)).toEqual({
       field: { tincture: Colours.gules },
-      ordinary: { type, tincture: Metals.argent },
+      ordinaries: [{ type, tincture: Metals.argent }],
     });
   });
 
@@ -42,21 +42,25 @@ describe('a field bearing an ordinary', () => {
     const blazon = parser.parse(
       `D'azur au chevron ${withArticle(wordOf(FrenchTinctures, tincture))}`
     );
-    expect(blazon.ordinary).toEqual({ type: OrdinaryType.chevron, tincture });
+    expect(blazon.ordinaries).toEqual([{ type: OrdinaryType.chevron, tincture }]);
   });
 
   test('lays an ordinary on a divided field as readily as on a plain one', () => {
-    expect(parser.parse("Parti d'azur et d'or au sautoir de gueules").ordinary).toEqual({
-      type: OrdinaryType.saltire,
-      tincture: Colours.gules,
-    });
+    expect(parser.parse("Parti d'azur et d'or au sautoir de gueules").ordinaries).toEqual([
+      {
+        type: OrdinaryType.saltire,
+        tincture: Colours.gules,
+      },
+    ]);
   });
 
   test('accepts the same tincture on the field and on what it bears', () => {
-    expect(parser.parse("D'or à la fasce d'or").ordinary).toEqual({
-      type: OrdinaryType.fess,
-      tincture: Metals.or,
-    });
+    expect(parser.parse("D'or à la fasce d'or").ordinaries).toEqual([
+      {
+        type: OrdinaryType.fess,
+        tincture: Metals.or,
+      },
+    ]);
   });
 
   test('is case insensitive', () => {
@@ -68,7 +72,7 @@ describe('a field bearing an ordinary', () => {
   });
 
   test('leaves the key off entirely when the field bears nothing', () => {
-    expect(parser.parse("D'azur")).not.toHaveProperty('ordinary');
+    expect(parser.parse("D'azur")).not.toHaveProperty('ordinaries');
   });
 
   describe('the article agreeing with the ordinary it introduces', () => {
@@ -89,10 +93,12 @@ describe('a field bearing an ordinary', () => {
     test('names every ordinary with an article the parser then accepts', () => {
       for (const type of Object.values(OrdinaryType)) {
         const borne = bearing(wordOf(FrenchOrdinaryType, type));
-        expect(parser.parse(`D'azur ${borne} d'or`).ordinary).toEqual({
-          type,
-          tincture: Metals.or,
-        });
+        expect(parser.parse(`D'azur ${borne} d'or`).ordinaries).toEqual([
+          {
+            type,
+            tincture: Metals.or,
+          },
+        ]);
       }
     });
   });
@@ -118,22 +124,28 @@ describe('a field bearing an ordinary', () => {
     );
 
     test('rejects an ordinary the vocabulary does not know', () => {
-      expect(() => parser.parse("D'azur à la bordure d'or")).toThrow(UnknownOrdinary);
-      expect(() => parser.parse("D'azur à la bordure d'or")).toThrow(/Unknown ordinary: bordure/);
+      expect(() => parser.parse("D'azur à la champagne d'or")).toThrow(UnknownOrdinary);
+      expect(() => parser.parse("D'azur à la champagne d'or")).toThrow(
+        /Unknown ordinary: champagne/
+      );
     });
 
     test('tells the bande apart from the tranché it runs along', () => {
-      expect(parser.parse("D'azur à la bande d'or").ordinary).toMatchObject({
-        type: OrdinaryType.bend,
-      });
-      expect(parser.parse("Tranché d'azur et d'or")).not.toHaveProperty('ordinary');
+      expect(parser.parse("D'azur à la bande d'or").ordinaries).toMatchObject([
+        {
+          type: OrdinaryType.bend,
+        },
+      ]);
+      expect(parser.parse("Tranché d'azur et d'or")).not.toHaveProperty('ordinaries');
     });
 
     test('tells the barre apart from the taillé it runs along', () => {
-      expect(parser.parse("D'azur à la barre d'or").ordinary).toMatchObject({
-        type: OrdinaryType.bendSinister,
-      });
-      expect(parser.parse("Taillé d'azur et d'or")).not.toHaveProperty('ordinary');
+      expect(parser.parse("D'azur à la barre d'or").ordinaries).toMatchObject([
+        {
+          type: OrdinaryType.bendSinister,
+        },
+      ]);
+      expect(parser.parse("Taillé d'azur et d'or")).not.toHaveProperty('ordinaries');
     });
 
     test('rejects an ordinary named without its article', () => {
@@ -142,10 +154,6 @@ describe('a field bearing an ordinary', () => {
 
     test('rejects an ordinary with no tincture of its own, as a missing tincture', () => {
       expect(() => parser.parse("D'azur à la fasce")).toThrow(MissingTincture);
-    });
-
-    test('rejects a second ordinary: a field bears one at most', () => {
-      expect(() => parser.parse("D'azur à la fasce d'or au chevron de gueules")).toThrow();
     });
 
     test("carries the elision rule into the ordinary's tincture", () => {
@@ -161,16 +169,18 @@ describe('the bar gemel', () => {
     // the singular for all that the word means "twin".
     expect(parser.parse("D'argent à la jumelle de gueules")).toEqual({
       field: { tincture: Metals.argent },
-      ordinary: { type: OrdinaryType.barGemel, tincture: Colours.gules },
+      ordinaries: [{ type: OrdinaryType.barGemel, tincture: Colours.gules }],
     });
   });
 
   test('reads the three jumelles an armorial writes', () => {
-    expect(parser.parse("D'argent à trois jumelles de gueules.").ordinary).toEqual({
-      type: OrdinaryType.barGemel,
-      tincture: Colours.gules,
-      count: 3,
-    });
+    expect(parser.parse("D'argent à trois jumelles de gueules.").ordinaries).toEqual([
+      {
+        type: OrdinaryType.barGemel,
+        tincture: Colours.gules,
+        count: 3,
+      },
+    ]);
   });
 
   test('takes the feminine article, and refuses the masculine one', () => {
@@ -182,7 +192,7 @@ describe('a field bearing several of one ordinary', () => {
   test('reads "De gueules à trois chevrons d\'or" as three chevrons on a gules field', () => {
     expect(parser.parse("De gueules à trois chevrons d'or")).toEqual({
       field: { tincture: Colours.gules },
-      ordinary: { type: OrdinaryType.chevron, tincture: Metals.or, count: 3 },
+      ordinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or, count: 3 }],
     });
   });
 
@@ -194,11 +204,13 @@ describe('a field bearing several of one ordinary', () => {
     ['à six barres', OrdinaryType.bendSinister, 6],
     ['à seize chevrons', OrdinaryType.chevron, 16],
   ])('reads "%s" as that many of that ordinary', (borne, type, count) => {
-    expect(parser.parse(`D'azur ${borne} d'or`).ordinary).toEqual({
-      type,
-      tincture: Metals.or,
-      count,
-    });
+    expect(parser.parse(`D'azur ${borne} d'or`).ordinaries).toEqual([
+      {
+        type,
+        tincture: Metals.or,
+        count,
+      },
+    ]);
   });
 
   test('reads the contracted article, which armorials also write', () => {
@@ -216,7 +228,7 @@ describe('a field bearing several of one ordinary', () => {
   });
 
   test('leaves the count off entirely when one is borne', () => {
-    expect(parser.parse("D'azur au chevron d'or").ordinary).not.toHaveProperty('count');
+    expect(parser.parse("D'azur au chevron d'or").ordinaries?.[0]).not.toHaveProperty('count');
   });
 
   test('is case insensitive', () => {
@@ -232,15 +244,17 @@ describe('a field bearing several of one ordinary', () => {
   });
 
   test('lays several on a divided field as readily as on a plain one', () => {
-    expect(parser.parse("Parti d'azur et d'or à deux fasces de gueules").ordinary).toEqual({
-      type: OrdinaryType.fess,
-      tincture: Colours.gules,
-      count: 2,
-    });
+    expect(parser.parse("Parti d'azur et d'or à deux fasces de gueules").ordinaries).toEqual([
+      {
+        type: OrdinaryType.fess,
+        tincture: Colours.gules,
+        count: 2,
+      },
+    ]);
   });
 
   test('gives every band of them the one tincture', () => {
-    expect(parser.parse("D'azur à trois fasces d'or").ordinary?.tincture).toBe(Metals.or);
+    expect(parser.parse("D'azur à trois fasces d'or").ordinaries?.[0].tincture).toBe(Metals.or);
   });
 
   describe('rejections', () => {
@@ -269,7 +283,7 @@ describe('a field bearing several of one ordinary', () => {
     });
 
     test('refuses a plural the vocabulary does not know', () => {
-      expect(() => parser.parse("D'or à deux bordures de gueules")).toThrow(UnknownOrdinary);
+      expect(() => parser.parse("D'or à deux champagnes de gueules")).toThrow(UnknownOrdinary);
     });
 
     test('still owes them a tincture of their own', () => {
@@ -284,6 +298,129 @@ describe('a field bearing several of one ordinary', () => {
       // "dix-sept" is hyphenated, and the lexer reads words rather than
       // punctuation, so the number never reaches the grammar.
       expect(() => parser.parse("D'or à dix-sept fasces de gueules")).toThrow();
+    });
+  });
+});
+
+describe('the bordure', () => {
+  test('reads "D\'argent à la bordure de gueules" as a bordure on an argent field', () => {
+    expect(parser.parse("D'argent à la bordure de gueules.")).toEqual({
+      field: { tincture: Metals.argent },
+      ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+    });
+  });
+
+  test('takes the feminine article, and refuses the masculine one', () => {
+    expect(() => parser.parse("D'argent au bordure de gueules")).toThrow(/expected "à la bordure"/);
+  });
+
+  test('is borne but once, a shield having one edge', () => {
+    expect(() => parser.parse("D'or à deux bordures de gueules")).toThrow(RepeatedOrdinary);
+  });
+});
+
+describe('a field bearing more than one ordinary', () => {
+  test('reads the bends and the bordure an armorial writes', () => {
+    expect(parser.parse("D'or à trois bandes de sable ; à la bordure de gueules")).toEqual({
+      field: { tincture: Metals.or },
+      ordinaries: [
+        { type: OrdinaryType.bend, tincture: Colours.sable, count: 3 },
+        { type: OrdinaryType.bordure, tincture: Colours.gules },
+      ],
+    });
+  });
+
+  test('keeps them in the order the blazon laid them, which says which covers which', () => {
+    const over = parser.parse("D'or à trois bandes de sable ; à la bordure de gueules");
+    const under = parser.parse("D'or à la bordure de gueules ; à trois bandes de sable");
+    expect(over.ordinaries?.map(({ type }) => type)).toEqual([
+      OrdinaryType.bend,
+      OrdinaryType.bordure,
+    ]);
+    expect(under.ordinaries?.map(({ type }) => type)).toEqual([
+      OrdinaryType.bordure,
+      OrdinaryType.bend,
+    ]);
+  });
+
+  test.each([
+    ['a semicolon, as an armorial writes it', "D'azur à la fasce d'or ; au chef de gueules"],
+    ['a comma', "D'azur à la fasce d'or, au chef de gueules"],
+    ['no mark at all, the article saying it alone', "D'azur à la fasce d'or au chef de gueules"],
+  ])('reads them separated by %s', (_how, blazon) => {
+    expect(parser.parse(blazon).ordinaries).toEqual([
+      { type: OrdinaryType.fess, tincture: Metals.or },
+      { type: OrdinaryType.chief, tincture: Colours.gules },
+    ]);
+  });
+
+  test('reads a mark set between the field and the first of them', () => {
+    // An armorial writes "De gueules, à deux haches d'armes" as readily as not.
+    expect(parser.parse("De gueules, au chevron d'or")).toEqual(
+      parser.parse("De gueules au chevron d'or")
+    );
+  });
+
+  test('closes on the mark a blazon copied out of an armorial ends with', () => {
+    expect(parser.parse("D'or à trois bandes de sable ; à la bordure de gueules,")).toEqual(
+      parser.parse("D'or à trois bandes de sable ; à la bordure de gueules")
+    );
+  });
+
+  test('bears as many as the blazon names', () => {
+    expect(
+      parser.parse("D'argent à la fasce d'or, au chef de gueules, à la bordure de sable").ordinaries
+    ).toHaveLength(3);
+  });
+
+  test('gives each one a tincture and a count of its own', () => {
+    expect(parser.parse("D'argent à trois chevrons d'or ; à la bordure de gueules")).toEqual({
+      field: { tincture: Metals.argent },
+      ordinaries: [
+        { type: OrdinaryType.chevron, tincture: Metals.or, count: 3 },
+        { type: OrdinaryType.bordure, tincture: Colours.gules },
+      ],
+    });
+  });
+
+  test('lays them on a divided field as readily as on a plain one', () => {
+    expect(
+      parser.parse("Parti d'azur et d'or au sautoir de gueules ; à la bordure de sable").ordinaries
+    ).toEqual([
+      { type: OrdinaryType.saltire, tincture: Colours.gules },
+      { type: OrdinaryType.bordure, tincture: Colours.sable },
+    ]);
+  });
+
+  test('bears the same ordinary twice, which is not the same as two of it', () => {
+    // Two fesses of one tincture narrow to make room for each other; a fess and
+    // another fess are two charges, each drawn where a single one is drawn.
+    expect(parser.parse("D'or à la fasce d'argent, à la fasce de gueules").ordinaries).toEqual([
+      { type: OrdinaryType.fess, tincture: Metals.argent },
+      { type: OrdinaryType.fess, tincture: Colours.gules },
+    ]);
+  });
+
+  describe('rejections', () => {
+    test('still owes every one of them a tincture', () => {
+      expect(() => parser.parse("D'azur à la fasce d'or ; au chevron")).toThrow(MissingTincture);
+    });
+
+    test('names the phrase the tincture is missing from, not the blazon at large', () => {
+      const refusal = refused(() =>
+        parser.parse("D'azur à la fasce d'or ; au chevron")
+      ) as MissingTincture;
+      expect(refusal.context).toBe('au chevron');
+    });
+
+    test('refuses a second ordinary the vocabulary does not know', () => {
+      expect(() => parser.parse("D'azur à la fasce d'or, à la champagne de gueules")).toThrow(
+        UnknownOrdinary
+      );
+    });
+
+    test('refuses a mark with nothing but another mark after it', () => {
+      expect(() => parser.parse("D'azur à la fasce d'or,,")).toThrow();
     });
   });
 });

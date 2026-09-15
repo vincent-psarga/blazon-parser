@@ -31,16 +31,33 @@ export interface BlazonWording<W extends Word = Word> {
 }
 
 /**
+ * What is set between one charge and the next. The mark is punctuation rather
+ * than vocabulary — a blazon in either language is read with it or without — so
+ * it is written here rather than asked of the language.
+ *
+ * Nothing but a space stands between the field and the first charge, which is
+ * how both languages write it: "D'or à trois bandes de sable, à la bordure de
+ * gueules", "Or three bends sable, a bordure gules".
+ */
+const SEPARATOR = ',';
+
+/**
  * Writes a blazon as a sentence: opening capital, closing full stop.
  *
  * A term with several accepted spellings is written with its canonical one, so a
  * blazon read from a synonym comes back out spelled differently. The blazon it
  * describes is the same, which is what the round trip preserves.
+ *
+ * The ordinaries are written in the order the model holds them, which is the
+ * order they are laid on the field: what is named last is drawn over the rest,
+ * so writing them in any other order would say something else.
  */
 export function writeBlazon<W extends Word>(wording: BlazonWording<W>, blazon: Blazon): string {
   const field = capitalise(writeField(wording, blazon.field));
-  const borne = blazon.ordinary === undefined ? '' : ` ${writeOrdinary(wording, blazon.ordinary)}`;
-  return `${field}${borne}.`;
+  const borne = (blazon.ordinaries ?? [])
+    .map((ordinary) => writeOrdinary(wording, ordinary))
+    .join(`${SEPARATOR} `);
+  return `${borne === '' ? field : `${field} ${borne}`}.`;
 }
 
 /**

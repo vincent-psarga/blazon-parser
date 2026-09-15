@@ -6,6 +6,7 @@ export enum TokenKind {
   Word,
   Number,
   Period,
+  Separator,
   Space,
 }
 
@@ -21,6 +22,10 @@ export const lexer = buildLexer<TokenKind>([
   // read as numbers yet.
   [true, /^[0-9]+/g, TokenKind.Number],
   [true, /^\./g, TokenKind.Period],
+  // What a blazon sets between the things a field bears: "à trois bandes de
+  // sable ; à la bordure de gueules". Which mark is used says nothing, so the
+  // two are one kind, and a blazon that sets none is read just the same.
+  [true, /^[,;]/g, TokenKind.Separator],
   [false, /^\s+/g, TokenKind.Space],
 ]);
 

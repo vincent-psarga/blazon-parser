@@ -142,14 +142,22 @@ export function term<T extends string, W extends Word>(
  * different thing: those words committed the reading, so the complaint belongs to
  * the blazon rather than to the grammar's own backtracking. Failing further along
  * than the token it would have started at is what tells the two apart.
+ *
+ * A phrase may be introduced by something that promises nothing — the mark a
+ * blazon sets between the charges it lays on the field. That is stepped over
+ * before the phrase is read, and it is the phrase that decides whether anything
+ * began: a mark with a phrase after it joins the two, and the same mark with
+ * nothing after it is the blazon's own punctuation and is left where it stands.
  */
 export function optionalUnlessBegun<TKind, TResult>(
-  parser: Parser<TKind, TResult>
+  parser: Parser<TKind, TResult>,
+  introduction?: Parser<TKind, unknown>
 ): Parser<TKind, TResult | undefined> {
   return {
     parse(token: Token<TKind> | undefined): ParserOutput<TKind, TResult | undefined> {
-      const output = parser.parse(token);
-      if (output.successful || began(token, output.error)) {
+      const from = introduction === undefined ? token : stepOver(introduction, token);
+      const output = parser.parse(from);
+      if (output.successful || began(from, output.error)) {
         return output;
       }
       return {
@@ -159,6 +167,15 @@ export function optionalUnlessBegun<TKind, TResult>(
       };
     },
   };
+}
+
+/** Where a phrase begins, once whatever introduces it has been read past. */
+function stepOver<TKind>(
+  introduction: Parser<TKind, unknown>,
+  token: Token<TKind> | undefined
+): Token<TKind> | undefined {
+  const output = introduction.parse(token);
+  return output.successful ? output.candidates[0].nextToken : token;
 }
 
 /**

@@ -18,4 +18,5 @@ export const FrenchOrdinaryType: Translation<OrdinaryType, FrenchWord> = {
   [OrdinaryType.chevron]: new FrenchWord('chevron'),
   [OrdinaryType.cross]: new FrenchWord('croix', { isFeminine: true, plural: 'croix' }),
   [OrdinaryType.saltire]: new FrenchWord('sautoir'),
+  [OrdinaryType.bordure]: new FrenchWord('bordure', { isFeminine: true }),
 };

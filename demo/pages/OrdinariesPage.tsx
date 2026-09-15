@@ -41,6 +41,8 @@ const GLOSS: Record<OrdinaryType, string> = {
     'The pale and the fess crossing — the cross of Saint George. Its four arms are one charge, not two bands.',
   [OrdinaryType.saltire]:
     'A diagonal cross, corner to corner — the saltire of Saint Andrew. Its two limbs are one charge, not two.',
+  [OrdinaryType.bordure]:
+    'A band following the whole edge of the shield, inside it. The bordure crosses the field nowhere, which is why it is so often borne beside another band: blazoned last, it is drawn over whatever it meets.',
 };
 
 /**
@@ -63,6 +65,8 @@ const BUT_ONCE: Record<OrdinaryType, string | undefined> = {
     'Borne but once. The four arms are one charge, not two bands: repeated, a cross becomes crosslets, which are small charges strewn on the field rather than an ordinary.',
   [OrdinaryType.saltire]:
     'Borne but once. The two limbs are one charge, and repeating them makes charges of them too, never a second saltire.',
+  [OrdinaryType.bordure]:
+    'Borne but once. A bordure is not a band laid across the field but the edge of the shield, and a shield has one edge.',
 };
 
 const IN_NUMBER =
@@ -77,7 +81,7 @@ const COUNTS: readonly (readonly [string, number])[] = [
 
 const armsOf = (type: OrdinaryType, count?: number): Blazon => ({
   field: { tincture: FIELD },
-  ordinary: count === undefined ? { type, tincture: BORNE } : { type, tincture: BORNE, count },
+  ordinaries: [count === undefined ? { type, tincture: BORNE } : { type, tincture: BORNE, count }],
 });
 
 /** The same ordinary borne twice and thrice, for the five that may be. */
@@ -130,7 +134,7 @@ export function OrdinariesPage({ colourings }: OrdinariesPageProps) {
   return (
     <Reference
       title="Ordinaries"
-      extent="Nine ordinaries · six of them borne in number"
+      extent="Ten ordinaries · six of them borne in number"
       lead={
         <>
           <p className="plane__lead">
@@ -146,15 +150,24 @@ export function OrdinariesPage({ colourings }: OrdinariesPageProps) {
             gender: <span lang="fr">à la fasce</span> but <span lang="fr">au chevron</span>.
           </p>
           <p className="plane__lead">
-            A field bears one kind of ordinary, and that ordinary is a plain band of a plain
-            tincture. Nothing may yet be charged upon it, and no line but the straight one is read.
+            An ordinary is a plain band of a plain tincture. Nothing may yet be charged upon it, and
+            no line but the straight one is read.
           </p>
           <p className="plane__lead">
-            It may bear several of that kind, though, and then the bands narrow and space themselves
-            to make room for each other: <span lang="fr">De gueules à trois chevrons d’or</span> is{' '}
-            <span lang="en">Gules three chevrons or</span>. Six of the nine may be borne in number
-            and three may not, and each says below which it is, the six drawn twice and thrice
-            beside the one.
+            A field may bear several of one kind, and then the bands narrow and space themselves to
+            make room for each other: <span lang="fr">De gueules à trois chevrons d’or</span> is{' '}
+            <span lang="en">Gules three chevrons or</span>. Six of the ten may be borne in number
+            and four may not, and each says below which it is, the six drawn twice and thrice beside
+            the one.
+          </p>
+          <p className="plane__lead">
+            A field may also bear more than one kind, named one after another and read in the order
+            they were written, because that order is what says which covers which:{' '}
+            <span lang="fr">D’or à trois bandes de sable, à la bordure de gueules</span> draws the
+            bordure over the bends, and{' '}
+            <span lang="fr">D’or à la bordure de gueules, à trois bandes de sable</span> draws the
+            bends over the bordure. A blazon may set a comma or a semicolon between them, or nothing
+            at all.
           </p>
           <p className="plane__lead">
             The little word in front is blazonry’s rather than French’s: a blazon says{' '}

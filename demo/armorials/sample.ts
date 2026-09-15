@@ -25,5 +25,15 @@ export const SampleArmorial: Armorial = {
         url: "https://fr.wikipedia.org/wiki/Armoiries_de_la_France#Armoiries_sous_la_monarchie_et_l'Empire",
       },
     },
+    {
+      name: 'Bourgogne (Capétien)',
+      blazon: "Bandé d'or et d'azur en six pièces, à la bordure de gueules",
+      image:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Blason_Ducs_Bourgogne_%28ancien%29.svg/langfr-250px-Blason_Ducs_Bourgogne_%28ancien%29.svg.png?utm_source=fr.wikipedia.org&utm_campaign=parser&utm_content=thumbnail',
+      source: {
+        name: 'Wikipédia: Maison capétienne de Bourgogne',
+        url: 'https://fr.wikipedia.org/wiki/Maison_cap%C3%A9tienne_de_Bourgogne',
+      },
+    },
   ],
 };

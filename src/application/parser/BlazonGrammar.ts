@@ -2,10 +2,12 @@ import {
   ParseResult,
   Parser,
   Token,
+  alt,
   apply,
   betterError,
   kleft,
   resultOrError,
+  rule,
   seq,
   tok,
 } from 'typescript-parsec';
@@ -34,6 +36,9 @@ export interface BlazonGrammar {
   readonly and: Parser<TokenKind, unknown>;
 }
 
+/** The mark a blazon may set between the charges it lays on the field. */
+const SEPARATOR = tok(TokenKind.Separator);
+
 export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   const plainField = apply(grammar.tincture, (tincture): Field => ({ tincture }));
 
@@ -59,8 +64,8 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
 
   // An ordinary is laid on the field and carries a tincture of its own, however
   // many of it are borne: two chevrons are two bands of one tincture, not two
-  // charges each with its own. One kind of band, and a plain one: a charge upon
-  // a charge, and a band drawn with a modified line, are both still outside the
+  // charges each with its own. A plain band, at that: a charge upon a charge,
+  // and a band drawn with a modified line, are both still outside the
   // vocabulary.
   //
   // The count is left off rather than set to one when a single band is borne, so
@@ -73,15 +78,31 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
     )
   );
 
-  // The key is left off rather than set to undefined when nothing is borne, so a
-  // plain field reads back as the blazon it was before ordinaries existed.
-  const arms = apply(seq(field, optionalUnlessBegun(ordinary)), ([field, ordinary]): Blazon =>
-    ordinary === undefined ? { field } : { field, ordinary }
+  // Everything the field bears, read in the order it was written, because that
+  // order is what says which covers which: "D'or à trois bandes de sable ; à la
+  // bordure de gueules" puts the bordure over the bends.
+  //
+  // A blazon may set a mark between the phrases — French writes the semicolon as
+  // readily as the comma — or set none at all and let the article do the work,
+  // so the mark is read and discarded rather than required.
+  const borne = rule<TokenKind, readonly Ordinary[]>();
+  borne.setPattern(
+    apply(optionalUnlessBegun(seq(ordinary, borne), SEPARATOR), (laid): readonly Ordinary[] =>
+      laid === undefined ? [] : [laid[0], ...laid[1]]
+    )
+  );
+
+  // The key is left off rather than set to an empty list when nothing is borne,
+  // so a plain field reads back as the blazon it was before ordinaries existed.
+  const arms = apply(seq(field, borne), ([field, ordinaries]): Blazon =>
+    ordinaries.length === 0 ? { field } : { field, ordinaries }
   );
 
   // A blazon is written as a sentence and closed with a full stop, but the stop
-  // carries no meaning, so it is accepted and discarded rather than required.
-  return kleft(arms, optional(tok(TokenKind.Period)));
+  // carries no meaning, so it is accepted and discarded rather than required. A
+  // blazon copied out of an armorial can end on the mark that set it apart from
+  // the next one, which means no more than the stop does.
+  return kleft(arms, optional(alt(tok(TokenKind.Period), SEPARATOR)));
 }
 
 /**

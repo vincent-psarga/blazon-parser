@@ -83,10 +83,12 @@ describe('what an armorial asks for and the parser has not got', () => {
     readArmorial(armorial(...blazons), parser).unknown;
 
   test('files each word under the term the parser was expecting there', () => {
-    expect(unknownIn('De fuchsia', "Écartelé d'azur et d'or", "D'azur à la bordure d'or")).toEqual({
+    expect(
+      unknownIn('De fuchsia', "Écartelé d'azur et d'or", "D'azur à la champagne d'or")
+    ).toEqual({
       tinctures: ['fuchsia'],
       divisions: ['écartelé'],
-      ordinaries: ['bordure'],
+      ordinaries: ['champagne'],
     });
   });
 
