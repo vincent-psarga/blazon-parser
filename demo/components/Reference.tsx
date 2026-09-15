@@ -1,7 +1,11 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode } from 'react';
+import { Link, useLocation } from 'react-router';
 import { Blazon } from '../../src/domain/models/Blazon';
 import { BlazonShield } from './BlazonShield';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
+import { anchorOf, isAnchored } from '../utils/Anchors';
+import { LanguageCode } from '../utils/Languages';
+import { readingPath } from '../utils/Reading';
 
 /** The same term borne another way, shown in arms of its own. */
 export interface ReferenceVariant {
@@ -20,12 +24,11 @@ export interface ReferenceVariants {
 
 /** One term of the vocabulary, everything a reader or a caller needs of it. */
 export interface ReferenceEntry {
-  /** The enum value, used as the key and shown as the reference. */
+  /** The enum value, used as the key and as the anchor. Never shown: a reader of
+   * the documentation is learning heraldry, not the shape of an enum. */
   readonly term: string;
-  readonly french: string;
   readonly english: string;
-  /** What a caller writes in code, e.g. `Colours.gules`. */
-  readonly reference: string;
+  readonly french: string;
   /** A line of plain help where the term is genuinely opaque. */
   readonly gloss: string;
   /** The arms that show the term. */
@@ -53,26 +56,24 @@ export interface ReferenceProps {
   readonly lead: ReactNode;
   readonly ranks: readonly ReferenceRank[];
   readonly colourings?: readonly Colouring[];
-  /** Hands the reader the struck term to try, when the host can route. */
-  readonly onTry?: (blazon: string) => void;
 }
 
 /**
  * Every value of the vocabulary hangs present at once, and the one being read is
  * struck forward beside them — never beneath them. Striking a term must never
  * cost sight of the terms still unread, which is the whole of it.
+ *
+ * Which term is struck is the address's to say rather than the component's: a
+ * term is a place in the documentation, so it answers to an anchor of its own
+ * and is reached by a link like any other place. A reader can then send someone
+ * the saltire rather than the ordinaries, and the browser's own back button
+ * walks back through what they read.
  */
-export function Reference({
-  title,
-  extent,
-  lead,
-  ranks,
-  colourings = COLOURINGS,
-  onTry,
-}: ReferenceProps) {
+export function Reference({ title, extent, lead, ranks, colourings = COLOURINGS }: ReferenceProps) {
+  const { hash } = useLocation();
   const entries = ranks.flatMap((rank) => rank.entries);
-  const [struckTerm, setStruckTerm] = useState(entries[0]?.term);
-  const struck = entries.find((entry) => entry.term === struckTerm) ?? entries[0];
+  // No anchor means the head of the set, so the page is never empty.
+  const struck = entries.find((entry) => isAnchored(entry.term, hash)) ?? entries[0];
 
   return (
     <main className="plane plane--reference">
@@ -98,11 +99,10 @@ export function Reference({
               <ul className="stack__terms" role="list">
                 {rank.entries.map((entry) => (
                   <li key={entry.term}>
-                    <button
-                      type="button"
+                    <Link
                       className="ghost"
+                      to={`#${anchorOf(entry.term)}`}
                       aria-current={entry.term === struck?.term ? 'true' : undefined}
-                      onClick={() => setStruckTerm(entry.term)}
                     >
                       <span className="ghost__field">
                         <BlazonShield
@@ -116,7 +116,7 @@ export function Reference({
                       <span className="ghost__name" lang="en">
                         {entry.english}
                       </span>
-                    </button>
+                    </Link>
                   </li>
                 ))}
               </ul>
@@ -126,7 +126,9 @@ export function Reference({
       </div>
 
       {struck !== undefined && (
-        <div className="showing" aria-live="polite">
+        /* The term's own anchor names this, the reading of it: what an address
+           ending in #saltire promises is the saltire read at full size. */
+        <div className="showing" id={anchorOf(struck.term)} aria-live="polite">
           {/* Keyed on the term, so the strike replays each time one is struck. */}
           <div className="showing__fields" key={struck.term}>
             {colourings.map(({ label, colours }) => (
@@ -144,34 +146,34 @@ export function Reference({
           </div>
 
           <div className="showing__read">
+            {/* The two names of the one term, side by side rather than one
+                under the other: what the reader is after is the pair, and the
+                page is written in English, so the English name leads. */}
             <dl className="showing__names">
-              <dt>Français</dt>
-              <dd lang="fr">{struck.french}</dd>
-              <dt>English</dt>
-              <dd lang="en">{struck.english}</dd>
+              <div className="showing__name">
+                <dt>English</dt>
+                <dd lang="en">{struck.english}</dd>
+              </div>
+              <div className="showing__name">
+                <dt>Français</dt>
+                <dd lang="fr">{struck.french}</dd>
+              </div>
             </dl>
 
-            <p className="showing__ref">{struck.reference}</p>
             <p className="showing__gloss">{struck.gloss}</p>
             {struck.note !== undefined && <p className="showing__note">{struck.note}</p>}
 
+            {/* The blazon is the invitation: each of the two is a link to itself
+                read in the tongue it is written in, so there is no button to
+                wonder which of them it takes. */}
             <p className="showing__usage">
-              <span lang="fr">{struck.inFrench}</span>
-              <b lang="en">{struck.inEnglish}</b>
+              <BlazonLink blazon={struck.inFrench} language="fr" />
+              <BlazonLink blazon={struck.inEnglish} language="en" />
             </p>
 
-            {onTry !== undefined && (
-              <button type="button" className="showing__try" onClick={() => onTry(struck.inFrench)}>
-                Read this one
-              </button>
-            )}
-
-            {/* Last of all, after the button: the button reads the blazon
-                written directly above it, and anything standing between the two
-                would leave the reader guessing which of them it takes. The
-                further arms are smaller than the struck ones for the same
-                reason — they say what one drawing cannot, without ever standing
-                in its place. */}
+            {/* The further arms are smaller than the struck ones, and say what
+                one drawing cannot without ever standing in its place. Each is
+                offered to be read in both tongues, exactly as the one above. */}
             {struck.variants !== undefined && (
               <section
                 className="showing__variants"
@@ -191,8 +193,8 @@ export function Reference({
                       />
                       <figcaption>
                         <b>{variant.label}</b>
-                        <span lang="fr">{variant.inFrench}</span>
-                        <span lang="en">{variant.inEnglish}</span>
+                        <BlazonLink blazon={variant.inFrench} language="fr" />
+                        <BlazonLink blazon={variant.inEnglish} language="en" />
                       </figcaption>
                     </figure>
                   ))}
@@ -203,5 +205,20 @@ export function Reference({
         </div>
       )}
     </main>
+  );
+}
+
+/** A blazon, and the way to the page that reads it. */
+function BlazonLink({
+  blazon,
+  language,
+}: {
+  readonly blazon: string;
+  readonly language: LanguageCode;
+}) {
+  return (
+    <Link className="reading" lang={language} to={readingPath(blazon, language)}>
+      {blazon}
+    </Link>
   );
 }

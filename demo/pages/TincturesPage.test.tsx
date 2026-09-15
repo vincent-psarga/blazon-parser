@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
+import { mount } from '../testing/Mounting';
 import { afterEach, describe, expect, test } from 'vitest';
 import { Colours, Furs, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
 import { isPattern } from '../../src/domain/services/IBlazonDrawer';
@@ -15,7 +16,7 @@ afterEach(cleanup);
 
 // The set is labelled in the page's own language; the struck term carries both.
 const ghost = (tincture: (typeof TINCTURES)[number]) =>
-  screen.getByRole('button', { name: nameOf(EnglishTinctures, tincture) });
+  screen.getByRole('link', { name: nameOf(EnglishTinctures, tincture) });
 const showing = () => document.querySelector('.showing') as HTMLElement;
 const painting = (colouring: string) =>
   decodeURIComponent(
@@ -24,10 +25,10 @@ const painting = (colouring: string) =>
       .getAttribute('src') ?? ''
   );
 const names = () => {
-  const [french, english] = Array.from(
+  const [english, french] = Array.from(
     showing().querySelectorAll('.showing__names dd')
   ) as HTMLElement[];
-  return { french, english };
+  return { english, french };
 };
 
 const fillOf = (paint: (typeof WikipediaColours)[keyof typeof WikipediaColours]) =>
@@ -35,44 +36,43 @@ const fillOf = (paint: (typeof WikipediaColours)[keyof typeof WikipediaColours])
 
 describe('TincturesPage', () => {
   test('keeps the three ranks apart', () => {
-    render(<TincturesPage />);
+    mount(<TincturesPage />);
     for (const heading of ['Metals', 'Colours', 'Furs']) {
       expect(screen.getByRole('region', { name: heading })).toBeInTheDocument();
     }
   });
 
   test('gives the reader the rule the ranks exist for', () => {
-    render(<TincturesPage />);
+    mount(<TincturesPage />);
     expect(screen.getByText(/Metal may not be laid on metal/)).toBeInTheDocument();
     expect(screen.getByText(/Nor colour on colour/)).toBeInTheDocument();
     expect(screen.getByText(/answer to neither rank/)).toBeInTheDocument();
   });
 
   test('states how many terms there are before showing any', () => {
-    render(<TincturesPage />);
+    mount(<TincturesPage />);
     expect(screen.getByText(/Eight tinctures · three ranks/)).toBeInTheDocument();
   });
 
   test.each(TINCTURES)('keeps %s present in the stack', (tincture) => {
-    render(<TincturesPage />);
+    mount(<TincturesPage />);
     expect(ghost(tincture)).toBeInTheDocument();
   });
 
   test.each(TINCTURES)('reads %s in both languages when struck', async (tincture) => {
-    render(<TincturesPage />);
+    mount(<TincturesPage />);
     await userEvent.setup().click(ghost(tincture));
     // Four of the eight are spelled alike in both tongues, so the two readings are
     // told apart by where they sit and what they are marked as, never by their text.
-    const { french, english } = names();
-    expect(french).toHaveTextContent(nameOf(FrenchTinctures, tincture));
-    expect(french).toHaveAttribute('lang', 'fr');
+    const { english, french } = names();
     expect(english).toHaveTextContent(nameOf(EnglishTinctures, tincture));
     expect(english).toHaveAttribute('lang', 'en');
-    expect(within(showing()).getByText(tincture)).toBeInTheDocument();
+    expect(french).toHaveTextContent(nameOf(FrenchTinctures, tincture));
+    expect(french).toHaveAttribute('lang', 'fr');
   });
 
   test.each(TINCTURES)('paints %s in colour and in hatching when struck', async (tincture) => {
-    render(<TincturesPage />);
+    mount(<TincturesPage />);
     await userEvent.setup().click(ghost(tincture));
     expect(painting('colour')).toContain(`fill="${fillOf(WikipediaColours[tincture])}"`);
     expect(painting('hatching')).toContain(`fill="${fillOf(HatchingColours[tincture])}"`);
@@ -85,14 +85,14 @@ describe('TincturesPage', () => {
       [Furs.ermine, /h is mute/],
       [Colours.sable, /spelled alike in both/],
     ])('glosses %s', async (tincture, gloss) => {
-      render(<TincturesPage />);
+      mount(<TincturesPage />);
       await userEvent.setup().click(ghost(tincture));
       expect(within(showing()).getByText(gloss)).toBeInTheDocument();
     });
   });
 
   test('labels the set in the language the page is written in', () => {
-    render(<TincturesPage />);
+    mount(<TincturesPage />);
     expect(ghost(Colours.gules)).toContainHTML('lang="en"');
     expect(
       screen.queryByRole('button', { name: nameOf(FrenchTinctures, Colours.gules) })
@@ -100,7 +100,7 @@ describe('TincturesPage', () => {
   });
 
   test('still marks the French reading as French where it is given', async () => {
-    render(<TincturesPage />);
+    mount(<TincturesPage />);
     await userEvent.setup().click(ghost(Colours.gules));
     expect(names().french).toHaveAttribute('lang', 'fr');
   });

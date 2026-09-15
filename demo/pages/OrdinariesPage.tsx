@@ -103,9 +103,8 @@ function entry(type: OrdinaryType): ReferenceEntry {
   const blazon = armsOf(type);
   return {
     term: type,
-    french: nameOf(FrenchOrdinaryType, type),
     english: nameOf(EnglishOrdinaryType, type),
-    reference: type,
+    french: nameOf(FrenchOrdinaryType, type),
     gloss: GLOSS[type],
     note: BUT_ONCE[type] ?? IN_NUMBER,
     blazon,
@@ -125,10 +124,9 @@ const RANKS: readonly ReferenceRank[] = [
 
 export interface OrdinariesPageProps {
   readonly colourings?: readonly Colouring[];
-  readonly onTry?: (blazon: string) => void;
 }
 
-export function OrdinariesPage({ colourings, onTry }: OrdinariesPageProps) {
+export function OrdinariesPage({ colourings }: OrdinariesPageProps) {
   return (
     <Reference
       title="Ordinaries"
@@ -170,7 +168,6 @@ export function OrdinariesPage({ colourings, onTry }: OrdinariesPageProps) {
       }
       ranks={RANKS}
       colourings={colourings}
-      onTry={onTry}
     />
   );
 }

@@ -107,9 +107,13 @@ demo/
     Reference.tsx             the anatomy both vocabulary pages are built on
     BlazonShield.tsx          one blazon, drawn
   utils/
+    Anchors.ts                the anchor a term of the vocabulary answers to
     Colourings.ts             the paintings a page offers: colour, hatching
     Languages.ts              the languages offered, and what each translates into
+    Reading.ts                the address a blazon is read at, written and read back
     Tally.ts                  a count with its noun, singular or plural
+  testing/
+    Mounting.tsx              a page under test, with a router to link into
   armorials/                  the armorials the demo carries
   fonts/                      Archivo Narrow, self-hosted
 ```
@@ -268,14 +272,20 @@ articles, its elisions, its conjunction.
 ## The demo
 
 Everything React lives in `demo/`, and nothing else does. The library reads,
-writes and draws blazons; it holds no component, imports no React, and ships a
-single entry point — `require('blazon-parser')` pulls in no view layer at all.
+writes and draws blazons; it holds no component, imports no React and no router,
+and ships a single entry point — `require('blazon-parser')` pulls in no view
+layer at all. React and React Router are the demo's, and are development
+dependencies for exactly that reason: they are built into the demo and never
+into `lib`.
 
 `BlazonPage` takes a blazon, shows it translated, and draws the arms — in colour
 and in hatching, since both are ways of saying the same tinctures.
 `TincturesPage`, `DivisionsPage` and `OrdinariesPage` document the vocabulary on
 one shared anatomy: the whole closed set hangs present at once, and the term being read is
-struck forward at full measure in both languages and both paintings.
+struck forward at full measure in both languages and both paintings — the English
+name and the French standing level, English first. What the documentation never
+shows is the enum value behind a term: a reader of it is learning heraldry, and
+`Colours.gules` is the caller's business, which is what this README is for.
 `ArmorialsPage` and `ArmorialPage` read a real armorial and own up to how much of
 it parses — and to what stopped the rest. `readArmorial` keeps each refusal
 beside the entry it refused and gathers the words the parser does not hold into
@@ -291,10 +301,21 @@ is what the armorial is blocked on first rather than everything it would go on t
 ask for: adding a word uncovers the next.
 
 The pages are components and nothing more — routing belongs to whatever mounts
-them, so `App.tsx` carries its own, small enough not to need a router and honest
-about the fact that a real application would bring one. It serves `/`, `/doc`,
-`/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`, `/armorials` and
-`/armorial/<slug>`.
+them, so `App.tsx` mounts a router over them and they link rather than call back.
+It serves `/`, `/doc`, `/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`,
+`/armorials` and `/armorial/<slug>`, under whatever base the demo is served from:
+GitHub Pages serves it from a subdirectory, which is the router's `basename` and
+nothing else's business.
+
+Two kinds of address carry more than the page. A term of the vocabulary answers
+to an anchor of its own — `/doc/ordinaries#saltire`, `/doc/tinctures#or` — so
+striking one leaves it in the address, the browser walks back through the terms
+that were read, and a reader can send someone the saltire rather than the
+ordinaries. And a blazon is offered by being a way to itself: every blazon shown
+on a reference links to `/?b=<blazon>&lang=fr` or `&lang=en`, which is the
+translator opened on that blazon, in the tongue it is written in. Both spellings
+are written once, in `utils/Anchors.ts` and `utils/Reading.ts`, because whoever
+writes such an address and whoever reads it back have to agree on it.
 
 `pages/` holds what answers to an address, `components/` what more than one page
 is built from, and `utils/` the small things neither of those should carry: the

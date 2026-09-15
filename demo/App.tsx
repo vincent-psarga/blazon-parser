@@ -1,127 +1,108 @@
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  BrowserRouter,
+  Link,
+  Route,
+  Routes,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from 'react-router';
 import { ArmorialPage } from './pages/ArmorialPage';
-import { ArmorialsPage, armorialPath } from './pages/ArmorialsPage';
+import { ArmorialsPage } from './pages/ArmorialsPage';
 import { BlazonPage } from './pages/BlazonPage';
 import { DivisionsPage } from './pages/DivisionsPage';
 import { DocIndexPage } from './pages/DocIndexPage';
 import { OrdinariesPage } from './pages/OrdinariesPage';
 import { TincturesPage } from './pages/TincturesPage';
 import { ARMORIALS } from './armorials';
+import { readingIn } from './utils/Reading';
+
+const DOCS = [
+  { path: '/doc/tinctures', label: 'Tinctures' },
+  { path: '/doc/divisions', label: 'Divisions' },
+  { path: '/doc/ordinaries', label: 'Ordinaries' },
+];
 
 /**
  * The demo is served from the root in development and from a subdirectory on
- * GitHub Pages, so the routes below are written without that prefix and it is
- * added back the moment an address reaches the browser.
+ * GitHub Pages, so every route below is written without that prefix and the
+ * router puts it back the moment an address reaches the browser.
+ *
+ * Routing is the application's, never the library's: the router lives here, and
+ * blazon-parser neither knows nor cares that there is one.
  */
-const base = () => import.meta.env.BASE_URL.replace(/\/$/, '');
-
-function address(to: string): string {
-  return base() + to;
-}
-
-function route(pathname: string): string {
-  const prefix = base();
-  const path = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname;
-  return path === '' ? '/' : path;
-}
-
-/**
- * Routing belongs to whatever mounts the pages, not to the library, so the demo
- * keeps its own — small enough not to need a router, and honest about the fact
- * that a real application would bring its own.
- */
-function useRoute(): [string, string, (to: string) => void] {
-  const read = () => route(window.location.pathname) + window.location.search;
-  const [href, setHref] = useState(read);
-
-  useEffect(() => {
-    const onPopState = () => setHref(read());
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  const [path, query = ''] = href.split('?');
-  return [
-    path,
-    query,
-    (to: string) => {
-      window.history.pushState(null, '', address(to));
-      setHref(to);
-      window.scrollTo(0, 0);
-    },
-  ];
-}
-
 export function App() {
-  const [path, query, navigate] = useRoute();
-
-  // A documentation page hands a blazon over by naming it in the address, so the
-  // handover is linkable and survives a reload.
-  const handedOver = new URLSearchParams(query).get('b') ?? undefined;
-
-  const docs = [
-    { path: '/doc/tinctures', label: 'Tinctures' },
-    { path: '/doc/divisions', label: 'Divisions' },
-    { path: '/doc/ordinaries', label: 'Ordinaries' },
-  ];
-
-  const readThis = (blazon: string) => navigate(`/?b=${encodeURIComponent(blazon)}`);
-
-  const pages: Record<string, ReactNode> = {
-    '/': <BlazonPage initialText={handedOver} />,
-    '/doc': <DocIndexPage onGo={navigate} />,
-    '/doc/tinctures': <TincturesPage onTry={readThis} />,
-    '/doc/divisions': <DivisionsPage onTry={readThis} />,
-    '/doc/ordinaries': <OrdinariesPage onTry={readThis} />,
-    '/armorials': <ArmorialsPage armorials={ARMORIALS} onGo={navigate} />,
-  };
-
-  // One armorial answers to its own slug, which is the only part of the demo's
-  // addresses that is data rather than a route.
-  const armorial = ARMORIALS.find((candidate) => armorialPath(candidate) === path);
-
   return (
-    <>
-      <nav className="rail">
-        <a
-          href={address('/')}
-          aria-current={path === '/' ? 'page' : undefined}
-          onClick={go(navigate, '/')}
-        >
-          Demo
-        </a>
-        <RailMenu label="Doc" docs={docs} path={path} navigate={navigate} />
-        <a
-          href={address('/armorials')}
-          aria-current={path.startsWith('/armorial') ? 'page' : undefined}
-          onClick={go(navigate, '/armorials')}
-        >
-          Armorials
-        </a>
-      </nav>
-      {pages[path] ??
-        (armorial !== undefined ? <ArmorialPage armorial={armorial} /> : <NotFound path={path} />)}
-    </>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <ToTheTop />
+      <Rail />
+      <Routes>
+        <Route path="/" element={<ReadBlazon />} />
+        <Route path="/doc" element={<DocIndexPage />} />
+        <Route path="/doc/tinctures" element={<TincturesPage />} />
+        <Route path="/doc/divisions" element={<DivisionsPage />} />
+        <Route path="/doc/ordinaries" element={<OrdinariesPage />} />
+        <Route path="/armorials" element={<ArmorialsPage armorials={ARMORIALS} />} />
+        <Route path="/armorial/:slug" element={<ReadArmorial />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-function go(navigate: (to: string) => void, to: string) {
-  return (event: { preventDefault: () => void }) => {
-    event.preventDefault();
-    navigate(to);
-  };
+/**
+ * A new page is read from its beginning. An anchor within one is not a new page,
+ * which is why the term struck on a reference leaves the scroll where it was.
+ */
+function ToTheTop() {
+  const { pathname } = useLocation();
+  useEffect(() => window.scrollTo(0, 0), [pathname]);
+  return null;
+}
+
+/**
+ * A documentation page hands a blazon over by naming it in the address, so the
+ * handover is linkable and survives a reload. The page starts from what it is
+ * handed, so it is begun afresh whenever the address hands it something else.
+ */
+function ReadBlazon() {
+  const [params] = useSearchParams();
+  const { blazon, language } = readingIn(params);
+  return <BlazonPage key={params.toString()} initialText={blazon} initialLanguage={language} />;
+}
+
+/** One armorial answers to its own slug, the one part of an address that is data. */
+function ReadArmorial() {
+  const { slug } = useParams();
+  const armorial = ARMORIALS.find((candidate) => candidate.slug === slug);
+  return armorial !== undefined ? <ArmorialPage armorial={armorial} /> : <NotFound />;
+}
+
+function Rail() {
+  const { pathname } = useLocation();
+
+  return (
+    <nav className="rail">
+      <Link to="/" aria-current={pathname === '/' ? 'page' : undefined}>
+        Demo
+      </Link>
+      <RailMenu label="Doc" docs={DOCS} pathname={pathname} />
+      <Link to="/armorials" aria-current={pathname.startsWith('/armorial') ? 'page' : undefined}>
+        Armorials
+      </Link>
+    </nav>
+  );
 }
 
 function RailMenu({
   label,
   docs,
-  path,
-  navigate,
+  pathname,
 }: {
   readonly label: string;
   readonly docs: readonly { readonly path: string; readonly label: string }[];
-  readonly path: string;
-  readonly navigate: (to: string) => void;
+  readonly pathname: string;
 }) {
   const [open, setOpen] = useState(false);
   const menu = useRef<HTMLDivElement>(null);
@@ -157,39 +138,22 @@ function RailMenu({
         type="button"
         aria-expanded={open}
         aria-haspopup="true"
-        aria-current={path.startsWith('/doc') ? 'page' : undefined}
+        aria-current={pathname.startsWith('/doc') ? 'page' : undefined}
         onClick={() => setOpen((wasOpen) => !wasOpen)}
       >
         {label}
       </button>
       {open && (
         <ul>
-          <li>
-            <a
-              href={address('/doc')}
-              aria-current={path === '/doc' ? 'page' : undefined}
-              onClick={(event) => {
-                event.preventDefault();
-                navigate('/doc');
-                setOpen(false);
-              }}
-            >
-              Everything
-            </a>
-          </li>
-          {docs.map((doc) => (
+          {[{ path: '/doc', label: 'Everything' }, ...docs].map((doc) => (
             <li key={doc.path}>
-              <a
-                href={address(doc.path)}
-                aria-current={doc.path === path ? 'page' : undefined}
-                onClick={(event) => {
-                  event.preventDefault();
-                  navigate(doc.path);
-                  setOpen(false);
-                }}
+              <Link
+                to={doc.path}
+                aria-current={doc.path === pathname ? 'page' : undefined}
+                onClick={() => setOpen(false)}
               >
                 {doc.label}
-              </a>
+              </Link>
             </li>
           ))}
         </ul>
@@ -198,11 +162,13 @@ function RailMenu({
   );
 }
 
-function NotFound({ path }: { readonly path: string }) {
+function NotFound() {
+  const { pathname } = useLocation();
+
   return (
     <main className="plane">
       <h1>Nothing here</h1>
-      <p className="plane__extent">No page answers to {path}</p>
+      <p className="plane__extent">No page answers to {pathname}</p>
       <p className="plane__lead">Try the vocabulary, or write a blazon.</p>
     </main>
   );

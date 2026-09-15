@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { DivisionType } from '../../src/domain/models/Field';
 import { OrdinaryType } from '../../src/domain/models/Ordinary';
 import { Colours, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
@@ -7,11 +8,6 @@ import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions'
 import { EnglishOrdinaryType } from '../../src/domain/translations/en/Ordinaries';
 import { BlazonShield } from '../components/BlazonShield';
 import { COLOURINGS, OUTLINE } from '../utils/Colourings';
-
-export interface DocIndexPageProps {
-  /** How the host routes to a documentation page. */
-  readonly onGo?: (path: string) => void;
-}
 
 const DIVISIONS = Object.values(DivisionType);
 const ORDINARIES = Object.values(OrdinaryType);
@@ -51,7 +47,7 @@ const PAGES = [
   },
 ];
 
-export function DocIndexPage({ onGo }: DocIndexPageProps) {
+export function DocIndexPage() {
   return (
     <main className="plane">
       <h1>The vocabulary</h1>
@@ -67,16 +63,7 @@ export function DocIndexPage({ onGo }: DocIndexPageProps) {
 
       <nav className="index" aria-label="Documentation">
         {PAGES.map(({ path, name, note, arms }) => (
-          <a
-            key={path}
-            href={path}
-            onClick={(event) => {
-              if (onGo !== undefined) {
-                event.preventDefault();
-                onGo(path);
-              }
-            }}
-          >
+          <Link key={path} to={path}>
             <span className="index__name">{name}</span>
             <p className="index__note">{note}</p>
             <span className="index__set">
@@ -92,7 +79,7 @@ export function DocIndexPage({ onGo }: DocIndexPageProps) {
                 </span>
               ))}
             </span>
-          </a>
+          </Link>
         ))}
       </nav>
     </main>

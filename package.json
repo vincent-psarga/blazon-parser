@@ -35,6 +35,7 @@
     "pretty-quick": "^4.2.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "react-router": "^7.18.3",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",
     "vitest": "^5.0.0"

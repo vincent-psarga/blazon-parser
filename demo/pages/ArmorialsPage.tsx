@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { Armorial } from '../../src/domain/models/Armorial';
 import { LANGUAGES, codeOf } from '../utils/Languages';
 import { tally } from '../utils/Tally';
@@ -13,11 +14,9 @@ export function armorialPath(armorial: Armorial): string {
 export interface ArmorialsPageProps {
   /** The armorials the host carries. It owns them; the page only shows them. */
   readonly armorials: readonly Armorial[];
-  /** How the host routes to one armorial. */
-  readonly onGo?: (path: string) => void;
 }
 
-export function ArmorialsPage({ armorials, onGo }: ArmorialsPageProps) {
+export function ArmorialsPage({ armorials }: ArmorialsPageProps) {
   const entries = armorials.reduce((count, armorial) => count + armorial.entries.length, 0);
 
   return (
@@ -34,22 +33,13 @@ export function ArmorialsPage({ armorials, onGo }: ArmorialsPageProps) {
 
       <nav className="index" aria-label="Armorials">
         {armorials.map((armorial) => (
-          <a
-            key={armorial.slug}
-            href={armorialPath(armorial)}
-            onClick={(event) => {
-              if (onGo !== undefined) {
-                event.preventDefault();
-                onGo(armorialPath(armorial));
-              }
-            }}
-          >
+          <Link key={armorial.slug} to={armorialPath(armorial)}>
             <span className="index__name">{armorial.name}</span>
             <p className="index__note">
               {tally(armorial.entries.length, 'entry', 'entries')} ·{' '}
               {LANGUAGES[codeOf(armorial.language)].label} · {armorial.licence}
             </p>
-          </a>
+          </Link>
         ))}
       </nav>
     </main>

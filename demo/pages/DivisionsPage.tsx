@@ -30,9 +30,8 @@ function entry(type: DivisionType): ReferenceEntry {
   const blazon = { field: { type, firstTincture: FIRST, secondTincture: SECOND } };
   return {
     term: type,
-    french: nameOf(FrenchDivisionType, type),
     english: nameOf(EnglishDivisionType, type),
-    reference: type,
+    french: nameOf(FrenchDivisionType, type),
     gloss: GLOSS[type],
     blazon,
     inFrench: inFrench.write(blazon),
@@ -50,10 +49,9 @@ const RANKS: readonly ReferenceRank[] = [
 
 export interface DivisionsPageProps {
   readonly colourings?: readonly Colouring[];
-  readonly onTry?: (blazon: string) => void;
 }
 
-export function DivisionsPage({ colourings, onTry }: DivisionsPageProps) {
+export function DivisionsPage({ colourings }: DivisionsPageProps) {
   return (
     <Reference
       title="Divisions"
@@ -69,7 +67,6 @@ export function DivisionsPage({ colourings, onTry }: DivisionsPageProps) {
       }
       ranks={RANKS}
       colourings={colourings}
-      onTry={onTry}
     />
   );
 }

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { App } from './App';
@@ -13,6 +13,8 @@ const doc = () => within(screen.getAllByRole('navigation')[0]).getByRole('button
 const inMenu = (name: string) =>
   within(screen.getAllByRole('navigation')[0]).queryByRole('link', { name });
 const heading = () => screen.getByRole('heading', { level: 1 }).textContent;
+// A term of the vocabulary is a place in the page, and is reached as places are.
+const term = (name: string) => screen.getByRole('link', { name });
 
 const openDoc = () => userEvent.setup().click(doc());
 
@@ -94,34 +96,94 @@ describe('the index', () => {
   });
 });
 
-describe('handing a term to the translator', () => {
-  test('carries the struck blazon over, and leaves it in the address', async () => {
+describe('the anchor a term of the vocabulary answers to', () => {
+  test('leaves the struck term in the address', async () => {
+    window.history.pushState(null, '', '/doc/ordinaries');
+    render(<App />);
+    await userEvent.setup().click(term('saltire'));
+    expect(window.location.pathname).toBe('/doc/ordinaries');
+    expect(window.location.hash).toBe('#saltire');
+  });
+
+  test('spells a term of two words the way an address spells things', async () => {
+    window.history.pushState(null, '', '/doc/ordinaries');
+    render(<App />);
+    await userEvent.setup().click(term('bend sinister'));
+    expect(window.location.hash).toBe('#bend-sinister');
+  });
+
+  test('reads the term named in the address on arrival', () => {
+    window.history.pushState(null, '', '/doc/ordinaries#saltire');
+    render(<App />);
+    expect(term('saltire')).toHaveAttribute('aria-current', 'true');
+  });
+
+  test('walks back through the terms that were read', async () => {
     window.history.pushState(null, '', '/doc/tinctures');
     render(<App />);
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'vert' }));
-    await user.click(screen.getByRole('button', { name: 'Read this one' }));
+    await user.click(term('gules'));
+    await user.click(term('vert'));
+    window.history.back();
+    await waitFor(() => expect(term('gules')).toHaveAttribute('aria-current', 'true'));
+  });
+});
+
+describe('handing a term to the translator', () => {
+  test('carries the struck blazon over in French, and leaves it in the address', async () => {
+    window.history.pushState(null, '', '/doc/tinctures');
+    render(<App />);
+    const user = userEvent.setup();
+    await user.click(term('vert'));
+    await user.click(screen.getByRole('link', { name: 'De sinople.' }));
 
     expect(heading()).toBe('Blazon');
     expect(screen.getByLabelText('Blazon')).toHaveValue('De sinople.');
     expect(window.location.search).toContain('De%20sinople.');
   });
 
+  test('carries it over in English when the English blazon is the one followed', async () => {
+    window.history.pushState(null, '', '/doc/tinctures');
+    render(<App />);
+    const user = userEvent.setup();
+    await user.click(term('vert'));
+    await user.click(screen.getByRole('link', { name: 'Vert.' }));
+
+    expect(screen.getByLabelText('Blazon')).toHaveValue('Vert.');
+    expect(screen.getByLabelText('Language')).toHaveValue('en');
+  });
+
   test('carries an ordinary over as a blazon the reader can then read back', async () => {
     window.history.pushState(null, '', '/doc/ordinaries');
     render(<App />);
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'saltire' }));
-    await user.click(screen.getByRole('button', { name: 'Read this one' }));
+    await user.click(term('saltire'));
+    await user.click(screen.getByRole('link', { name: "D'argent au sautoir de gueules." }));
 
     expect(heading()).toBe('Blazon');
     expect(screen.getByLabelText('Blazon')).toHaveValue("D'argent au sautoir de gueules.");
+  });
+
+  test('carries one of the counted arms over rather than the single one', async () => {
+    window.history.pushState(null, '', '/doc/ordinaries#chevron');
+    render(<App />);
+    await userEvent
+      .setup()
+      .click(screen.getByRole('link', { name: "D'argent à deux chevrons de gueules." }));
+    expect(screen.getByLabelText('Blazon')).toHaveValue("D'argent à deux chevrons de gueules.");
   });
 
   test('reads a blazon named in the address on arrival', () => {
     window.history.pushState(null, '', `/?b=${encodeURIComponent('De gueules')}`);
     render(<App />);
     expect(screen.getByLabelText('Blazon')).toHaveValue('De gueules');
+  });
+
+  test('reads it in the tongue the address says it is written in', () => {
+    window.history.pushState(null, '', `/?b=${encodeURIComponent('Gules')}&lang=en`);
+    render(<App />);
+    expect(screen.getByLabelText('Blazon')).toHaveValue('Gules');
+    expect(screen.getByLabelText('Language')).toHaveValue('en');
   });
 });
 

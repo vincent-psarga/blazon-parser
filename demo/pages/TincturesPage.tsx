@@ -28,9 +28,8 @@ function entry(tincture: Tincture): ReferenceEntry {
   const blazon = { field: { tincture } };
   return {
     term: tincture,
-    french: nameOf(FrenchTinctures, tincture),
     english: nameOf(EnglishTinctures, tincture),
-    reference: tincture,
+    french: nameOf(FrenchTinctures, tincture),
     gloss: GLOSS[tincture],
     blazon,
     inFrench: inFrench.write(blazon),
@@ -63,11 +62,9 @@ const RANKS: readonly ReferenceRank[] = [
 export interface TincturesPageProps {
   /** The paintings to show each tincture in. */
   readonly colourings?: readonly Colouring[];
-  /** Hands the reader the struck term to read in the translator. */
-  readonly onTry?: (blazon: string) => void;
 }
 
-export function TincturesPage({ colourings, onTry }: TincturesPageProps) {
+export function TincturesPage({ colourings }: TincturesPageProps) {
   return (
     <Reference
       title="Tinctures"
@@ -84,7 +81,6 @@ export function TincturesPage({ colourings, onTry }: TincturesPageProps) {
       }
       ranks={RANKS}
       colourings={colourings}
-      onTry={onTry}
     />
   );
 }
