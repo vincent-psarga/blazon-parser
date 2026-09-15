@@ -22,7 +22,6 @@ export class FrenchWord extends Word {
     value: string,
     options?: Partial<{
       plural: string;
-      alwaysPlural: boolean;
       isFeminine: boolean;
       needsElision: boolean;
     }>

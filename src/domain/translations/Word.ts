@@ -12,17 +12,12 @@ export class Word {
   /** The word as more than one: "fasces" for "fasce". */
   public readonly plural: string;
 
-  /** Whether the word is only ever written as a plural, as "jumelles" is. */
-  public readonly alwaysPlural: boolean;
-
   constructor(
     public readonly value: string,
     options?: Partial<{
       plural: string;
-      alwaysPlural: boolean;
     }>
   ) {
     this.plural = options?.plural ?? `${value}s`;
-    this.alwaysPlural = options?.alwaysPlural ?? false;
   }
 }
