@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
 import { MissingOrdinary } from '../../domain/errors/parsing/MissingOrdinary';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
+import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
@@ -245,5 +246,41 @@ describe('every refusal', () => {
 
   test('is an Error, so nothing that catches Errors is surprised by it', () => {
     expect(refused(() => french.parse('de fuchsia'))).toBeInstanceOf(Error);
+  });
+});
+
+describe('more of an ordinary than a field can bear', () => {
+  test.each([
+    ['a chief, which is the top of the shield', "D'or à deux chefs de gueules"],
+    ['a cross, which is one charge though it is drawn twice over', "D'or à deux croix de gueules"],
+    ['a saltire, the same', "D'or à trois sautoirs de gueules"],
+  ])('%s', (_why, blazon) => {
+    expect(() => french.parse(blazon)).toThrow(RepeatedOrdinary);
+  });
+
+  test.each([
+    ['a chief', 'Or two chiefs gules'],
+    ['a cross', 'Or two crosses gules'],
+    ['a saltire', 'Or three saltires gules'],
+  ])('%s, in English', (_why, blazon) => {
+    expect(() => english.parse(blazon)).toThrow(RepeatedOrdinary);
+  });
+
+  test('carries the word and the number, so no one has to read the message for them', () => {
+    const refusal = refused(() => french.parse("D'or à deux chefs de gueules")) as RepeatedOrdinary;
+    expect(refusal.ordinary).toBe('chefs');
+    expect(refusal.count).toBe(2);
+    expect(refusal.message).toBe('Borne but once: chefs, not 2 of them');
+  });
+
+  test('is no kind of unknown ordinary: the word names a band the parser holds', () => {
+    const refusal = refused(() => french.parse("D'or à deux chefs de gueules"));
+    expect(refusal).toBeInstanceOf(BlazonParseError);
+    expect(refusal).not.toBeInstanceOf(UnknownOrdinary);
+  });
+
+  test('points at the number that asked for them, in either language', () => {
+    expect(refused(() => french.parse("D'or à deux chefs de gueules")).position?.column).toBe(8);
+    expect(refused(() => english.parse('Or two chiefs gules')).position?.column).toBe(4);
   });
 });

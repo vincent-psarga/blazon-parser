@@ -9,7 +9,13 @@ import {
   tok,
 } from 'typescript-parsec';
 import { BlazonParseError, TextPosition } from '../../domain/errors/parsing/BlazonParseError';
-import { TermWord, Translation, bySpelling } from '../../domain/translations/Translation';
+import {
+  Spelled,
+  TermWord,
+  Translation,
+  asOne,
+  bySpelling,
+} from '../../domain/translations/Translation';
 import { Word } from '../../domain/translations/Word';
 import { TokenKind } from '../lexer/Lexer';
 import { Vocabulary, complaining, owed, positionOf } from './Failures';
@@ -72,12 +78,17 @@ export function keyword(expected: string): Parser<TokenKind, Token<TokenKind>> {
  * A term may run over several words — "per bend sinister" — so every prefix that
  * names a term is offered as a candidate rather than the longest one alone: it
  * is the surrounding grammar, not the vocabulary, that knows which reading fits.
+ *
+ * Which spelling is matched is the caller's to say: a blazon bearing several of
+ * an ordinary names them in the plural, and only the rule reading the number
+ * knows that it does.
  */
 export function spelledTerm<T extends string, W extends Word>(
   translation: Translation<T, W>,
-  vocabulary: Vocabulary
+  vocabulary: Vocabulary,
+  spelled: Spelled<W> = asOne
 ): Parser<TokenKind, TermWord<T, W>> {
-  const terms = bySpelling(translation);
+  const terms = bySpelling(translation, spelled);
   const longest = Math.max(...Array.from(terms.keys(), (spelling) => spelling.split(' ').length));
 
   return {

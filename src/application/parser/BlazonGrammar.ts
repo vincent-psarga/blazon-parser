@@ -11,11 +11,12 @@ import {
 } from 'typescript-parsec';
 import { Blazon } from '../../domain/models/Blazon';
 import { Division, DivisionType, Field } from '../../domain/models/Field';
-import { Ordinary, OrdinaryType } from '../../domain/models/Ordinary';
+import { Ordinary } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
 import { optional, optionalUnlessBegun } from './Combinators';
 import { within } from './Failures';
+import { BorneOrdinary } from './Ordinaries';
 
 /**
  * What one language contributes to reading a blazon. The shape of a blazon is
@@ -27,8 +28,8 @@ export interface BlazonGrammar {
   readonly tincture: Parser<TokenKind, Tincture>;
   /** The name of a partition. */
   readonly division: Parser<TokenKind, DivisionType>;
-  /** The name of an ordinary, with whatever says the field bears it. */
-  readonly ordinary: Parser<TokenKind, OrdinaryType>;
+  /** The name of an ordinary, with whatever says the field bears it, and how many. */
+  readonly ordinary: Parser<TokenKind, BorneOrdinary>;
   /** The conjunction joining the halves of a divided field. */
   readonly and: Parser<TokenKind, unknown>;
 }
@@ -56,14 +57,20 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
 
   const field = eitherReading(plainField, dividedField, restOfDivision);
 
-  // An ordinary is laid on the field and carries a tincture of its own. One at
-  // most, and a plain one: a charge upon a charge, and a band drawn with a
-  // modified line, are both still outside the vocabulary.
+  // An ordinary is laid on the field and carries a tincture of its own, however
+  // many of it are borne: two chevrons are two bands of one tincture, not two
+  // charges each with its own. One kind of band, and a plain one: a charge upon
+  // a charge, and a band drawn with a modified line, are both still outside the
+  // vocabulary.
+  //
+  // The count is left off rather than set to one when a single band is borne, so
+  // that a fess reads back as the fess it was before a field could bear two.
   const ordinary = within(
-    apply(seq(grammar.ordinary, grammar.tincture), ([type, tincture]): Ordinary => ({
-      type,
-      tincture,
-    }))
+    apply(seq(grammar.ordinary, grammar.tincture), ([borne, tincture]): Ordinary =>
+      borne.count === undefined
+        ? { type: borne.type, tincture }
+        : { type: borne.type, tincture, count: borne.count }
+    )
   );
 
   // The key is left off rather than set to undefined when nothing is borne, so a

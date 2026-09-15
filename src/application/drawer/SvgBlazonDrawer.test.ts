@@ -264,3 +264,80 @@ describe('WikipediaColours', () => {
     expect(new Set(used).size).toBe(used.length);
   });
 });
+
+describe('a field bearing several of one ordinary', () => {
+  const polygons = (svg: string) => svg.split('<polygon').length - 1;
+  const rects = (svg: string) => svg.split('<rect').length - 1;
+
+  test('draws as many bands as are borne, painted alike', () => {
+    const svg = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.chevron, tincture: Metals.or, count: 3 },
+    });
+    expect(polygons(svg)).toBe(3);
+    expect(fills(svg).slice(1)).toEqual(Array(3).fill(WikipediaColours[Metals.or]));
+  });
+
+  test('draws two pales as two bands, evenly spaced across the field', () => {
+    const svg = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.pale, tincture: Metals.or, count: 2 },
+    });
+    // A fifth apiece, with a fifth of the field between them and at either edge.
+    expect(svg).toContain('<rect x="40" y="0" width="40" height="240" fill="#ffd700"/>');
+    expect(svg).toContain('<rect x="120" y="0" width="40" height="240" fill="#ffd700"/>');
+  });
+
+  test('narrows the bands to make room for each other', () => {
+    const one = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.fess, tincture: Metals.or },
+    });
+    const three = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.fess, tincture: Metals.or, count: 3 },
+    });
+    const heights = (svg: string) =>
+      Array.from(svg.matchAll(/<rect [^>]*height="(\d+)"/g), (match) => Number(match[1]));
+    expect(heights(one)).toEqual([80]);
+    expect(heights(three).every((height) => height < 80)).toBe(true);
+    expect(rects(three)).toBe(3);
+  });
+
+  test('leaves a single band exactly where it was drawn before there could be two', () => {
+    const counted = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.bend, tincture: Metals.or, count: 1 },
+    });
+    const plain = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.bend, tincture: Metals.or },
+    });
+    expect(counted).toBe(plain);
+  });
+
+  test('draws but one of an ordinary borne but once, whatever count it was handed', () => {
+    const svg = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.chief, tincture: Metals.or, count: 3 },
+    });
+    expect(rects(svg)).toBe(1);
+  });
+
+  test('keeps every band inside the shield', () => {
+    const svg = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.bendSinister, tincture: Metals.or, count: 4 },
+    });
+    const arms = svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>'));
+    expect(polygons(arms)).toBe(4);
+  });
+
+  test('paints several bands with one pattern, not one apiece', () => {
+    const svg = drawer.draw({
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.fess, tincture: Furs.ermine, count: 3 },
+    });
+    expect(svg.split('<pattern').length - 1).toBe(1);
+  });
+});

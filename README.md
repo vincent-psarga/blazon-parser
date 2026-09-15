@@ -39,6 +39,7 @@ src/
       UnknownTincture.ts      a word naming no tincture
       UnknownDivision.ts      a word naming no line of division
       UnknownOrdinary.ts      a word naming no band
+      RepeatedOrdinary.ts     more of a band than a field can bear
       WrongTinctureArticle.ts a tincture its article does not agree with
       WrongOrdinaryArticle.ts an ordinary its article does not agree with
       MissingTincture.ts      no tincture at all, where one was owed
@@ -54,6 +55,7 @@ src/
       IBlazonDrawer.ts        Blazon -> SVG; ColorModel
     translations/
       Translation.ts          Translation<T>, and reading a term back from a spelling
+      Numbers.ts              how a language counts what a field bears several of
       fr/  en/                the name of every term, per language
 
   application/
@@ -61,6 +63,7 @@ src/
       Lexer.ts                token kinds, the tokenizer, and NFC normalisation
     parser/
       Combinators.ts          guard, optional, keyword, term
+      Ordinaries.ts           how many are borne, and which may be
       BlazonGrammar.ts        what a language contributes; the shared rule
       Parser.ts               running a rule over some text
       FrenchBlazonParser.ts   implements IBlazonParser
@@ -119,7 +122,8 @@ caught up. A term may be spelled several ways — `['mantelé-versé',
 'mantelé-renversé']` — with the first spelling used for writing it back out.
 
 A blazon has the same shape in every language — a field, plain or divided between
-two tinctures, bearing at most one ordinary — so one rule reads them all and one
+two tinctures, bearing one kind of ordinary, once or several times over — so one
+rule reads them all and one
 sentence writes them all. A language supplies a `BlazonGrammar` for reading and a
 `BlazonWording` for writing: its tinctures, its partitions, its ordinaries, and
 its conjunction. French wraps its tinctures in an article that has to agree with
@@ -135,10 +139,38 @@ gender can no more be read off a spelling than a mute h can, so the feminine one
 are named in `FrenchGrammar` beside them.
 
 Eight ordinaries so far — chief, pale, fess, bend, bend sinister, chevron, cross
-and saltire — each a plain band of a plain tincture, and a field bears one at
-most. The last two are single charges for all that they are drawn twice over: a
-cross is the pale and the fess crossing, a saltire the two diagonals. Nothing may
-be charged upon one, and no line but the straight one is read.
+and saltire — each a plain band of a plain tincture. The last two are single
+charges for all that they are drawn twice over: a cross is the pale and the fess
+crossing, a saltire the two diagonals. Nothing may be charged upon one, and no
+line but the straight one is read.
+
+A field may bear several of an ordinary — "De gueules à trois chevrons d'or",
+"Gules three chevrons or" — and the bands narrow and space themselves evenly to
+make room for each other. Three of the eight may not be borne in number, and `Ordinary.ts`
+says which: a chief is the top of the shield and a shield has one top, while a
+cross and a saltire are each a single charge, repeated into crosslets that are
+charges rather than ordinaries. Asking for two of those is its own refusal:
+
+```ts
+frenchParser.parse("D'or à deux chefs de gueules");
+// RepeatedOrdinary: Borne but once: chefs, not 2 of them
+//   ordinary: 'chefs', count: 2
+```
+
+The number is a word like any other, so each language spells its own — `deux`,
+`three` — in a `NumberWords`, which is a translation keyed on the number itself
+rather than on a term, heraldry having had no hand in inventing counting. Both
+stop at sixteen, the next number being hyphenated in either language where the
+lexer reads letters; past that the figure is written instead, which is a poor
+blazon but an honest one. Figures are read as readily as words — "à 3 bandes"
+parses — and come back out spelled: "à trois bandes".
+
+The little word in front is blazonry's rather than French's: a blazon says "à
+trois bandes de gueules" where ordinary French would contract the article into
+"aux". Armorials write "aux trois aiglettes d'argent" too, so both are read and
+the first is what is written back. English would give the repeated band a name of
+its own, the diminutive — pallets, bars, bendlets, chevronels — which the
+vocabulary does not hold, so it writes the plural of the ordinary itself.
 
 Drawing is a third service over the same models, and needs no language at all: a
 `ColorModel` says what each tincture is painted with, so the shades stay out of

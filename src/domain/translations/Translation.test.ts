@@ -1,9 +1,11 @@
 import { describe, expect, test } from 'vitest';
 import { DivisionType } from '../models/Field';
 import { TINCTURES } from '../models/Tinctures';
-import { Translation, bySpelling, nameOf, spellingsOf, wordOf } from './Translation';
+import { OrdinaryType } from '../models/Ordinary';
+import { Translation, asSeveral, bySpelling, nameOf, spellingsOf, wordOf } from './Translation';
 import { Word } from './Word';
 import { FrenchDivisionType } from './fr/Divisions';
+import { FrenchOrdinaryType } from './fr/Ordinaries';
 import { FrenchTinctures } from './fr/Tinctures';
 
 // A partition not yet in the vocabulary, kept here to exercise synonyms without
@@ -87,5 +89,26 @@ describe('the French vocabulary', () => {
   test('names every term exactly once', () => {
     const spellings = TINCTURES.flatMap((tincture) => spellingsOf(FrenchTinctures, tincture));
     expect(new Set(spellings).size).toBe(spellings.length);
+  });
+});
+
+describe('a vocabulary looked up in the plural', () => {
+  test('reads a term back from the spelling several of it take', () => {
+    const ordinaries = bySpelling(FrenchOrdinaryType, asSeveral);
+    expect(ordinaries.get('chevrons')?.term).toBe(OrdinaryType.chevron);
+    expect(ordinaries.get('fasces')?.term).toBe(OrdinaryType.fess);
+  });
+
+  test('holds no singular, a blazon that counts naming what it counts in the plural', () => {
+    expect(bySpelling(FrenchOrdinaryType, asSeveral).get('chevron')).toBeUndefined();
+  });
+
+  test('keeps a word whose plural is its singular', () => {
+    expect(bySpelling(FrenchOrdinaryType, asSeveral).get('croix')?.term).toBe(OrdinaryType.cross);
+  });
+
+  test('names every ordinary in the plural exactly once', () => {
+    const plurals = bySpelling(FrenchOrdinaryType, asSeveral);
+    expect(plurals.size).toBe(Object.values(OrdinaryType).length);
   });
 });

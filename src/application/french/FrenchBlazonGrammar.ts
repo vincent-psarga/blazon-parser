@@ -3,12 +3,22 @@ import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
 import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryArticle';
 import { WrongTinctureArticle } from '../../domain/errors/parsing/WrongTinctureArticle';
+import { FrenchNumbers } from '../../domain/translations/fr/Numbers';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
 import { guard, optional, spelledTerm, term } from '../parser/Combinators';
 import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
-import { AND, AU, A_LA, bearing, expectedArticle, withArticle } from './FrenchGrammar';
+import { alone, several } from '../parser/Ordinaries';
+import {
+  AND,
+  AU,
+  A_LA,
+  BEFORE_SEVERAL,
+  bearing,
+  expectedArticle,
+  withArticle,
+} from './FrenchGrammar';
 
 // A tincture may be named bare ("or") or introduced by an article ("d'or"), so
 // the article is part of the grammar rather than part of the vocabulary.
@@ -53,7 +63,14 @@ const borneAs = (article: Parser<TokenKind, unknown>, expected: string) =>
 
 // An ordinary is never named bare: the article is what says the field bears one
 // rather than is divided by one.
-const ORDINARY = alt(borneAs(A_LA, 'à la'), borneAs(AU, 'au'));
+const ONE_ORDINARY = alone(alt(borneAs(A_LA, 'à la'), borneAs(AU, 'au')));
+
+// Several of one ordinary, named in the plural after the count: "à trois
+// chevrons". No gender is agreed with here, so unlike the singular there is but
+// one shape of the phrase to read.
+const SEVERAL_ORDINARIES = kright(BEFORE_SEVERAL, several(FrenchOrdinaryType, FrenchNumbers));
+
+const ORDINARY = alt(ONE_ORDINARY, SEVERAL_ORDINARIES);
 
 export const FrenchBlazonGrammar: BlazonGrammar = {
   tincture: TINCTURE,

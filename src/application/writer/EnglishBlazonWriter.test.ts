@@ -178,3 +178,40 @@ describe('round trip', () => {
     expect(roundTrip(blazon)).toEqual(blazon);
   });
 });
+
+describe('several of one ordinary', () => {
+  test('writes the count in place of the article, and the name in the plural', () => {
+    expect(
+      writer.write({
+        field: { tincture: Metals.or },
+        ordinary: { type: OrdinaryType.chevron, tincture: Colours.gules, count: 2 },
+      })
+    ).toBe('Or two chevrons gules.');
+  });
+
+  test('pluralises the noun of a name that runs to two words', () => {
+    expect(
+      writer.write({
+        field: { tincture: Metals.or },
+        ordinary: { type: OrdinaryType.bendSinister, tincture: Colours.gules, count: 3 },
+      })
+    ).toBe('Or three bends sinister gules.');
+  });
+
+  test('writes a single band with its article, count or no count', () => {
+    expect(
+      writer.write({
+        field: { tincture: Metals.or },
+        ordinary: { type: OrdinaryType.fess, tincture: Colours.gules, count: 1 },
+      })
+    ).toBe('Or a fess gules.');
+  });
+
+  test('survives the round trip, count and all', () => {
+    const blazon: Blazon = {
+      field: { tincture: Colours.azure },
+      ordinary: { type: OrdinaryType.pale, tincture: Metals.argent, count: 2 },
+    };
+    expect(parser.parse(writer.write(blazon))).toEqual(blazon);
+  });
+});

@@ -1,7 +1,8 @@
 import { Blazon } from '../../domain/models/Blazon';
 import { Division, DivisionType, Field, isDivision } from '../../domain/models/Field';
-import { Ordinary, OrdinaryType } from '../../domain/models/Ordinary';
+import { Ordinary, OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
+import { NumberWords, counted } from '../../domain/translations/Numbers';
 import { Translation, nameOf, wordOf } from '../../domain/translations/Translation';
 import { Word } from '../../domain/translations/Word';
 
@@ -14,10 +15,17 @@ export interface BlazonWording<W extends Word = Word> {
   readonly tinctures: Translation<Tincture, W>;
   readonly divisions: Translation<DivisionType, W>;
   readonly ordinaries: Translation<OrdinaryType, W>;
+  /** How the language counts what a field bears several of. */
+  readonly numbers: NumberWords<W>;
   /** How a tincture is introduced: "d'or" in French, plain "or" in English. */
   readonly introduce: (word: W) => string;
-  /** How an ordinary is introduced: "à la fasce" in French, "a fess" in English. */
-  readonly bear: (word: W) => string;
+  /**
+   * How an ordinary is introduced: "à la fasce" in French, "a fess" in English,
+   * and, where several are borne, how many — "à trois chevrons", "three
+   * chevrons". The count arrives spelled, the language having said how it spells
+   * its numbers; what stands around it is what differs.
+   */
+  readonly bear: (word: W, count?: string) => string;
   /** The conjunction joining the halves of a divided field. */
   readonly conjunction: string;
 }
@@ -35,9 +43,18 @@ export function writeBlazon<W extends Word>(wording: BlazonWording<W>, blazon: B
   return `${field}${borne}.`;
 }
 
+/**
+ * How many are borne is asked of the model rather than read off the blazon, so
+ * that an ordinary borne but once — whatever count it was handed — is written as
+ * the one band it is, and comes back as itself when read again.
+ */
 function writeOrdinary<W extends Word>(wording: BlazonWording<W>, ordinary: Ordinary): string {
+  const count = borne(ordinary);
   return [
-    wording.bear(wordOf(wording.ordinaries, ordinary.type)),
+    wording.bear(
+      wordOf(wording.ordinaries, ordinary.type),
+      count < SEVERAL ? undefined : counted(wording.numbers, count)
+    ),
     writeTincture(wording, ordinary.tincture),
   ].join(' ');
 }

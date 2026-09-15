@@ -173,3 +173,73 @@ describe('round trip', () => {
     expect(writer.write(once)).toBe("D'azur au sautoir de gueules.");
   });
 });
+
+describe('several of one ordinary', () => {
+  test('writes the count in words after the bare preposition', () => {
+    // Blazonry keeps "à" where ordinary French would contract it into "aux".
+    expect(
+      writer.write({
+        field: { tincture: Colours.gules },
+        ordinary: { type: OrdinaryType.chevron, tincture: Metals.or, count: 3 },
+      })
+    ).toBe("De gueules à trois chevrons d'or.");
+  });
+
+  test.each([
+    [OrdinaryType.pale, 2, "D'azur à deux pals d'or."],
+    [OrdinaryType.fess, 3, "D'azur à trois fasces d'or."],
+    [OrdinaryType.bend, 6, "D'azur à six bandes d'or."],
+    [OrdinaryType.bendSinister, 4, "D'azur à quatre barres d'or."],
+  ])('writes %s borne %i times as "%s"', (type, count, expected) => {
+    expect(
+      writer.write({
+        field: { tincture: Colours.azure },
+        ordinary: { type, tincture: Metals.or, count },
+      })
+    ).toBe(expected);
+  });
+
+  test('writes a single band as the one it is, count or no count', () => {
+    expect(
+      writer.write({
+        field: { tincture: Colours.azure },
+        ordinary: { type: OrdinaryType.chevron, tincture: Metals.or, count: 1 },
+      })
+    ).toBe("D'azur au chevron d'or.");
+  });
+
+  test('writes but one of an ordinary borne but once, whatever it was handed', () => {
+    expect(
+      writer.write({
+        field: { tincture: Colours.azure },
+        ordinary: { type: OrdinaryType.chief, tincture: Metals.or, count: 3 },
+      })
+    ).toBe("D'azur au chef d'or.");
+  });
+
+  test('survives the round trip, count and all', () => {
+    const blazon: Blazon = {
+      field: { tincture: Metals.or },
+      ordinary: { type: OrdinaryType.fess, tincture: Colours.sable, count: 3 },
+    };
+    expect(parser.parse(writer.write(blazon))).toEqual(blazon);
+  });
+
+  test.each(["D'argent à 3 bandes de gueules", "D'argent aux trois bandes de gueules"])(
+    'normalises %s into the form a blazon is written in',
+    (text) => {
+      expect(writer.write(parser.parse(text))).toBe("D'argent à trois bandes de gueules.");
+    }
+  );
+
+  test('falls back on the figure where the language has no word for the number', () => {
+    // Seventeen is written with a hyphen, which the lexer does not read, so it
+    // is not in the vocabulary. A figure is a poor blazon but an honest one.
+    expect(
+      writer.write({
+        field: { tincture: Metals.or },
+        ordinary: { type: OrdinaryType.fess, tincture: Colours.gules, count: 17 },
+      })
+    ).toBe("D'or à 17 fasces de gueules.");
+  });
+});

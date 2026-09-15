@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { DivisionType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
+import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
@@ -180,5 +181,66 @@ describe('reading the same arms in either language', () => {
     expect(parser.parse('Argent a cross gules')).toEqual(
       french.parse("D'argent à la croix de gueules")
     );
+  });
+});
+
+describe('a field bearing several of one ordinary', () => {
+  test('reads "Or three chevrons gules" as three chevrons on an or field', () => {
+    expect(parser.parse('Or three chevrons gules')).toEqual({
+      field: { tincture: Metals.or },
+      ordinary: { type: OrdinaryType.chevron, tincture: Colours.gules, count: 3 },
+    });
+  });
+
+  test.each([
+    ['two pales', OrdinaryType.pale, 2],
+    ['three fesses', OrdinaryType.fess, 3],
+    ['four bends', OrdinaryType.bend, 4],
+    ['six bends sinister', OrdinaryType.bendSinister, 6],
+    ['sixteen chevrons', OrdinaryType.chevron, 16],
+  ])('reads "%s" as that many of that ordinary', (borne, type, count) => {
+    expect(parser.parse(`Azure ${borne} or`).ordinary).toEqual({
+      type,
+      tincture: Metals.or,
+      count,
+    });
+  });
+
+  test('names the count with nothing in front of it, where one takes an article', () => {
+    expect(parser.parse('Or a chevron gules').ordinary).not.toHaveProperty('count');
+    expect(() => parser.parse('Or a three chevrons gules')).toThrow();
+  });
+
+  test('reads the count in figures as readily as in words', () => {
+    expect(parser.parse('Or 3 chevrons gules')).toEqual(parser.parse('Or three chevrons gules'));
+  });
+
+  test('closes with the optional full stop, and is read whatever its case', () => {
+    expect(parser.parse('OR THREE CHEVRONS GULES.')).toEqual(
+      parser.parse('Or three chevrons gules')
+    );
+  });
+
+  describe('rejections', () => {
+    test.each(['chiefs', 'crosses', 'saltires'])('refuses several %s, borne but once', (word) => {
+      expect(() => parser.parse(`Or two ${word} gules`)).toThrow(RepeatedOrdinary);
+    });
+
+    test('refuses a count of one', () => {
+      expect(() => parser.parse('Or 1 chevrons gules')).toThrow(/not more than one/);
+      expect(() => parser.parse('Or one chevrons gules')).toThrow();
+    });
+
+    test('refuses the singular name after a count', () => {
+      expect(() => parser.parse('Or two chevron gules')).toThrow(UnknownOrdinary);
+    });
+
+    test('refuses a word that is no number at all', () => {
+      expect(() => parser.parse('Or many chevrons gules')).toThrow();
+    });
+
+    test('still owes them a tincture of their own', () => {
+      expect(() => parser.parse('Or two chevrons')).toThrow(MissingTincture);
+    });
   });
 });

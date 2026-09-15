@@ -4,6 +4,7 @@ export enum TokenKind {
   Elision,
   Article,
   Word,
+  Number,
   Period,
   Space,
 }
@@ -15,6 +16,10 @@ export const lexer = buildLexer<TokenKind>([
   [true, /^[Dd]['’]/g, TokenKind.Elision],
   [true, /^[Dd][Ee]\b/g, TokenKind.Article],
   [true, /^[A-Za-zÀ-ÖØ-öø-ÿ]+/g, TokenKind.Word],
+  // How many of a charge are borne, written in figures. A blazon more often
+  // writes the number out in words, which are words like any other and are not
+  // read as numbers yet.
+  [true, /^[0-9]+/g, TokenKind.Number],
   [true, /^\./g, TokenKind.Period],
   [false, /^\s+/g, TokenKind.Space],
 ]);

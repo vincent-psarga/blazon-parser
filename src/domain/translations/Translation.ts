@@ -54,6 +54,15 @@ export function nameOf<T extends string, W extends Word>(
   return wordOf(translation, term).value;
 }
 
+/** Which spelling of a word a lookup is keyed on: the one, or the several. */
+export type Spelled<W extends Word> = (word: W) => string;
+
+/** A word as one of it: the spelling a translation is written in. */
+export const asOne = <W extends Word>(word: W): string => word.value;
+
+/** A word as several of them: "chevrons" for "chevron". */
+export const asSeveral = <W extends Word>(word: W): string => word.plural;
+
 /**
  * Inverts a translation into a lookup from spelling to term, folded to lower
  * case so that a parser can match however the writer capitalised the word.
@@ -61,14 +70,19 @@ export function nameOf<T extends string, W extends Word>(
  * What a spelling leads to is the word as well as the term, because a grammar
  * that reads a word has to agree with the one actually written rather than with
  * the term's canonical spelling.
+ *
+ * Which spelling is looked up is asked for, because a blazon naming several of
+ * something names them in the plural, and the plural is a property of the word
+ * rather than a term of its own.
  */
 export function bySpelling<T extends string, W extends Word>(
-  translation: Translation<T, W>
+  translation: Translation<T, W>,
+  spelled: Spelled<W> = asOne
 ): ReadonlyMap<string, TermWord<T, W>> {
   const terms = new Map<string, TermWord<T, W>>();
   for (const term of Object.keys(translation) as T[]) {
     for (const word of wordsOf(translation, term)) {
-      terms.set(word.value.toLowerCase(), { term, word });
+      terms.set(spelled(word).toLowerCase(), { term, word });
     }
   }
   return terms;

@@ -59,6 +59,15 @@ export const asDivision: Vocabulary = {
   unknown: (word, position) => new UnknownDivision(word, position),
 };
 
+/**
+ * A number is no term of the vocabulary — heraldry did not invent counting — so
+ * a word standing where one is expected has simply failed to be a number, and
+ * the complaint names no kind of its own.
+ */
+export const asCount: Vocabulary = {
+  unknown: (word, position) => new BlazonParseError(`Not a number: ${word}`, position),
+};
+
 export const asOrdinary: Vocabulary = {
   unknown: (word, position) => new UnknownOrdinary(word, position),
   owed: (context) => new MissingOrdinary(context),

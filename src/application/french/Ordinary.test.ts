@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
+import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
@@ -151,3 +152,122 @@ describe('a field bearing an ordinary', () => {
     });
   });
 });
+
+describe('a field bearing several of one ordinary', () => {
+  test('reads "De gueules à trois chevrons d\'or" as three chevrons on a gules field', () => {
+    expect(parser.parse("De gueules à trois chevrons d'or")).toEqual({
+      field: { tincture: Colours.gules },
+      ordinary: { type: OrdinaryType.chevron, tincture: Metals.or, count: 3 },
+    });
+  });
+
+  test.each([
+    ['à deux pals', OrdinaryType.pale, 2],
+    ['à trois fasces', OrdinaryType.fess, 3],
+    ['à quatre bandes', OrdinaryType.bend, 4],
+    ['à six barres', OrdinaryType.bendSinister, 6],
+    ['à seize chevrons', OrdinaryType.chevron, 16],
+  ])('reads "%s" as that many of that ordinary', (borne, type, count) => {
+    expect(parser.parse(`D'azur ${borne} d'or`).ordinary).toEqual({
+      type,
+      tincture: Metals.or,
+      count,
+    });
+  });
+
+  test('reads the contracted article, which armorials also write', () => {
+    // Blazonry says "à trois bandes de gueules", but "aux trois aiglettes
+    // d'argent" stands in an armorial too, and says the same thing.
+    expect(parser.parse("D'argent aux trois bandes de gueules")).toEqual(
+      parser.parse("D'argent à trois bandes de gueules")
+    );
+  });
+
+  test('reads the count in figures as readily as in words', () => {
+    expect(parser.parse("D'argent à 3 bandes de gueules")).toEqual(
+      parser.parse("D'argent à trois bandes de gueules")
+    );
+  });
+
+  test('leaves the count off entirely when one is borne', () => {
+    expect(parser.parse("D'azur au chevron d'or").ordinary).not.toHaveProperty('count');
+  });
+
+  test('is case insensitive', () => {
+    expect(parser.parse("D'OR À TROIS CHEVRONS DE GUEULES")).toEqual(
+      parser.parse("d'or à trois chevrons de gueules")
+    );
+  });
+
+  test('closes with the optional full stop', () => {
+    expect(parser.parse("D'or à trois chevrons de gueules.")).toEqual(
+      parser.parse("D'or à trois chevrons de gueules")
+    );
+  });
+
+  test('lays several on a divided field as readily as on a plain one', () => {
+    expect(parser.parse("Parti d'azur et d'or à deux fasces de gueules").ordinary).toEqual({
+      type: OrdinaryType.fess,
+      tincture: Colours.gules,
+      count: 2,
+    });
+  });
+
+  test('gives every band of them the one tincture', () => {
+    expect(parser.parse("D'azur à trois fasces d'or").ordinary?.tincture).toBe(Metals.or);
+  });
+
+  describe('rejections', () => {
+    test.each(['chefs', 'croix', 'sautoirs'])('refuses several %s, borne but once', (word) => {
+      expect(() => parser.parse(`D'or à deux ${word} de gueules`)).toThrow(RepeatedOrdinary);
+    });
+
+    test('says which ordinary was repeated, and how many were asked for', () => {
+      const refusal = refused(() => parser.parse("D'or à deux chefs de gueules"));
+      expect(refusal).toBeInstanceOf(RepeatedOrdinary);
+      expect((refusal as RepeatedOrdinary).ordinary).toBe('chefs');
+      expect((refusal as RepeatedOrdinary).count).toBe(2);
+    });
+
+    test('refuses a count of one, a single band being named on its own', () => {
+      expect(() => parser.parse("D'or à 1 chevrons de gueules")).toThrow(/not more than one/);
+      expect(() => parser.parse("D'or à une fasce de gueules")).toThrow();
+    });
+
+    test('refuses the singular name after a count', () => {
+      expect(() => parser.parse("D'or à deux chevron de gueules")).toThrow(UnknownOrdinary);
+    });
+
+    test('refuses several named with no preposition at all', () => {
+      expect(() => parser.parse("D'or trois chevrons de gueules")).toThrow();
+    });
+
+    test('refuses a plural the vocabulary does not know', () => {
+      expect(() => parser.parse("D'or à deux bordures de gueules")).toThrow(UnknownOrdinary);
+    });
+
+    test('still owes them a tincture of their own', () => {
+      expect(() => parser.parse("D'or à deux chevrons")).toThrow(MissingTincture);
+    });
+
+    test('refuses a word that is no number at all', () => {
+      expect(() => parser.parse("D'or à maintes fasces de gueules")).toThrow();
+    });
+
+    test('refuses a number the vocabulary stops short of', () => {
+      // "dix-sept" is hyphenated, and the lexer reads words rather than
+      // punctuation, so the number never reaches the grammar.
+      expect(() => parser.parse("D'or à dix-sept fasces de gueules")).toThrow();
+    });
+  });
+});
+
+/** What a blazon threw, for a test that wants to look at it rather than match it. */
+function refused(parse: () => unknown): unknown {
+  try {
+    parse();
+  } catch (thrown) {
+    return thrown;
+  }
+  throw new Error('That blazon was read, when it should have been refused.');
+}

@@ -24,13 +24,14 @@ export type {
 } from './application/armorial/ArmorialReading';
 export { DivisionType, isDivision } from './domain/models/Field';
 export type { Division, Field } from './domain/models/Field';
-export { OrdinaryType } from './domain/models/Ordinary';
+export { OrdinaryType, SEVERAL, borne, bornInNumber } from './domain/models/Ordinary';
 
 export { BlazonParseError } from './domain/errors/parsing/BlazonParseError';
 export type { TextPosition } from './domain/errors/parsing/BlazonParseError';
 export { UnknownTincture } from './domain/errors/parsing/UnknownTincture';
 export { UnknownDivision } from './domain/errors/parsing/UnknownDivision';
 export { UnknownOrdinary } from './domain/errors/parsing/UnknownOrdinary';
+export { RepeatedOrdinary } from './domain/errors/parsing/RepeatedOrdinary';
 export { MissingTincture } from './domain/errors/parsing/MissingTincture';
 export { MissingOrdinary } from './domain/errors/parsing/MissingOrdinary';
 export { WrongTinctureArticle } from './domain/errors/parsing/WrongTinctureArticle';
@@ -40,16 +41,21 @@ export { Colours, Furs, Metals, TINCTURES, isTincture } from './domain/models/Ti
 export type { Tincture } from './domain/models/Tinctures';
 
 export {
+  asOne,
+  asSeveral,
   bySpelling,
   nameOf,
   spellingsOf,
   wordOf,
   wordsOf,
 } from './domain/translations/Translation';
-export type { TermWord, Translation } from './domain/translations/Translation';
+export type { Spelled, TermWord, Translation } from './domain/translations/Translation';
+export { counted, numberWord } from './domain/translations/Numbers';
+export type { NumberWords } from './domain/translations/Numbers';
 export { Word } from './domain/translations/Word';
 export { FrenchWord } from './domain/translations/fr/FrenchWord';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';
+export { EnglishNumbers } from './domain/translations/en/Numbers';
 export { EnglishOrdinaryType } from './domain/translations/en/Ordinaries';
 export {
   EnglishColours,
@@ -57,6 +63,7 @@ export {
   EnglishTinctures,
 } from './domain/translations/en/Tinctures';
 export { FrenchDivisionType } from './domain/translations/fr/Divisions';
+export { FrenchNumbers } from './domain/translations/fr/Numbers';
 export { FrenchOrdinaryType } from './domain/translations/fr/Ordinaries';
 export {
   FrenchColours,
