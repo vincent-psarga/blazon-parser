@@ -1,0 +1,101 @@
+# Product
+
+<!-- impeccable:product-schema 1 -->
+
+## Platform
+
+web
+
+## Users
+
+Two audiences, weighted equally — neither is an afterthought.
+
+- **Developers** deciding whether to install `blason-parser`, or already integrating it. They arrive
+  wanting the supported vocabulary, the exact input string a term takes, and the component API.
+- **Heraldry learners** who want to understand blazon itself. They arrive wanting the conventions
+  taught — what a tincture is, why the ranks exist, what "in chief" means — with the library as the
+  vehicle rather than the subject.
+
+The same page must serve a developer scanning for a citable term and a learner reading to understand.
+
+## Product Purpose
+
+Read a coat of arms written in words, in French or English, into a language-neutral model; write that
+model back out in either language; and draw it as an SVG shield.
+
+Translating is the point: parsing in one language and writing in another is the whole mechanism, and
+nothing between the two services knows a second language exists.
+
+## Positioning
+
+The domain is named in English heraldic terms and knows no language at all. What a term is _called_ is
+a `Translation<T>` keyed on the enum's values, so adding a term breaks every language that has not
+caught up. A language contributes only a `BlazonGrammar` for reading and a `BlazonWording` for writing:
+its terms, its conjunction, and how it introduces a tincture. French agrees an article with the word
+that follows; English names the tincture bare.
+
+This is what a neighbouring blazon parser could not truthfully copy: most are written against one
+language's grammar, so a second language means a second parser.
+
+## Operating Context
+
+- Published as an npm library with a single entry point. It holds no React: every component lives in
+  `demo/`, which is not published, so installing the library on a backend pulls no React in.
+- The demo is run locally with `npm run dev`. It is **not yet published**, and is intended to be put in
+  front of other people eventually, with no deadline. Build as though it will be seen.
+- Documentation pages (`/doc/tinctures`, `/doc/divisions`) are today the only statement of what the
+  parser accepts.
+
+## Capabilities and Constraints
+
+Supported vocabulary as it stands:
+
+- **Tinctures (8)** in three ranks — metals (or, argent), colours (azure, gules, sable, vert),
+  furs (ermine, vair).
+- **Divisions (4)** — per pale, per fess, per bend, per bend sinister.
+- **Languages (2)** — French and English, both reading and writing.
+- **Colourings (2)** — a colour model and the monochrome hatching convention. A tincture's paint is
+  either a flat colour or a pattern.
+
+Constraints and facts future work must preserve:
+
+- A blazon is a field, plain or divided between two tinctures. There are no charges or ordinaries yet.
+- The rule of tincture (metal may not lie on metal, nor colour on colour) is why the tinctures carry
+  three ranks. The furs answer to neither rank.
+- Heraldry fixes no shade. Colours are supplied to the drawer, never assumed by it.
+- French elision depends on the word, not its spelling — "d'hermine" but "de hérisson" — so mute-h
+  words are named rather than inferred.
+
+**Scope is explicitly undecided.** The vocabulary grows as curiosity holds; there is no committed
+roadmap toward full blazon. Pages must state what is supported and must not promise what is coming.
+
+## Evidence on Hand
+
+- The working library itself: parser, writer and drawer, with 306 passing tests. Any claim a page makes
+  can be demonstrated live rather than asserted.
+- Tincture shades and hatching marks are taken from Wikipedia's own tables
+  (`https://en.wikipedia.org/wiki/Tincture_(heraldry)`, `https://en.wikipedia.org/wiki/Hatching_(heraldry)`),
+  recorded in `src/infra/colours/`. Cited, not invented.
+- The existing page copy is written by someone who knows the subject ("The first tincture named takes
+  the half in chief"). Recorded as an observed asset of the committed content; the user has not made
+  this voice a binding constraint.
+- **Absent, and not to be fabricated:** there are no users, no testimonials, no downloads, no
+  benchmarks, no case studies, no institutional affiliation and no license claims beyond MIT.
+
+## Product Principles
+
+1. **Serve both readers in one artefact.** Every term shown is simultaneously a citable input string
+   and an explained convention. Splitting into a developer page and a learner page would be a failure.
+2. **Say what is supported; promise nothing.** With scope undecided, the pages state today's vocabulary
+   plainly and never imply a roadmap.
+3. **Demonstrate rather than assert.** The library can prove every claim a page makes; a page that
+   states a convention without showing it is wasting what it is built on.
+4. **The domain stays language-neutral.** Anything a new language needs is a translation and a grammar,
+   never a change to the models or the rules.
+5. **Build as though it will be published.** Not yet public is a schedule, not a licence to cut.
+
+## Accessibility & Inclusion
+
+The content is inherently bilingual, so language marking is payload rather than polish: a French term
+in an English document must carry `lang="fr"` or a screen reader pronounces it with English phonemes.
+No external standard has been set by the user; WCAG AA is the working bar.

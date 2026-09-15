@@ -68,7 +68,7 @@ export function TincturesPage({ colourings }: TincturesPageProps) {
   return (
     <Reference
       title="Tinctures"
-      extent="Eight tinctures · three ranks · all the parser reads"
+      extent="Eight tinctures"
       lead={
         <>
           <p className="plane__lead">

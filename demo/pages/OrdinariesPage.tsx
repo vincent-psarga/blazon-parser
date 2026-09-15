@@ -69,9 +69,6 @@ const BUT_ONCE: Record<OrdinaryType, string | undefined> = {
     'Borne but once. A bordure is not a band laid across the field but the edge of the shield, and a shield has one edge.',
 };
 
-const IN_NUMBER =
-  'Borne in number. A field may bear two of it, or three, or more: the bands narrow and space themselves evenly to make room for each other, and the count is named before the plural.';
-
 // Two and three, which is enough to show what a count does to the drawing: the
 // bands narrow, and the field keeps as much of itself between them as they take.
 const COUNTS: readonly (readonly [string, number])[] = [
@@ -110,7 +107,7 @@ function entry(type: OrdinaryType): ReferenceEntry {
     english: nameOf(EnglishOrdinaryType, type),
     french: nameOf(FrenchOrdinaryType, type),
     gloss: GLOSS[type],
-    note: BUT_ONCE[type] ?? IN_NUMBER,
+    note: BUT_ONCE[type],
     blazon,
     inFrench: inFrench.write(blazon),
     inEnglish: inEnglish.write(blazon),
@@ -134,47 +131,12 @@ export function OrdinariesPage({ colourings }: OrdinariesPageProps) {
   return (
     <Reference
       title="Ordinaries"
-      extent="Ten ordinaries · six of them borne in number"
+      extent="Ten ordinaries"
       lead={
         <>
           <p className="plane__lead">
             The plain bands a field may be charged with. An ordinary does not divide the field: the
             field keeps its own tincture, and the band is laid over it in a tincture of its own.
-          </p>
-          <p className="plane__lead">
-            Most are named after the same line as a partition, because both follow it. What says a
-            field bears one rather than is divided by one is the little word in front: English
-            divides <span lang="en">per fess</span> and charges <span lang="en">a fess</span>.
-            French changes the word outright — <span lang="fr">coupé</span> divides where{' '}
-            <span lang="fr">fasce</span> is borne — and puts an article in front that agrees in
-            gender: <span lang="fr">à la fasce</span> but <span lang="fr">au chevron</span>.
-          </p>
-          <p className="plane__lead">
-            An ordinary is a plain band of a plain tincture. Nothing may yet be charged upon it, and
-            no line but the straight one is read.
-          </p>
-          <p className="plane__lead">
-            A field may bear several of one kind, and then the bands narrow and space themselves to
-            make room for each other: <span lang="fr">De gueules à trois chevrons d’or</span> is{' '}
-            <span lang="en">Gules three chevrons or</span>. Six of the ten may be borne in number
-            and four may not, and each says below which it is, the six drawn twice and thrice beside
-            the one.
-          </p>
-          <p className="plane__lead">
-            A field may also bear more than one kind, named one after another and read in the order
-            they were written, because that order is what says which covers which:{' '}
-            <span lang="fr">D’or à trois bandes de sable, à la bordure de gueules</span> draws the
-            bordure over the bends, and{' '}
-            <span lang="fr">D’or à la bordure de gueules, à trois bandes de sable</span> draws the
-            bends over the bordure. A blazon may set a comma or a semicolon between them, or nothing
-            at all.
-          </p>
-          <p className="plane__lead">
-            The little word in front is blazonry’s rather than French’s: a blazon says{' '}
-            <span lang="fr">à trois bandes</span> where ordinary French would contract the article
-            into <span lang="fr">aux</span>. Both are read, and each language counts in its own
-            words as far as sixteen — the next number is hyphenated, and the parser reads letters. A
-            count in figures is read too, and comes back out spelled.
           </p>
           <p className="plane__lead">Choose any term to read it at full size.</p>
         </>

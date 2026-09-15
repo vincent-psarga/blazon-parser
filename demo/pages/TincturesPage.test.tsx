@@ -51,7 +51,7 @@ describe('TincturesPage', () => {
 
   test('states how many terms there are before showing any', () => {
     mount(<TincturesPage />);
-    expect(screen.getByText(/Eight tinctures · three ranks/)).toBeInTheDocument();
+    expect(screen.getByText(/Eight tinctures/)).toBeInTheDocument();
   });
 
   test.each(TINCTURES)('keeps %s present in the stack', (tincture) => {

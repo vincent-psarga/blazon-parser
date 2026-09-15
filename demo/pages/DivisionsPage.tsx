@@ -41,7 +41,7 @@ function entry(type: DivisionType): ReferenceEntry {
 
 const RANKS: readonly ReferenceRank[] = [
   {
-    heading: 'Partitions',
+    heading: 'Divisions',
     law: 'Each is shown argent and gules, so the only thing that changes from one to the next is the line itself.',
     entries: Object.values(DivisionType).map(entry),
   },
@@ -55,7 +55,7 @@ export function DivisionsPage({ colourings }: DivisionsPageProps) {
   return (
     <Reference
       title="Divisions"
-      extent="Four partitions · all the parser reads"
+      extent="Four divisions"
       lead={
         <>
           <p className="plane__lead">

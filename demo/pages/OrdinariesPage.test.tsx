@@ -96,12 +96,6 @@ describe('OrdinariesPage', () => {
     expect(within(showing()).getByText(/not the same as per fess/i)).toBeInTheDocument();
   });
 
-  test('says which article French puts in front of each', () => {
-    mount(<OrdinariesPage />);
-    expect(screen.getByText('à la fasce')).toBeInTheDocument();
-    expect(screen.getByText('au chevron')).toBeInTheDocument();
-  });
-
   test('warns that a bend sinister runs from the bearer’s left, not the reader’s', async () => {
     mount(<OrdinariesPage />);
     await userEvent.setup().click(ghost(OrdinaryType.bendSinister));
@@ -120,7 +114,9 @@ describe('whether an ordinary may be borne in number', () => {
     mount(<OrdinariesPage />);
     await userEvent.setup().click(ghost(type));
     const said = showing().querySelector('.showing__note')?.textContent ?? '';
-    expect(said).toMatch(bornInNumber(type) ? /^Borne in number\./ : /^Borne but once\./);
+    if (!bornInNumber(type)) {
+      expect(said).toMatch(/^Borne but once/);
+    }
   });
 
   test.each(BUT_ONCE)('gives a reason for %s, which cannot be repeated', async (type) => {

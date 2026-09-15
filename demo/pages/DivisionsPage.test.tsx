@@ -32,9 +32,9 @@ const painting = (colouring: string) =>
   );
 
 describe('DivisionsPage', () => {
-  test('states how many partitions there are', () => {
+  test('states how many divisions there are', () => {
     mount(<DivisionsPage />);
-    expect(screen.getByText(/Four partitions/)).toBeInTheDocument();
+    expect(screen.getByText(/Four divisions/)).toBeInTheDocument();
   });
 
   test.each(DIVISIONS)('keeps %s present in the stack', (type) => {
