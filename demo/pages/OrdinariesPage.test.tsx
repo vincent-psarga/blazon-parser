@@ -40,7 +40,7 @@ const BUT_ONCE = ORDINARIES.filter((type) => !bornInNumber(type));
 describe('OrdinariesPage', () => {
   test('states how many ordinaries there are', () => {
     render(<OrdinariesPage />);
-    expect(screen.getByText(/Eight ordinaries/)).toBeInTheDocument();
+    expect(screen.getByText(/Nine ordinaries/)).toBeInTheDocument();
   });
 
   test.each(ORDINARIES)('keeps %s present in the stack', (type) => {

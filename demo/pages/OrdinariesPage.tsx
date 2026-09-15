@@ -29,6 +29,8 @@ const GLOSS: Record<OrdinaryType, string> = {
     'A band straight down the middle. Not the same as per pale, which cuts the field in two: here the field keeps its own tincture and the band is laid over it.',
   [OrdinaryType.fess]:
     'A band straight across the middle. Not the same as per fess, which cuts the field in two: here the field keeps its own tincture and the band is laid over it.',
+  [OrdinaryType.barGemel]:
+    'Two narrow bars close together, borne and blazoned as one charge — gemel is twinned. French calls it the jumelle. Three bars gemel are three pairs, and so six bars.',
   [OrdinaryType.bend]:
     'A band from dexter chief to sinister base — from the top left, as you look at it. French calls it the bande, along the line tranché divides.',
   [OrdinaryType.bendSinister]:
@@ -53,6 +55,7 @@ const BUT_ONCE: Record<OrdinaryType, string | undefined> = {
     'Borne but once. A chief is not a band laid somewhere on the shield but the top of the shield itself, and a shield has one top.',
   [OrdinaryType.pale]: undefined,
   [OrdinaryType.fess]: undefined,
+  [OrdinaryType.barGemel]: undefined,
   [OrdinaryType.bend]: undefined,
   [OrdinaryType.bendSinister]: undefined,
   [OrdinaryType.chevron]: undefined,
@@ -129,7 +132,7 @@ export function OrdinariesPage({ colourings, onTry }: OrdinariesPageProps) {
   return (
     <Reference
       title="Ordinaries"
-      extent="Eight ordinaries · five of them borne in number"
+      extent="Nine ordinaries · six of them borne in number"
       lead={
         <>
           <p className="plane__lead">
@@ -151,8 +154,8 @@ export function OrdinariesPage({ colourings, onTry }: OrdinariesPageProps) {
           <p className="plane__lead">
             It may bear several of that kind, though, and then the bands narrow and space themselves
             to make room for each other: <span lang="fr">De gueules à trois chevrons d’or</span> is{' '}
-            <span lang="en">Gules three chevrons or</span>. Five of the eight may be borne in number
-            and three may not, and each says below which it is, the five drawn twice and thrice
+            <span lang="en">Gules three chevrons or</span>. Six of the nine may be borne in number
+            and three may not, and each says below which it is, the six drawn twice and thrice
             beside the one.
           </p>
           <p className="plane__lead">

@@ -25,6 +25,7 @@ describe('a field bearing an ordinary', () => {
     ['au chef', OrdinaryType.chief],
     ['au pal', OrdinaryType.pale],
     ['à la fasce', OrdinaryType.fess],
+    ['à la jumelle', OrdinaryType.barGemel],
     ['à la bande', OrdinaryType.bend],
     ['à la barre', OrdinaryType.bendSinister],
     ['au chevron', OrdinaryType.chevron],
@@ -75,6 +76,7 @@ describe('a field bearing an ordinary', () => {
       [OrdinaryType.chief, 'au chef'],
       [OrdinaryType.pale, 'au pal'],
       [OrdinaryType.fess, 'à la fasce'],
+      [OrdinaryType.barGemel, 'à la jumelle'],
       [OrdinaryType.bend, 'à la bande'],
       [OrdinaryType.bendSinister, 'à la barre'],
       [OrdinaryType.chevron, 'au chevron'],
@@ -153,6 +155,29 @@ describe('a field bearing an ordinary', () => {
   });
 });
 
+describe('the bar gemel', () => {
+  test('reads "D\'argent à la jumelle de gueules" as one gemel, borne singly', () => {
+    // A gemel is a pair of bars, but it is one charge, and French names it in
+    // the singular for all that the word means "twin".
+    expect(parser.parse("D'argent à la jumelle de gueules")).toEqual({
+      field: { tincture: Metals.argent },
+      ordinary: { type: OrdinaryType.barGemel, tincture: Colours.gules },
+    });
+  });
+
+  test('reads the three jumelles an armorial writes', () => {
+    expect(parser.parse("D'argent à trois jumelles de gueules.").ordinary).toEqual({
+      type: OrdinaryType.barGemel,
+      tincture: Colours.gules,
+      count: 3,
+    });
+  });
+
+  test('takes the feminine article, and refuses the masculine one', () => {
+    expect(() => parser.parse("D'argent au jumelle de gueules")).toThrow(/expected "à la jumelle"/);
+  });
+});
+
 describe('a field bearing several of one ordinary', () => {
   test('reads "De gueules à trois chevrons d\'or" as three chevrons on a gules field', () => {
     expect(parser.parse("De gueules à trois chevrons d'or")).toEqual({
@@ -164,6 +189,7 @@ describe('a field bearing several of one ordinary', () => {
   test.each([
     ['à deux pals', OrdinaryType.pale, 2],
     ['à trois fasces', OrdinaryType.fess, 3],
+    ['à trois jumelles', OrdinaryType.barGemel, 3],
     ['à quatre bandes', OrdinaryType.bend, 4],
     ['à six barres', OrdinaryType.bendSinister, 6],
     ['à seize chevrons', OrdinaryType.chevron, 16],

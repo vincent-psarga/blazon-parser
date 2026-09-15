@@ -12,6 +12,7 @@ export const FrenchOrdinaryType: Translation<OrdinaryType, FrenchWord> = {
   [OrdinaryType.chief]: new FrenchWord('chef'),
   [OrdinaryType.pale]: new FrenchWord('pal'),
   [OrdinaryType.fess]: new FrenchWord('fasce', { isFeminine: true }),
+  [OrdinaryType.barGemel]: new FrenchWord('jumelle', { isFeminine: true }),
   [OrdinaryType.bend]: new FrenchWord('bande', { isFeminine: true }),
   [OrdinaryType.bendSinister]: new FrenchWord('barre', { isFeminine: true }),
   [OrdinaryType.chevron]: new FrenchWord('chevron'),

@@ -92,6 +92,19 @@ const bendBand = ([at, across]: Band): Shape =>
 const bendSinisterBand = ([at, across]: Band): Shape =>
   polygon(`${WIDTH + at},0 ${WIDTH + at + across},0 ${at + across},${HEIGHT} ${at},${HEIGHT}`);
 
+/**
+ * The pair of narrow bars a gemel is drawn as, in the room one band would have
+ * taken: three parts bar, two parts field, three parts bar.
+ *
+ * The gap inside the pair is narrower than the field left around it, which is
+ * what makes the two read as one charge rather than as two bars that happen to
+ * lie close together.
+ */
+const gemelBars = ([at, across]: Band): Shape => {
+  const bar = Math.round((across * 3) / 8);
+  return all([rect(0, at, WIDTH, bar), rect(0, at + across - bar, WIDTH, bar)]);
+};
+
 /** A band bent to a point, given where its upper edge reaches that point. */
 const chevronBand = ([at, across]: Band): Shape =>
   polygon(
@@ -139,6 +152,9 @@ const ORDINARIES: Record<OrdinaryType, (count: number) => Shape> = {
     all(bands(count, 0, WIDTH).map(([at, across]) => rect(at, 0, across, HEIGHT))),
   [OrdinaryType.fess]: (count) =>
     all(bands(count, 0, HEIGHT).map(([at, across]) => rect(0, at, WIDTH, across))),
+  // A gemel takes the room of a fess and spends it on two bars, so three of them
+  // sit where three fesses would and are drawn as six.
+  [OrdinaryType.barGemel]: (count) => all(bands(count, 0, HEIGHT).map(gemelBars)),
   [OrdinaryType.bend]: (count) => all(bands(count, -DIAGONALS / 2, DIAGONALS).map(bendBand)),
   [OrdinaryType.bendSinister]: (count) =>
     all(bands(count, -DIAGONALS / 2, DIAGONALS).map(bendSinisterBand)),

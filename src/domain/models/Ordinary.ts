@@ -2,10 +2,14 @@ import { Tincture } from './Tinctures';
 
 /**
  * The ordinaries: the plain geometric bands a field is charged with, named after
- * the lines they follow. Eight of them so far, listed as heraldry lists them —
+ * the lines they follow. Nine of them so far, listed as heraldry lists them —
  * the straight bands first, then the diagonals, then the ones that bend or
  * cross. A field bears one kind of them at a time, though it may bear several of
  * that kind.
+ *
+ * One of the nine is not a single band: a bar gemel is a pair of narrow ones,
+ * borne and blazoned as one charge. Which is why the count on an Ordinary counts
+ * charges rather than bands — "à trois jumelles" is three gemels, and six bars.
  *
  * Several share a name with a partition, because both are named after the same
  * line: a field may be divided per fess or charged with a fess. What tells them
@@ -16,6 +20,7 @@ export enum OrdinaryType {
   chief = 'Ordinary.chief',
   pale = 'Ordinary.pale',
   fess = 'Ordinary.fess',
+  barGemel = 'Ordinary.barGemel',
   bend = 'Ordinary.bend',
   bendSinister = 'Ordinary.bendSinister',
   chevron = 'Ordinary.chevron',
@@ -28,7 +33,8 @@ export enum OrdinaryType {
  * borne, as heraldry says, in number.
  *
  * Most of the bands may: a field bears two chevrons or three bends as readily as
- * one, the bands growing narrower to make room for each other. Three cannot. The
+ * one, the bands growing narrower to make room for each other, and an armorial
+ * is as likely to say "à trois jumelles" as "à la jumelle". Three cannot. The
  * chief is not a band laid anywhere on the shield but the top of the shield
  * itself, and a shield has one top. The cross and the saltire are each a single
  * charge for all that they are drawn as two limbs crossing, and repeating them
@@ -47,6 +53,7 @@ const IN_NUMBER: Record<OrdinaryType, boolean> = {
   [OrdinaryType.chief]: false,
   [OrdinaryType.pale]: true,
   [OrdinaryType.fess]: true,
+  [OrdinaryType.barGemel]: true,
   [OrdinaryType.bend]: true,
   [OrdinaryType.bendSinister]: true,
   [OrdinaryType.chevron]: true,

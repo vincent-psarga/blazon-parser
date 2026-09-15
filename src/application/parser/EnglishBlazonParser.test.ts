@@ -195,6 +195,7 @@ describe('a field bearing several of one ordinary', () => {
   test.each([
     ['two pales', OrdinaryType.pale, 2],
     ['three fesses', OrdinaryType.fess, 3],
+    ['three bars gemel', OrdinaryType.barGemel, 3],
     ['four bends', OrdinaryType.bend, 4],
     ['six bends sinister', OrdinaryType.bendSinister, 6],
     ['sixteen chevrons', OrdinaryType.chevron, 16],
@@ -242,5 +243,23 @@ describe('a field bearing several of one ordinary', () => {
     test('still owes them a tincture of their own', () => {
       expect(() => parser.parse('Or two chevrons')).toThrow(MissingTincture);
     });
+  });
+});
+
+describe('the bar gemel', () => {
+  test('reads a name of two words, and the noun that pluralises inside it', () => {
+    expect(parser.parse('Argent a bar gemel gules').ordinary).toEqual({
+      type: OrdinaryType.barGemel,
+      tincture: Colours.gules,
+    });
+    expect(parser.parse('Argent three bars gemel gules').ordinary).toEqual({
+      type: OrdinaryType.barGemel,
+      tincture: Colours.gules,
+      count: 3,
+    });
+  });
+
+  test('is not read from the plural spelled the easy way', () => {
+    expect(() => parser.parse('Argent three bar gemels gules')).toThrow();
   });
 });

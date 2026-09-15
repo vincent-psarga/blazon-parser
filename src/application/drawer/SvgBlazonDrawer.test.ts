@@ -341,3 +341,43 @@ describe('a field bearing several of one ordinary', () => {
     expect(svg.split('<pattern').length - 1).toBe(1);
   });
 });
+
+describe('a bar gemel', () => {
+  const bars = (svg: string) =>
+    Array.from(svg.matchAll(/<rect [^>]*y="(\d+)"[^>]*height="(\d+)"/g), (match) => ({
+      at: Number(match[1]),
+      across: Number(match[2]),
+    }));
+
+  const drawn = (count?: number) =>
+    bars(
+      drawer.draw({
+        field: { tincture: Metals.argent },
+        ordinary: { type: OrdinaryType.barGemel, tincture: Colours.gules, count },
+      })
+    );
+
+  test('draws one gemel as two bars, not one band', () => {
+    expect(drawn()).toHaveLength(2);
+  });
+
+  test('draws three gemels as six bars: the count counts charges, not bands', () => {
+    expect(drawn(3)).toHaveLength(6);
+  });
+
+  test("spends a fess's room on the pair, and stays inside it", () => {
+    const [first, second] = drawn();
+    const fess = { at: 80, across: 80 };
+    expect(first.at).toBe(fess.at);
+    expect(second.at + second.across).toBe(fess.at + fess.across);
+  });
+
+  test('keeps the pair tighter than the field left around it', () => {
+    // What makes two bars read as one charge is that the gap inside them is
+    // narrower than anything separating them from the next.
+    const [first, second, third] = drawn(2);
+    const inside = second.at - (first.at + first.across);
+    const between = third.at - (second.at + second.across);
+    expect(inside).toBeLessThan(between);
+  });
+});

@@ -138,16 +138,18 @@ French article agrees in gender as well — `à la fasce` but `au chevron` — a
 gender can no more be read off a spelling than a mute h can, so the feminine ones
 are named in `FrenchGrammar` beside them.
 
-Eight ordinaries so far — chief, pale, fess, bend, bend sinister, chevron, cross
-and saltire — each a plain band of a plain tincture. The last two are single
-charges for all that they are drawn twice over: a cross is the pale and the fess
-crossing, a saltire the two diagonals. Nothing may be charged upon one, and no
-line but the straight one is read.
+Nine ordinaries so far — chief, pale, fess, bar gemel, bend, bend sinister,
+chevron, cross and saltire — each a plain band of a plain tincture, or a pair of
+them. Three are single charges for all that they are drawn twice over: a cross is
+the pale and the fess crossing, a saltire the two diagonals, and a bar gemel two
+narrow bars set close, gemel being twinned. French names that one the `jumelle`,
+in the singular, however many bars it is drawn with. Nothing may be charged upon
+an ordinary, and no line but the straight one is read.
 
 A field may bear several of an ordinary — "De gueules à trois chevrons d'or",
 "Gules three chevrons or" — and the bands narrow and space themselves evenly to
-make room for each other. Three of the eight may not be borne in number, and `Ordinary.ts`
-says which: a chief is the top of the shield and a shield has one top, while a
+make room for each other. Three of the nine may not be borne in number, and
+`Ordinary.ts` says which: a chief is the top of the shield and a shield has one top, while a
 cross and a saltire are each a single charge, repeated into crosslets that are
 charges rather than ordinaries. Asking for two of those is its own refusal:
 

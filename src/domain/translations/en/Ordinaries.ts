@@ -8,6 +8,8 @@ export const EnglishOrdinaryType: Translation<OrdinaryType> = {
   [OrdinaryType.chief]: new Word('chief'),
   [OrdinaryType.pale]: new Word('pale'),
   [OrdinaryType.fess]: new Word('fess', { plural: 'fesses' }),
+  // Gemel is the adjective — twinned — so again it is the noun that pluralises.
+  [OrdinaryType.barGemel]: new Word('bar gemel', { plural: 'bars gemel' }),
   [OrdinaryType.bend]: new Word('bend'),
   // The adjective follows the noun, so it is the noun that takes the plural.
   [OrdinaryType.bendSinister]: new Word('bend sinister', { plural: 'bends sinister' }),

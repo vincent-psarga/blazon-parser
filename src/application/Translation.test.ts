@@ -29,6 +29,8 @@ describe('translating a blazon', () => {
     ["D'azur à la fasce d'or.", 'Azure a fess or.'],
     ["De gueules à trois chevrons d'or.", 'Gules three chevrons or.'],
     ["D'argent à deux bandes de gueules.", 'Argent two bends gules.'],
+    ["D'argent à la jumelle de gueules.", 'Argent a bar gemel gules.'],
+    ["D'argent à trois jumelles de gueules.", 'Argent three bars gemel gules.'],
   ])('%s becomes %s', (inFrench, inEnglish) => {
     expect(intoEnglish(inFrench)).toBe(inEnglish);
     expect(intoFrench(inEnglish)).toBe(inFrench);
