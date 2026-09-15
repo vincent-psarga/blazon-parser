@@ -53,6 +53,8 @@ Supported vocabulary as it stands:
 - **Tinctures (8)** in three ranks — metals (or, argent), colours (azure, gules, sable, vert),
   furs (ermine, vair).
 - **Divisions (4)** — per pale, per fess, per bend, per bend sinister.
+- **Furred fields (1)** — vairy: the bells of vair cut from two tinctures the blazon names, rather
+  than from the argent and azure vair itself is always drawn in. Nothing about it is counted.
 - **Languages (2)** — French and English, both reading and writing.
 - **Colourings (2)** — a colour model and the monochrome hatching convention. A tincture's paint is
   either a flat colour or a pattern.

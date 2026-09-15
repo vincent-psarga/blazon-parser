@@ -3,9 +3,12 @@ import {
   Division,
   DivisionType,
   Field,
+  FurType,
+  Furred,
   Variation,
   VariationType,
   isDivision,
+  isFurred,
   isVariation,
   usualPieces,
 } from '../../domain/models/Field';
@@ -24,6 +27,7 @@ export interface BlazonWording<W extends Word = Word> {
   readonly tinctures: Translation<Tincture, W>;
   readonly divisions: Translation<DivisionType, W>;
   readonly variations: Translation<VariationType, W>;
+  readonly furs: Translation<FurType, W>;
   readonly ordinaries: Translation<OrdinaryType, W>;
   /** How the language counts what a field bears several of. */
   readonly numbers: NumberWords<W>;
@@ -101,7 +105,10 @@ function writeField<W extends Word>(wording: BlazonWording<W>, field: Field): st
   if (isVariation(field)) {
     return writeVariation(wording, field);
   }
-  return isDivision(field) ? writeDivision(wording, field) : writeTincture(wording, field.tincture);
+  if (isDivision(field)) {
+    return writeDivision(wording, field);
+  }
+  return isFurred(field) ? writeFurred(wording, field) : writeTincture(wording, field.tincture);
 }
 
 /**
@@ -123,11 +130,29 @@ function writeVariation<W extends Word>(wording: BlazonWording<W>, variation: Va
 }
 
 function writeDivision<W extends Word>(wording: BlazonWording<W>, division: Division): string {
+  return writeBetween(wording, nameOf(wording.divisions, division.type), division);
+}
+
+/**
+ * A furred field is written as a division is — the name, then the two tinctures
+ * — because that is all there is to say: no count stands anywhere in the phrase,
+ * and neither tongue puts anything between the name and the pair.
+ */
+function writeFurred<W extends Word>(wording: BlazonWording<W>, furred: Furred): string {
+  return writeBetween(wording, nameOf(wording.furs, furred.type), furred);
+}
+
+/** A named term and the two tinctures it takes, joined by the conjunction. */
+function writeBetween<W extends Word>(
+  wording: BlazonWording<W>,
+  name: string,
+  between: Division | Furred
+): string {
   return [
-    nameOf(wording.divisions, division.type),
-    writeTincture(wording, division.firstTincture),
+    name,
+    writeTincture(wording, between.firstTincture),
     wording.conjunction,
-    writeTincture(wording, division.secondTincture),
+    writeTincture(wording, between.secondTincture),
   ].join(' ');
 }
 

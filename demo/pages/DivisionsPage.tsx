@@ -1,12 +1,14 @@
 import { Blazon } from '../../src/domain/models/Blazon';
-import { DivisionType, VariationType, usualPieces } from '../../src/domain/models/Field';
+import { DivisionType, FurType, VariationType, usualPieces } from '../../src/domain/models/Field';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
 import { counted } from '../../src/domain/translations/Numbers';
 import { nameOf } from '../../src/domain/translations/Translation';
 import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions';
+import { EnglishFurType } from '../../src/domain/translations/en/Furs';
 import { EnglishNumbers } from '../../src/domain/translations/en/Numbers';
 import { EnglishVariationType } from '../../src/domain/translations/en/Variations';
 import { FrenchDivisionType } from '../../src/domain/translations/fr/Divisions';
+import { FrenchFurType } from '../../src/domain/translations/fr/Furs';
 import { FrenchVariationType } from '../../src/domain/translations/fr/Variations';
 import { EnglishBlazonWriter } from '../../src/application/writer/EnglishBlazonWriter';
 import { FrenchBlazonWriter } from '../../src/application/writer/FrenchBlazonWriter';
@@ -101,6 +103,20 @@ function otherCounts(type: VariationType): ReferenceVariants {
   };
 }
 
+/**
+ * What each furred field is, said plainly.
+ *
+ * Keyed on FurType, so a fur added to the vocabulary breaks the page until
+ * someone says what it looks like.
+ */
+const FURRED_GLOSS: Record<FurType, string> = {
+  [FurType.vairy]:
+    'The bells of vair, cut from two tinctures of the blazon’s choosing rather than from the argent and azure vair is always drawn in. Nothing is counted: the pelt is cut to no number of pieces.',
+};
+
+const FURRED_NOTE =
+  'Named where vair is not. Vair is a tincture and carries its pair with it, so “vair” alone is the whole of what it says; vairé is a field and is owed the two tinctures its bells are cut from. A vairé of argent and azure would simply be vair, and is blazoned so.';
+
 function entry(type: DivisionType): ReferenceEntry {
   const blazon = { field: { type, firstTincture: FIRST, secondTincture: SECOND } };
   return {
@@ -129,6 +145,20 @@ function variedEntry(type: VariationType): ReferenceEntry {
   };
 }
 
+function furredEntry(type: FurType): ReferenceEntry {
+  const blazon = { field: { type, firstTincture: FIRST, secondTincture: SECOND } };
+  return {
+    term: type,
+    english: nameOf(EnglishFurType, type),
+    french: nameOf(FrenchFurType, type),
+    gloss: FURRED_GLOSS[type],
+    note: FURRED_NOTE,
+    blazon,
+    inFrench: inFrench.write(blazon),
+    inEnglish: inEnglish.write(blazon),
+  };
+}
+
 const RANKS: readonly ReferenceRank[] = [
   {
     heading: 'Plain divisions',
@@ -140,6 +170,11 @@ const RANKS: readonly ReferenceRank[] = [
     law: 'The same lines taken over and over, cutting the field into a row of equal pieces of two tinctures laid alternately. How many pieces is part of the blazon.',
     entries: Object.values(VariationType).map(variedEntry),
   },
+  {
+    heading: 'Furred fields',
+    law: 'A pelt rather than a line: the field covered with the figures of a fur, cut from two tinctures the blazon names rather than from the pair the fur is understood to have. Nothing is counted.',
+    entries: Object.values(FurType).map(furredEntry),
+  },
 ];
 
 export interface DivisionsPageProps {
@@ -150,7 +185,7 @@ export function DivisionsPage({ colourings }: DivisionsPageProps) {
   return (
     <Reference
       title="Divisions"
-      extent="Four divisions · five varied fields"
+      extent="Four divisions · five varied fields · one furred field"
       lead={
         <>
           <p className="plane__lead">
@@ -170,6 +205,13 @@ export function DivisionsPage({ colourings }: DivisionsPageProps) {
             <span lang="fr">fascé d’argent et de gueules</span> — where English states it all the
             same: <span lang="en">barry of six argent and gules</span>. The fifth is understood to
             be cut in no number at all, so both tongues count it every time.
+          </p>
+          <p className="plane__lead">
+            A field may be covered rather than cut, with the figures of a fur laid over the whole of
+            it. That is a furred field, and what it takes from the blazon is the pair of tinctures
+            the pelt is cut from: <span lang="en">vair</span> is a tincture and is always argent and
+            azure, where <span lang="fr">vairé</span> is the same bells in whatever two are named.
+            Nothing is counted here — a pelt is cut to no number of pieces.
           </p>
           <p className="plane__lead">Choose any term to read it at full size.</p>
         </>

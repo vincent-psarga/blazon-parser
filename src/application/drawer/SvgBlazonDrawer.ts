@@ -2,9 +2,11 @@ import { Blazon } from '../../domain/models/Blazon';
 import {
   DivisionType,
   Field,
+  Furred,
   Variation,
   VariationType,
   isDivision,
+  isFurred,
   isVariation,
 } from '../../domain/models/Field';
 import { Ordinary, OrdinaryType, borne } from '../../domain/models/Ordinary';
@@ -13,6 +15,7 @@ import {
   ColorModel,
   DrawOptions,
   IBlazonDrawer,
+  Pattern,
   isPattern,
 } from '../../domain/services/IBlazonDrawer';
 
@@ -354,6 +357,11 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
     if (isVariation(field)) {
       return paintVariation(field, colours);
     }
+    // A pelt covers the whole field rather than cutting it, so there is nothing
+    // to lay over anything: the shield is painted with the fur and is done.
+    if (isFurred(field)) {
+      return `<path d="${SHIELD}" fill="${escapeAttribute(cutFor(field, colours).fill)}"/>`;
+    }
     if (!isDivision(field)) {
       return `<path d="${SHIELD}" fill="${colourOf(colours, field.tincture)}"/>`;
     }
@@ -378,6 +386,17 @@ function paintVariation(variation: Variation, colours: ColorModel): string {
   );
 }
 
+/**
+ * The fur a furred field is covered with, cut from the two tinctures it names.
+ *
+ * It is asked for twice over — once for the fill and once for the definition
+ * that fill refers to — so the cutting answers the same for the same pair, and
+ * the drawing carries one definition however often it is asked.
+ */
+function cutFor(field: Furred, colours: ColorModel): Pattern {
+  return colours.cut(field.type, field.firstTincture, field.secondTincture);
+}
+
 function paintOrdinary(ordinary: Ordinary, colours: ColorModel): string {
   return ORDINARIES[ordinary.type](borne(ordinary))(colourOf(colours, ordinary.tincture));
 }
@@ -390,7 +409,7 @@ function colourOf(colours: ColorModel, tincture: Tincture): string {
 function tincturesOf(blazon: Blazon): readonly Tincture[] {
   const painted = blazon.field;
   const field =
-    isDivision(painted) || isVariation(painted)
+    isDivision(painted) || isVariation(painted) || isFurred(painted)
       ? [painted.firstTincture, painted.secondTincture]
       : [painted.tincture];
   return [...field, ...(blazon.ordinaries ?? []).map((ordinary) => ordinary.tincture)];
@@ -412,6 +431,13 @@ function patternsFor(blazon: Blazon, colours: ColorModel): string {
     if (isPattern(paint)) {
       definitions.set(paint.fill, paint.definition);
     }
+  }
+  // A fur cut from two tinctures is a pattern no tincture of the blazon names,
+  // and it is filled with the two that are named, whose own definitions the loop
+  // above has already placed.
+  if (isFurred(blazon.field)) {
+    const cut = cutFor(blazon.field, colours);
+    definitions.set(cut.fill, cut.definition);
   }
   return [...definitions.values()].join('');
 }

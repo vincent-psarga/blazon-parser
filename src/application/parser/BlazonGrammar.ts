@@ -19,6 +19,8 @@ import {
   Division,
   DivisionType,
   Field,
+  FurType,
+  Furred,
   PIECES,
   Variation,
   cutInPieces,
@@ -42,6 +44,12 @@ export interface BlazonGrammar {
   readonly tincture: Parser<TokenKind, Tincture>;
   /** The name of a partition. */
   readonly division: Parser<TokenKind, DivisionType>;
+  /**
+   * The name of a furred field. Nothing follows it but the two tinctures its
+   * pelt is cut from: a fur is cut to no number of pieces, so neither tongue
+   * counts anything here.
+   */
+  readonly fur: Parser<TokenKind, FurType>;
   /**
    * The name of a varied field, with however many pieces the language counts
    * before naming the tinctures: "barry of six", where French says only "fascé".
@@ -123,17 +131,35 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
     )
   );
 
+  // A furred field names the fur and the two tinctures it is cut from, and is
+  // read exactly as a division is: what differs is the vocabulary the first word
+  // belongs to, and that the pelt takes the whole field rather than half of it.
+  const furredField = within(
+    apply(
+      seq(grammar.fur, grammar.tincture, grammar.and, grammar.tincture),
+      ([type, firstTincture, , secondTincture]): Furred => ({
+        type,
+        firstTincture,
+        secondTincture,
+      })
+    )
+  );
+
   // What follows a partition's name: the two tinctures it divides the field
   // between. Reading it alone is how an unknown first word is told apart from a
   // word that was never meant to be a partition at all.
   const restOfDivision = seq(grammar.tincture, grammar.and, grammar.tincture);
 
-  // The varied reading is tried first of the two, because both name the line the
-  // field is cut along and both complain about the same word when they fail: a
-  // tie between them is settled in favour of whichever was listed first, and only
-  // the varied one has anything to say beyond the name — that the pieces were
-  // never counted, or counted in a number no such field is cut into.
-  const field = eitherReading(plainField, alt(variedField, dividedField), restOfDivision);
+  // The varied reading is tried first of the three, because all three open on a
+  // word of their own vocabulary and all three complain about the same word when
+  // they fail: a tie between them is settled in favour of whichever was listed
+  // first, and only the varied one has anything to say beyond the name — that the
+  // pieces were never counted, or counted in a number no such field is cut into.
+  const field = eitherReading(
+    plainField,
+    alt(variedField, furredField, dividedField),
+    restOfDivision
+  );
 
   // An ordinary is laid on the field and carries a tincture of its own, however
   // many of it are borne: two chevrons are two bands of one tincture, not two

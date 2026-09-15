@@ -25,6 +25,8 @@ describe('translating a blazon', () => {
     ["D'hermine.", 'Ermine.'],
     ['De vair.', 'Vair.'],
     ["Parti d'hermine et de vair.", 'Per pale ermine and vair.'],
+    ["Vairé d'or et de gueules.", 'Vairy or and gules.'],
+    ["Vairé d'argent et de sable à la fasce d'or.", 'Vairy argent and sable a fess or.'],
     ["Coupé de gueules et d'hermine.", 'Per fess gules and ermine.'],
     ["D'azur à la fasce d'or.", 'Azure a fess or.'],
     ["De gueules à trois chevrons d'or.", 'Gules three chevrons or.'],

@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest';
 import {
   DivisionType,
+  FurType,
   PIECES,
   VariationType,
   cutInPieces,
   isDivision,
+  isFurred,
   isVariation,
   usualPieces,
 } from './Field';
@@ -25,22 +27,39 @@ const VARIED = {
   pieces: 6,
 };
 
+const FURRED = {
+  type: FurType.vairy,
+  firstTincture: Metals.or,
+  secondTincture: Colours.azure,
+};
+
 describe('telling one kind of field from another', () => {
-  test('a plain field is neither divided nor varied', () => {
+  test('a plain field is none of divided, varied or furred', () => {
     expect(isDivision(PLAIN)).toBe(false);
     expect(isVariation(PLAIN)).toBe(false);
+    expect(isFurred(PLAIN)).toBe(false);
   });
 
-  test('a divided field is divided, and is no variation', () => {
+  test('a divided field is divided, and is neither variation nor pelt', () => {
     expect(isDivision(DIVIDED)).toBe(true);
     expect(isVariation(DIVIDED)).toBe(false);
+    expect(isFurred(DIVIDED)).toBe(false);
   });
 
-  test('a varied field is a variation, and is no division', () => {
+  test('a furred field is furred, and is neither division nor variation', () => {
+    // All three carry a type and two tinctures, so what tells them apart is
+    // which vocabulary the term belongs to rather than the shape of the object.
+    expect(isFurred(FURRED)).toBe(true);
+    expect(isDivision(FURRED)).toBe(false);
+    expect(isVariation(FURRED)).toBe(false);
+  });
+
+  test('a varied field is a variation, and is neither division nor pelt', () => {
     // Both name a line and both carry two tinctures, so what tells them apart is
     // which vocabulary the term belongs to rather than the shape of the object.
     expect(isVariation(VARIED)).toBe(true);
     expect(isDivision(VARIED)).toBe(false);
+    expect(isFurred(VARIED)).toBe(false);
   });
 
   test.each(Object.values(DivisionType))('%s is a division', (type) => {
@@ -49,6 +68,10 @@ describe('telling one kind of field from another', () => {
 
   test.each(Object.values(VariationType))('%s is a variation', (type) => {
     expect(isVariation({ ...VARIED, type })).toBe(true);
+  });
+
+  test.each(Object.values(FurType))('%s is a furred field', (type) => {
+    expect(isFurred({ ...FURRED, type })).toBe(true);
   });
 });
 

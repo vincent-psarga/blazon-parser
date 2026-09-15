@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { DivisionType, VariationType } from '../../domain/models/Field';
+import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
-import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
-import { ColorModel, isPattern } from '../../domain/services/IBlazonDrawer';
+import { Colours, Furs, Metals, TINCTURES, Tincture } from '../../domain/models/Tinctures';
+import { ColorModel, Paint, isPattern } from '../../domain/services/IBlazonDrawer';
+import { cutFurs } from '../../infra/colours/Furs';
 import { HatchingColours } from '../../infra/colours/HatchingColours';
 import { WikipediaColours } from '../../infra/colours/WikipediaColours';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
@@ -19,11 +20,17 @@ const fills = (svg: string) => Array.from(svg.matchAll(/fill="(#[0-9a-f]{6})"/g)
  * following the shield's own edge, and is painted no less for that. The shield's
  * outline is drawn outside the clipped group, so it is left out of the reckoning.
  */
-const paints = (svg: string) =>
-  Array.from(
-    svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>')).matchAll(/="(#[0-9a-f]{6})"/g),
-    (m) => m[1]
-  );
+const paints = (svg: string) => Array.from(inside(svg).matchAll(/="(#[0-9a-f]{6})"/g), (m) => m[1]);
+
+/**
+ * What is drawn inside the clipped group. The closing tag is looked for after
+ * the opening one rather than from the start of the drawing, a pattern in the
+ * defs being free to carry a group of its own and to close it first.
+ */
+const inside = (svg: string) => {
+  const from = svg.indexOf('<g clip-path');
+  return svg.slice(from, svg.indexOf('</g>', from));
+};
 
 describe('SvgBlazonDrawer', () => {
   test('draws an SVG document', () => {
@@ -179,9 +186,10 @@ describe('SvgBlazonDrawer', () => {
   });
 
   describe('colours', () => {
-    const monochrome: ColorModel = Object.fromEntries(
+    const painted = Object.fromEntries(
       TINCTURES.map((tincture) => [tincture, '#123456'])
-    ) as ColorModel;
+    ) as Record<Tincture, Paint>;
+    const monochrome: ColorModel = { ...painted, cut: cutFurs('monochrome', painted) };
 
     test('prefers the colours given at the call over the ones it was built with', () => {
       const svg = drawer.draw({ field: { tincture: Colours.vert } }, { colorModel: monochrome });
@@ -619,6 +627,99 @@ describe('a varied field', () => {
   test('draws what was read from a blazon', () => {
     expect(drawer.draw(parser.parse("Fascé d'argent et de gueules"))).toBe(
       varied(VariationType.barry, 6)
+    );
+  });
+});
+
+describe('a furred field', () => {
+  const hatched = new SvgBlazonDrawer(HatchingColours);
+  const defs = (svg: string) => svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'));
+  const vairy = { type: FurType.vairy, firstTincture: Metals.or, secondTincture: Colours.gules };
+
+  test('covers the whole shield with the fur rather than cutting it', () => {
+    const svg = drawer.draw({ field: vairy });
+    // One shape inside the clip, and it is the shield itself: nothing is laid
+    // over anything, the pelt being the whole of the field.
+    expect(inside(svg).match(/<path /g)).toHaveLength(1);
+  });
+
+  test('fills the field by referring to the fur it was cut into', () => {
+    expect(drawer.draw({ field: vairy })).toContain(
+      'fill="url(#furtype-vairy-colour-metals-or-colours-gules)"'
+    );
+  });
+
+  test('carries the definition the fill refers to', () => {
+    expect(defs(drawer.draw({ field: vairy }))).toContain(
+      '<pattern id="furtype-vairy-colour-metals-or-colours-gules"'
+    );
+  });
+
+  test('cuts the bells out of the two tinctures it was given', () => {
+    const cut = defs(drawer.draw({ field: vairy }));
+    expect(cut).toContain(`fill="${WikipediaColours[Metals.or]}"`);
+    expect(cut).toContain(`fill="${WikipediaColours[Colours.gules]}"`);
+  });
+
+  test('gives the first tincture the ground the bells are laid on, which reaches the chief', () => {
+    const cut = defs(drawer.draw({ field: vairy }));
+    expect(cut.indexOf(`fill="${WikipediaColours[Metals.or]}"`)).toBeLessThan(
+      cut.indexOf(`fill="${WikipediaColours[Colours.gules]}"`)
+    );
+  });
+
+  test('cuts the bells out of whatever the colouring paints those tinctures with', () => {
+    const cut = defs(hatched.draw({ field: vairy }));
+    // The bells are filled with the rulings themselves, whose own definitions
+    // the drawing carries for having named the two tinctures.
+    expect(cut).toContain('<pattern id="hatch-or"');
+    expect(cut).toContain('<pattern id="hatch-gules"');
+    expect(cut).toContain('fill="url(#hatch-or)"');
+    expect(cut).toContain('fill="url(#hatch-gules)"');
+  });
+
+  /**
+   * Ids are shared across a whole page rather than owned by one drawing, so two
+   * colourings must never name one definition alike: a shield shown in colour
+   * beside the same shield hatched would otherwise take the other's.
+   */
+  test('names its fur differently from colouring to colouring', () => {
+    const inColour = drawer.draw({ field: vairy });
+    const inHatching = hatched.draw({ field: vairy });
+    const idOf = (svg: string) => svg.match(/<pattern id="(furtype-[^"]+)"/)?.[1];
+    expect(idOf(inColour)).toBeDefined();
+    expect(idOf(inHatching)).toBeDefined();
+    expect(idOf(inColour)).not.toBe(idOf(inHatching));
+  });
+
+  /**
+   * A heater is inset from the edges of the drawing, so a pelt reckoned from the
+   * drawing has its first figures cut through by the shield's own edge: the
+   * points of the topmost bells swallowed along the chief, and the flare of
+   * their bases along dexter. The tile is laid from the shield's corner instead,
+   * and the two are read off one drawing so that neither may drift from the
+   * other.
+   */
+  test('lays the bells from the corner of the shield, not the corner of the drawing', () => {
+    const svg = drawer.draw({ field: vairy });
+    const [, dexter, chief] = svg.match(/<path d="M(\d+) (\d+) H/) ?? [];
+    expect(dexter).toBeDefined();
+    expect(svg).toContain(
+      `<pattern id="furtype-vairy-colour-metals-or-colours-gules" x="${dexter}" y="${chief}"`
+    );
+  });
+
+  test('lays an ordinary over the pelt', () => {
+    const svg = drawer.draw({
+      field: vairy,
+      ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
+    });
+    expect(paints(svg).at(-1)).toBe(WikipediaColours[Colours.azure]);
+  });
+
+  test('draws what was read from a blazon', () => {
+    expect(drawer.draw(parser.parse("Vairé d'or et de gueules"))).toBe(
+      drawer.draw({ field: vairy })
     );
   });
 });

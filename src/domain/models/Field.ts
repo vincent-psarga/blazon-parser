@@ -2,14 +2,16 @@ import { Tincture } from './Tinctures';
 
 /**
  * What a blazon lays its charges on: one tincture, or two — divided once along a
- * line, or cut along that line over and over into a row of equal pieces.
+ * line, cut along that line over and over into a row of equal pieces, or covered
+ * with a fur cut from the pair.
  */
 export type Field =
   | {
       tincture: Tincture;
     }
   | Division
-  | Variation;
+  | Variation
+  | Furred;
 
 export enum DivisionType {
   fess = 'DivisionType.fess',
@@ -124,12 +126,47 @@ export function cutInPieces(type: VariationType, pieces: number): boolean {
   return pieces >= PIECES && (!EVEN_PIECES[type] || pieces % 2 === 0);
 }
 
+/**
+ * The furred fields: a field covered not with a line repeated but with a pelt,
+ * cut from two tinctures the blazon names rather than from the pair the fur is
+ * understood to have. Vair is a tincture and is always argent and azure; vairé
+ * is the same bells in whatever two tinctures are given, which is why the pair
+ * has to be said and why this is a field rather than a tincture.
+ *
+ * Nothing here is counted. A varied field's pieces belong to its blazon because
+ * cutting a line four times and cutting it eight say two different things; a
+ * pelt is cut to no such number, and neither tongue asks for one.
+ */
+export enum FurType {
+  vairy = 'FurType.vairy',
+}
+
+export type Furred = {
+  type: FurType;
+  firstTincture: Tincture;
+  secondTincture: Tincture;
+};
+
+/**
+ * Which vocabulary a term belongs to is what tells the three kinds apart: all
+ * three carry a type and two tinctures, and nothing about the shape of the
+ * object says which it is.
+ *
+ * Each is asked after by name rather than left to be whatever the others are
+ * not, so that a kind added here is refused by all three until it is given one.
+ */
 const DIVISIONS: ReadonlySet<string> = new Set(Object.values(DivisionType));
+const VARIATIONS: ReadonlySet<string> = new Set(Object.values(VariationType));
+const FURS: ReadonlySet<string> = new Set(Object.values(FurType));
 
 export function isDivision(field: Field): field is Division {
   return 'type' in field && DIVISIONS.has(field.type);
 }
 
 export function isVariation(field: Field): field is Variation {
-  return 'type' in field && !DIVISIONS.has(field.type);
+  return 'type' in field && VARIATIONS.has(field.type);
+}
+
+export function isFurred(field: Field): field is Furred {
+  return 'type' in field && FURS.has(field.type);
 }

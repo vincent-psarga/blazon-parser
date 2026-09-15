@@ -1,5 +1,6 @@
 import { alt, apply, kright, seq } from 'typescript-parsec';
 import { EnglishDivisionType } from '../../domain/translations/en/Divisions';
+import { EnglishFurType } from '../../domain/translations/en/Furs';
 import { EnglishVariationType, OF } from '../../domain/translations/en/Variations';
 import { EnglishOrdinaryType } from '../../domain/translations/en/Ordinaries';
 import { EnglishNumbers } from '../../domain/translations/en/Numbers';
@@ -27,6 +28,9 @@ const VARIATION = apply(
 export const EnglishBlazonGrammar: BlazonGrammar = {
   tincture: term(EnglishTinctures, asTincture),
   division: term(EnglishDivisionType, asDivision),
+  // Nothing stands between a furred field and its tinctures, and nothing is
+  // counted: "Vairy or and gules" is the whole of the phrase.
+  fur: term(EnglishFurType, asDivision),
   variation: VARIATION,
   // The article is dropped once read: it says that an ordinary follows, nothing
   // more. Where several are borne the count says it instead, and English puts

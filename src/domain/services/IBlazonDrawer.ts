@@ -1,4 +1,5 @@
 import { Blazon } from '../models/Blazon';
+import { FurType } from '../models/Field';
 import { Tincture } from '../models/Tinctures';
 
 /**
@@ -18,7 +19,27 @@ export type Pattern = {
 /** How one tincture is painted: a plain colour, or a pattern. */
 export type Paint = string | Pattern;
 
-export type ColorModel = Record<Tincture, Paint>;
+/**
+ * How a fur is cut from two tinctures which are not its own: vair is a tincture
+ * and is painted like any other, where vairé is the same bells asked for in
+ * whatever pair a blazon names.
+ *
+ * It belongs to the colouring rather than to the drawer because only the
+ * colouring knows what its tinctures are made of — a hatched shield cuts the
+ * bells out of ruling where a coloured one cuts them out of colour — and it must
+ * be a pattern rather than a paint, the bells being a figure repeated over the
+ * field however much of it the fur covers.
+ */
+export type FurCutting = (type: FurType, first: Tincture, second: Tincture) => Pattern;
+
+/**
+ * What every tincture is painted with, and how the furs are cut from pairs of
+ * them. A colouring answers for both: the tinctures it lays are what the bells
+ * are filled with.
+ */
+export type ColorModel = Record<Tincture, Paint> & {
+  readonly cut: FurCutting;
+};
 
 export type DrawOptions = {
   colorModel: ColorModel;

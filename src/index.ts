@@ -2,6 +2,7 @@ export type {
   IBlazonDrawer,
   ColorModel,
   DrawOptions,
+  FurCutting,
   Paint,
   Pattern,
 } from './domain/services/IBlazonDrawer';
@@ -24,14 +25,16 @@ export type {
 } from './application/armorial/ArmorialReading';
 export {
   DivisionType,
+  FurType,
   PIECES,
   VariationType,
   cutInPieces,
   isDivision,
+  isFurred,
   isVariation,
   usualPieces,
 } from './domain/models/Field';
-export type { Division, Field, Variation } from './domain/models/Field';
+export type { Division, Field, Furred, Variation } from './domain/models/Field';
 export { OrdinaryType, SEVERAL, borne, bornInNumber } from './domain/models/Ordinary';
 
 export { BlazonParseError } from './domain/errors/parsing/BlazonParseError';
@@ -64,6 +67,7 @@ export type { NumberWords } from './domain/translations/Numbers';
 export { Word } from './domain/translations/Word';
 export { FrenchWord } from './domain/translations/fr/FrenchWord';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';
+export { EnglishFurType } from './domain/translations/en/Furs';
 export { EnglishVariationType } from './domain/translations/en/Variations';
 export { EnglishNumbers } from './domain/translations/en/Numbers';
 export { EnglishOrdinaryType } from './domain/translations/en/Ordinaries';
@@ -73,6 +77,7 @@ export {
   EnglishTinctures,
 } from './domain/translations/en/Tinctures';
 export { FrenchDivisionType } from './domain/translations/fr/Divisions';
+export { FrenchFurType } from './domain/translations/fr/Furs';
 export { FrenchVariationType } from './domain/translations/fr/Variations';
 export { FrenchNumbers } from './domain/translations/fr/Numbers';
 export { FrenchOrdinaryType } from './domain/translations/fr/Ordinaries';
@@ -86,5 +91,6 @@ export {
 export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
 export { bearing, cutIn, withArticle } from './application/french/FrenchGrammar';
 
+export { cutFurs } from './infra/colours/Furs';
 export { HatchingColours } from './infra/colours/HatchingColours';
 export { WikipediaColours } from './infra/colours/WikipediaColours';

@@ -47,13 +47,13 @@ src/
       MissingPieces.ts        a varied field nobody counted the pieces of
     models/                   what a blazon is, in English
       Blazon.ts               a blazon: its field, and the ordinaries laid on it
-      Field.ts                a plain, divided or varied field; DivisionType, VariationType
+      Field.ts                a plain, divided, varied or furred field; DivisionType, VariationType, FurType
       Ordinary.ts             a band laid on the field; OrdinaryType
       Tinctures.ts            Metals, Colours, Furs, and the Tincture union
     services/                 what the library offers, as interfaces
       IBlazonParser.ts        text -> Blazon
       IBlazonWriter.ts        Blazon -> text
-      IBlazonDrawer.ts        Blazon -> SVG; ColorModel
+      IBlazonDrawer.ts        Blazon -> SVG; ColorModel, and how it cuts a fur
     translations/
       Translation.ts          Translation<T>, and reading a term back from a spelling
       Numbers.ts              how a language counts pieces, and what a field bears several of
@@ -90,7 +90,8 @@ src/
     colours/
       WikipediaColours.ts     the shades Wikipedia paints its tinctures with
       HatchingColours.ts      the marks that stand in for colour in monochrome
-      Furs.ts                 ermine and vair, built from whichever two tinctures
+      Furs.ts                 ermine and vair, built from whichever two tinctures,
+                              and how a colouring cuts a vairé from a pair of them
 
   index.ts                    public API
 
@@ -101,7 +102,7 @@ demo/
   pages/
     BlazonPage.tsx            type a blazon, read its translation, see the arms
     TincturesPage.tsx         every tincture, named, painted and hatched
-    DivisionsPage.tsx         every partition and varied field, named and drawn
+    DivisionsPage.tsx         every partition, varied field and furred field, named and drawn
     OrdinariesPage.tsx        every ordinary, named and drawn
     DocIndexPage.tsx          what a blazon may be, and what it may not
     ArmorialsPage.tsx         the armorials on offer, and how much each parses
@@ -129,12 +130,13 @@ caught up. A term may be spelled several ways — `['mantelé-versé',
 'mantelé-renversé']` — with the first spelling used for writing it back out.
 
 A blazon has the same shape in every language — a field, plain or divided between
-two tinctures or cut into a row of pieces of them, bearing whatever ordinaries are
-laid on it, each once or several times over — so one rule reads them all and one
-sentence writes them all. A language supplies a `BlazonGrammar` for reading and a
-`BlazonWording` for writing: its tinctures, its partitions, its varied fields, its
-ordinaries, and its conjunction. French wraps its tinctures in an article that has to agree with
-the word it introduces; English names them bare.
+two tinctures or cut into a row of pieces of them or covered with a fur cut from
+them, bearing whatever ordinaries are laid on it, each once or several times over
+— so one rule reads them all and one sentence writes them all. A language supplies
+a `BlazonGrammar` for reading and a `BlazonWording` for writing: its tinctures, its
+partitions, its varied fields, its furs, its ordinaries, and its conjunction.
+French wraps its tinctures in an article that has to agree with the word it
+introduces; English names them bare.
 
 A line may be taken over and over rather than once, cutting the field into a row
 of equal pieces of two tinctures laid alternately: that is a varied field, and it
@@ -182,6 +184,30 @@ a field blazoned in six would otherwise be drawn in five — and the shield is
 painted the first tincture entire with every other piece laid over it in the
 second, which halves the shapes and leaves no seam between two pieces of one
 tincture.
+
+A field may be covered rather than cut. A fur is a figure repeated over the whole
+of it, and two of the furs are tinctures in their own right — ermine, vair — which
+carry their pair with them and name no other: `vair` is argent and azure and says
+so by being vair. A furred field is the same pelt asked for in whatever two
+tinctures a blazon names, so it is a field rather than a tincture and is owed the
+pair:
+
+```ts
+frenchParser.parse("Vairé d'or et de gueules"); // FurType.vairy, or and gules
+englishWriter.write(blazon); // Vairy or and gules.
+```
+
+One so far — vairy, which French and the English armorials alike also spell
+vairé. Nothing about it is counted: a varied field's pieces belong to its blazon
+because cutting a line four times and cutting it eight say two different things,
+where a pelt is cut to no such number and neither tongue asks for one. A vairé of
+argent and azure would simply be vair, and is blazoned so.
+
+Drawing one is the colouring's business rather than the drawer's, because only the
+colouring knows what its tinctures are made of: a `ColorModel` says how it cuts a
+fur from a pair of them, and a hatched shield cuts the bells out of ruling where a
+coloured one cuts them out of colour. The bells themselves are the same bells, and
+the same shapes that paint the vair tincture.
 
 An ordinary is laid on the field rather than cutting it, and carries a tincture of
 its own. Most are named after the same line as a partition, so what tells the two
@@ -259,7 +285,10 @@ assumed — `WikipediaColours` is one convention among many.
 A tincture is not always a flat colour. A `Paint` is either a colour or a
 `Pattern`, which pairs the fill a shape asks for with the definition that fill
 refers to; the drawing carries the patterns its own tinctures call for and no
-others. `HatchingColours` is the monochrome convention — argent left blank, or
+others, along with whatever fur it was cut into. A pattern is named after the
+colouring that made it, ids being shared across a whole page rather than owned by
+one drawing: a shield shown in colour beside the same shield hatched would
+otherwise ask for one definition and be given the other's. `HatchingColours` is the monochrome convention — argent left blank, or
 dotted, azure ruled horizontally, gules vertically, sable both ways, vert along
 the diagonal a bend runs — and the furs are the same mechanism again: ermine is a
 field strewn with spots, vair a lattice of bells, each built from whichever two

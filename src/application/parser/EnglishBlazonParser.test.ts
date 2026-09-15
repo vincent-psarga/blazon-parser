@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { DivisionType, VariationType } from '../../domain/models/Field';
+import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
@@ -7,7 +7,7 @@ import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
-import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { EnglishBlazonParser } from './EnglishBlazonParser';
@@ -407,5 +407,45 @@ describe('varied fields, in English', () => {
     test('still owes both its tinctures', () => {
       expect(() => parser.parse('Barry of six argent and')).toThrow(MissingTincture);
     });
+  });
+});
+
+describe('furred fields, in English', () => {
+  test('reads "Vairy or and gules" as the bells of vair cut from that pair', () => {
+    expect(parser.parse('Vairy or and gules')).toEqual({
+      field: {
+        type: FurType.vairy,
+        firstTincture: Metals.or,
+        secondTincture: Colours.gules,
+      },
+    });
+  });
+
+  test('counts nothing: a pelt is cut to no number of pieces', () => {
+    expect(parser.parse('Vairy or and gules').field).not.toHaveProperty('pieces');
+  });
+
+  test.each(['vairy', 'vairé', 'vaire'])('reads "%s" as the same field', (name) => {
+    expect(parser.parse(`${name} or and gules`)).toEqual(parser.parse('Vairy or and gules'));
+  });
+
+  test('bears an ordinary over the pelt, as any other field does', () => {
+    expect(parser.parse('Vairy or and gules a fess azure')).toEqual({
+      field: { type: FurType.vairy, firstTincture: Metals.or, secondTincture: Colours.gules },
+      ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
+    });
+  });
+
+  test('tells "vairy" the field from "vair" the tincture, which names no pair', () => {
+    expect(parser.parse('Vairy argent and azure').field).toMatchObject({ type: FurType.vairy });
+    expect(parser.parse('Vair').field).toEqual({ tincture: Furs.vair });
+  });
+
+  test('still owes both its tinctures', () => {
+    expect(() => parser.parse('Vairy or and')).toThrow(MissingTincture);
+  });
+
+  test('counts nothing after the tinctures either', () => {
+    expect(() => parser.parse('Vairy of six or and gules')).toThrow();
   });
 });

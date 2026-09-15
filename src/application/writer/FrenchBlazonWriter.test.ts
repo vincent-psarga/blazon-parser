@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { Blazon } from '../../domain/models/Blazon';
-import { DivisionType, VariationType } from '../../domain/models/Field';
+import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
-import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { Colours, Metals, TINCTURES, Tincture } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { FrenchBlazonWriter } from './FrenchBlazonWriter';
 
@@ -364,5 +364,33 @@ describe('a varied field', () => {
 
   test('falls back on the figure where French has no word for the number', () => {
     expect(writer.write(barry(20))).toBe("Fascé d'argent et de gueules de 20 pièces.");
+  });
+});
+
+describe('a furred field', () => {
+  const vairy = (first: Tincture, second: Tincture): Blazon => ({
+    field: { type: FurType.vairy, firstTincture: first, secondTincture: second },
+  });
+
+  test('names the fur and the pair it is cut from, with the articles the pair calls for', () => {
+    expect(writer.write(vairy(Metals.or, Colours.gules))).toBe("Vairé d'or et de gueules.");
+    expect(writer.write(vairy(Metals.argent, Colours.azure))).toBe("Vairé d'argent et d'azur.");
+  });
+
+  test('counts nothing after the tinctures: a pelt is cut to no number of pieces', () => {
+    expect(writer.write(vairy(Metals.or, Colours.gules))).not.toMatch(/pièces/);
+  });
+
+  test('survives the round trip', () => {
+    for (const first of TINCTURES) {
+      const blazon = vairy(first, Colours.sable);
+      expect(parser.parse(writer.write(blazon))).toEqual(blazon);
+    }
+  });
+
+  test('writes what it bears after the pair the pelt is cut from', () => {
+    expect(writer.write(parser.parse("Vairé d'or et d'azur à la bordure de gueules."))).toBe(
+      "Vairé d'or et d'azur à la bordure de gueules."
+    );
   });
 });

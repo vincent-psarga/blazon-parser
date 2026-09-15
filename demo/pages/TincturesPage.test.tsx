@@ -4,7 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { mount } from '../testing/Mounting';
 import { afterEach, describe, expect, test } from 'vitest';
 import { Colours, Furs, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
-import { isPattern } from '../../src/domain/services/IBlazonDrawer';
+import { Paint, isPattern } from '../../src/domain/services/IBlazonDrawer';
 import { nameOf } from '../../src/domain/translations/Translation';
 import { EnglishTinctures } from '../../src/domain/translations/en/Tinctures';
 import { FrenchTinctures } from '../../src/domain/translations/fr/Tinctures';
@@ -31,8 +31,7 @@ const names = () => {
   return { english, french };
 };
 
-const fillOf = (paint: (typeof WikipediaColours)[keyof typeof WikipediaColours]) =>
-  isPattern(paint) ? paint.fill : paint;
+const fillOf = (paint: Paint) => (isPattern(paint) ? paint.fill : paint);
 
 describe('TincturesPage', () => {
   test('keeps the three ranks apart', () => {

@@ -1,6 +1,7 @@
 import { Colours, Furs, Metals } from '../../domain/models/Tinctures';
-import { ColorModel, Pattern } from '../../domain/services/IBlazonDrawer';
-import { ermine, vair } from './Furs';
+import { Tincture } from '../../domain/models/Tinctures';
+import { ColorModel, Paint, Pattern } from '../../domain/services/IBlazonDrawer';
+import { cutFurs, ermine, vair } from './Furs';
 
 /**
  * Hatching: the convention for standing in for the tinctures where colour cannot
@@ -32,7 +33,15 @@ function hatch(name: string, marks: string, transform = ''): Pattern {
   };
 }
 
-export const HatchingColours: ColorModel = {
+/**
+ * What this colouring names its patterns after. Ids are shared across a whole
+ * page rather than owned by one drawing, so a shield shown hatched beside the
+ * same shield in colour would otherwise ask for one definition and get the
+ * other's, whichever the page had placed first.
+ */
+const COLOURING = 'hatched';
+
+const TINCTURES: Record<Tincture, Paint> = {
   // Argent carries no marks at all: in this system the paper is the metal.
   [Metals.argent]: PAPER,
   [Metals.or]: hatch('or', DOTS),
@@ -42,9 +51,19 @@ export const HatchingColours: ColorModel = {
   // Ruled lines turned onto the diagonal a bend runs along.
   [Colours.vert]: hatch('vert', HORIZONTAL, ' patternTransform="rotate(45)"'),
   // Ermine is blank paper and solid spots, both of which hatching already has.
-  [Furs.ermine]: ermine('ermine-hatched', PAPER, INK),
+  [Furs.ermine]: ermine(`ermine-${COLOURING}`, PAPER, INK),
   // Vair needs its azure ruled, so it carries the ruling it refers to with it.
   [Furs.vair]: vairHatched(),
+};
+
+/**
+ * Every tincture here is ruling or blank paper, so a vairé cut from two of them
+ * would be one mark against another with nothing between: the bells are given an
+ * edge, as the vair's own are.
+ */
+export const HatchingColours: ColorModel = {
+  ...TINCTURES,
+  cut: cutFurs(COLOURING, TINCTURES, INK),
 };
 
 /**
@@ -54,6 +73,6 @@ export const HatchingColours: ColorModel = {
  */
 function vairHatched(): Pattern {
   const ruling = hatch('vair-azure', HORIZONTAL);
-  const bells = vair('vair-hatched', PAPER, ruling.fill, INK);
+  const bells = vair(`vair-${COLOURING}`, PAPER, ruling.fill, INK);
   return { fill: bells.fill, definition: ruling.definition + bells.definition };
 }

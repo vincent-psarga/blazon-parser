@@ -1,5 +1,6 @@
 import { Parser, alt, apply, kleft, kright, seq, tok } from 'typescript-parsec';
 import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
+import { FrenchFurType } from '../../domain/translations/fr/Furs';
 import { FrenchVariationType, PIECES } from '../../domain/translations/fr/Variations';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
 import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryArticle';
@@ -87,6 +88,9 @@ const HOW_MANY_PIECES = kleft(kright(IN_PIECES, number(FrenchNumbers)), keyword(
 export const FrenchBlazonGrammar: BlazonGrammar = {
   tincture: TINCTURE,
   division: term(FrenchDivisionType, asDivision),
+  // A furred field is named bare too, and nothing is counted after it: "Vairé
+  // d'or et de gueules" is the whole of the phrase.
+  fur: term(FrenchFurType, asDivision),
   // A varied field is named bare: nothing introduces it, the name being the
   // first word of the blazon, and nothing agrees with it either.
   variation: varied(FrenchVariationType, asDivision),

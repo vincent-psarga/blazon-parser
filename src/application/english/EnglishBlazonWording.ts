@@ -1,4 +1,5 @@
 import { EnglishDivisionType } from '../../domain/translations/en/Divisions';
+import { EnglishFurType } from '../../domain/translations/en/Furs';
 import { EnglishNumbers } from '../../domain/translations/en/Numbers';
 import { EnglishOrdinaryType } from '../../domain/translations/en/Ordinaries';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
@@ -10,6 +11,7 @@ export const EnglishBlazonWording: BlazonWording = {
   tinctures: EnglishTinctures,
   divisions: EnglishDivisionType,
   variations: EnglishVariationType,
+  furs: EnglishFurType,
   ordinaries: EnglishOrdinaryType,
   numbers: EnglishNumbers,
   // English names a tincture bare: "Azure.", "Per pale azure and or."

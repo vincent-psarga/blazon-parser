@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Blazon } from '../../domain/models/Blazon';
-import { DivisionType, VariationType } from '../../domain/models/Field';
+import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { EnglishBlazonParser } from '../parser/EnglishBlazonParser';
@@ -286,6 +286,34 @@ describe('a varied field, in English', () => {
   test('writes what it bears after the pieces it is cut into', () => {
     expect(writer.write(parser.parse('Bendy of eight or and azure a bordure gules'))).toBe(
       'Bendy of eight or and azure a bordure gules.'
+    );
+  });
+});
+
+describe('a furred field, in English', () => {
+  const furred: Blazon = {
+    field: {
+      type: FurType.vairy,
+      firstTincture: Metals.argent,
+      secondTincture: Colours.gules,
+    },
+  };
+
+  test('names the fur and the pair it is cut from, and counts nothing', () => {
+    expect(writer.write(furred)).toBe('Vairy argent and gules.');
+  });
+
+  test('survives the round trip', () => {
+    expect(parser.parse(writer.write(furred))).toEqual(furred);
+  });
+
+  test('writes the borrowed French spelling back as the English one', () => {
+    expect(writer.write(parser.parse('Vairé or and azure'))).toBe('Vairy or and azure.');
+  });
+
+  test('writes what it bears after the pair the pelt is cut from', () => {
+    expect(writer.write(parser.parse('Vairy or and azure a bordure gules'))).toBe(
+      'Vairy or and azure a bordure gules.'
     );
   });
 });

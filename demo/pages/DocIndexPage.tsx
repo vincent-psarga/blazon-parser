@@ -1,10 +1,11 @@
 import { Link } from 'react-router';
-import { DivisionType, VariationType, usualPieces } from '../../src/domain/models/Field';
+import { DivisionType, FurType, VariationType, usualPieces } from '../../src/domain/models/Field';
 import { OrdinaryType } from '../../src/domain/models/Ordinary';
 import { Colours, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
 import { nameOf } from '../../src/domain/translations/Translation';
 import { EnglishTinctures } from '../../src/domain/translations/en/Tinctures';
 import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions';
+import { EnglishFurType } from '../../src/domain/translations/en/Furs';
 import { EnglishVariationType } from '../../src/domain/translations/en/Variations';
 import { EnglishOrdinaryType } from '../../src/domain/translations/en/Ordinaries';
 import { BlazonShield } from '../components/BlazonShield';
@@ -12,6 +13,7 @@ import { COLOURINGS, OUTLINE } from '../utils/Colourings';
 
 const DIVISIONS = Object.values(DivisionType);
 const VARIATIONS = Object.values(VariationType);
+const FURS = Object.values(FurType);
 const ORDINARIES = Object.values(OrdinaryType);
 
 // A varied field is drawn in the pieces its term is understood to have, and the
@@ -34,7 +36,7 @@ const PAGES = [
   {
     path: '/doc/divisions',
     name: 'Divisions',
-    note: 'The field cut in two along a line, and the same line taken over and over into a row of pieces. Each is cut from the same argent and gules.',
+    note: 'The field cut in two along a line, the same line taken over and over into a row of pieces, and the field covered with a fur instead. Each is cut from the same argent and gules.',
     arms: [
       ...DIVISIONS.map((type) => ({
         key: type,
@@ -52,6 +54,11 @@ const PAGES = [
             pieces: usualPieces(type) ?? PIECES,
           },
         },
+      })),
+      ...FURS.map((type) => ({
+        key: type,
+        label: nameOf(EnglishFurType, type),
+        blazon: { field: { type, firstTincture: Metals.argent, secondTincture: Colours.gules } },
       })),
     ],
   },
@@ -76,13 +83,13 @@ export function DocIndexPage() {
       <h1>The vocabulary</h1>
       <p className="plane__extent">
         {TINCTURES.length} tinctures · {DIVISIONS.length} partitions · {VARIATIONS.length} varied
-        fields · {ORDINARIES.length} ordinaries
+        fields · {FURS.length} furred field · {ORDINARIES.length} ordinaries
       </p>
       <p className="plane__lead">
         Everything the parser reads, in French and in English. A blazon it accepts is a field — one
-        tincture, or two divided by a line, or two alternating down a row of pieces — and whatever
-        plain bands are laid over it, in the order they were laid. There are no other charges yet,
-        and nothing here promises any.
+        tincture, or two divided by a line, or two alternating down a row of pieces, or two cut into
+        the bells of a fur — and whatever plain bands are laid over it, in the order they were laid.
+        There are no other charges yet, and nothing here promises any.
       </p>
 
       <nav className="index" aria-label="Documentation">

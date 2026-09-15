@@ -3,14 +3,16 @@ import { cleanup, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { mount } from '../testing/Mounting';
 import { afterEach, describe, expect, test } from 'vitest';
-import { DivisionType, VariationType, usualPieces } from '../../src/domain/models/Field';
+import { DivisionType, FurType, VariationType, usualPieces } from '../../src/domain/models/Field';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
 import { counted } from '../../src/domain/translations/Numbers';
 import { nameOf } from '../../src/domain/translations/Translation';
 import { EnglishNumbers } from '../../src/domain/translations/en/Numbers';
 import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions';
+import { EnglishFurType } from '../../src/domain/translations/en/Furs';
 import { EnglishVariationType } from '../../src/domain/translations/en/Variations';
 import { FrenchDivisionType } from '../../src/domain/translations/fr/Divisions';
+import { FrenchFurType } from '../../src/domain/translations/fr/Furs';
 import { FrenchVariationType } from '../../src/domain/translations/fr/Variations';
 import { FrenchBlazonParser } from '../../src/application/parser/FrenchBlazonParser';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
@@ -37,9 +39,11 @@ const painting = (colouring: string) =>
   );
 
 describe('DivisionsPage', () => {
-  test('states how many divisions there are, and how many varied fields', () => {
+  test('states how many divisions there are, how many varied fields and how many furred', () => {
     mount(<DivisionsPage />);
-    expect(screen.getByText(/Four divisions · five varied fields/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Four divisions · five varied fields · one furred field/)
+    ).toBeInTheDocument();
   });
 
   test.each(DIVISIONS)('keeps %s present in the stack', (type) => {
@@ -87,21 +91,24 @@ const variants = () => showing().querySelector('.showing__variants');
 const borne = () => Array.from(variants()?.querySelectorAll('figure') ?? []);
 
 describe('the varied fields, which stand in a rank of their own', () => {
-  test('sets the two kinds apart, each under its own heading', () => {
+  test('sets the three kinds apart, each under its own heading', () => {
     mount(<DivisionsPage />);
     expect(screen.getByRole('heading', { name: 'Plain divisions' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Varied fields' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Furred fields' })).toBeInTheDocument();
   });
 
-  test('keeps the plain divisions out of the varied rank, and the varied out of theirs', () => {
+  test('keeps each kind to its own rank, and none of the three in another', () => {
     mount(<DivisionsPage />);
     const ranks = Array.from(document.querySelectorAll('.stack__rank'));
-    const [divisions, varied] = ranks;
-    expect(ranks).toHaveLength(2);
+    const [divisions, varied, furred] = ranks;
+    expect(ranks).toHaveLength(3);
     expect(within(divisions as HTMLElement).getByText('per fess')).toBeInTheDocument();
     expect(within(divisions as HTMLElement).queryByText('barry')).toBeNull();
     expect(within(varied as HTMLElement).getByText('barry')).toBeInTheDocument();
     expect(within(varied as HTMLElement).queryByText('per fess')).toBeNull();
+    expect(within(furred as HTMLElement).getByText('vairy')).toBeInTheDocument();
+    expect(within(furred as HTMLElement).queryByText('barry')).toBeNull();
   });
 
   test.each(VARIATIONS)('keeps %s present in the stack', (type) => {
@@ -167,6 +174,51 @@ describe('the varied fields, which stand in a rank of their own', () => {
   test('shows no further arms for a plain division: it is cut in two and that is all', async () => {
     mount(<DivisionsPage />);
     await userEvent.setup().click(ghost(DivisionType.pale));
+    expect(variants()).toBeNull();
+  });
+});
+
+const FURS = Object.values(FurType);
+const furredGhost = (type: FurType) =>
+  screen.getByRole('link', { name: nameOf(EnglishFurType, type) });
+
+describe('the furred fields, which stand in a rank of their own', () => {
+  test.each(FURS)('keeps %s present in the stack', (type) => {
+    mount(<DivisionsPage />);
+    expect(furredGhost(type)).toBeInTheDocument();
+  });
+
+  test.each(FURS)('reads %s in both languages when struck', async (type) => {
+    mount(<DivisionsPage />);
+    await userEvent.setup().click(furredGhost(type));
+    const { english, french } = names();
+    expect(english).toHaveTextContent(nameOf(EnglishFurType, type));
+    expect(french).toHaveTextContent(nameOf(FrenchFurType, type));
+  });
+
+  test.each(FURS)('offers %s as a blazon the parser reads back', async (type) => {
+    mount(<DivisionsPage />);
+    await userEvent.setup().click(furredGhost(type));
+    const written = showing().querySelector('.showing__usage [lang="fr"]')?.textContent ?? '';
+    expect(new FrenchBlazonParser().parse(written).field).toMatchObject({ type });
+  });
+
+  test('cuts the vairé from the same two tinctures as every other term on the page', async () => {
+    mount(<DivisionsPage />);
+    await userEvent.setup().click(furredGhost(FurType.vairy));
+    expect(within(showing()).getByText("Vairé d'argent et de gueules.")).toBeInTheDocument();
+    expect(within(showing()).getByText('Vairy argent and gules.')).toBeInTheDocument();
+  });
+
+  test('tells the reader why a vairé is named where a vair is not', async () => {
+    mount(<DivisionsPage />);
+    await userEvent.setup().click(furredGhost(FurType.vairy));
+    expect(showing().querySelector('.showing__note')?.textContent).toMatch(/Vair is a tincture/);
+  });
+
+  test('shows no further arms for a furred field: nothing about it is counted', async () => {
+    mount(<DivisionsPage />);
+    await userEvent.setup().click(furredGhost(FurType.vairy));
     expect(variants()).toBeNull();
   });
 });
