@@ -3,6 +3,21 @@ import { Blazon } from '../../src/domain/models/Blazon';
 import { BlazonShield } from './BlazonShield';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 
+/** The same term borne another way, shown in arms of its own. */
+export interface ReferenceVariant {
+  /** What this way is called: "Twice", "Thrice". */
+  readonly label: string;
+  readonly blazon: Blazon;
+  readonly inFrench: string;
+  readonly inEnglish: string;
+}
+
+/** Further arms a term is borne in, and what they have in common. */
+export interface ReferenceVariants {
+  readonly heading: string;
+  readonly entries: readonly ReferenceVariant[];
+}
+
 /** One term of the vocabulary, everything a reader or a caller needs of it. */
 export interface ReferenceEntry {
   /** The enum value, used as the key and shown as the reference. */
@@ -18,6 +33,10 @@ export interface ReferenceEntry {
   /** The term inside a blazon a reader could type. */
   readonly inFrench: string;
   readonly inEnglish: string;
+  /** A rule about the term itself, where the term is governed by one. */
+  readonly note?: string;
+  /** The term borne otherwise, where a single drawing does not tell the whole. */
+  readonly variants?: ReferenceVariants;
 }
 
 export interface ReferenceRank {
@@ -134,6 +153,7 @@ export function Reference({
 
             <p className="showing__ref">{struck.reference}</p>
             <p className="showing__gloss">{struck.gloss}</p>
+            {struck.note !== undefined && <p className="showing__note">{struck.note}</p>}
 
             <p className="showing__usage">
               <span lang="fr">{struck.inFrench}</span>
@@ -144,6 +164,40 @@ export function Reference({
               <button type="button" className="showing__try" onClick={() => onTry(struck.inFrench)}>
                 Read this one
               </button>
+            )}
+
+            {/* Last of all, after the button: the button reads the blazon
+                written directly above it, and anything standing between the two
+                would leave the reader guessing which of them it takes. The
+                further arms are smaller than the struck ones for the same
+                reason — they say what one drawing cannot, without ever standing
+                in its place. */}
+            {struck.variants !== undefined && (
+              <section
+                className="showing__variants"
+                aria-labelledby={`variants-${struck.term}`}
+                key={struck.term}
+              >
+                <h3 id={`variants-${struck.term}`}>{struck.variants.heading}</h3>
+                <div className="showing__borne">
+                  {struck.variants.entries.map((variant) => (
+                    <figure key={variant.label} className="showing__variant">
+                      <BlazonShield
+                        blazon={variant.blazon}
+                        alt={`${struck.english}, ${variant.label.toLowerCase()}`}
+                        colours={colourings[0]?.colours}
+                        outline={OUTLINE}
+                        width={88}
+                      />
+                      <figcaption>
+                        <b>{variant.label}</b>
+                        <span lang="fr">{variant.inFrench}</span>
+                        <span lang="en">{variant.inEnglish}</span>
+                      </figcaption>
+                    </figure>
+                  ))}
+                </div>
+              </section>
             )}
           </div>
         </div>

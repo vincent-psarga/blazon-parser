@@ -443,6 +443,81 @@ body {
   text-wrap: pretty;
 }
 
+/* A rule the term itself answers to, standing under the gloss that describes it. */
+.showing__note {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--bone-quiet);
+  text-wrap: pretty;
+}
+
+/*
+ * The same term borne another way. These stand under the reading and are drawn
+ * smaller than what is struck: they say what one drawing cannot, and must never
+ * compete with it for the eye.
+ */
+.showing__variants {
+  display: grid;
+  gap: 0.85rem;
+  /* A little more air than the reading's own rhythm, the block now following a
+     button: what can be pressed and what is only shown must not run together. */
+  margin-top: 0.5rem;
+}
+
+.showing__variants h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+}
+
+.showing__borne {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1rem, 3vw, 2rem);
+}
+
+.showing__variant {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.showing__variant img {
+  display: block;
+  width: 4.5rem;
+  height: auto;
+  filter: drop-shadow(0 0 14px rgb(251 247 238 / 0.18));
+}
+
+.showing__variant figcaption {
+  display: grid;
+  gap: 0.25rem;
+  font-family: var(--display);
+  min-width: 0;
+}
+
+.showing__variant b {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--strike);
+}
+
+.showing__variant span[lang='fr'] {
+  color: var(--bone-quiet);
+}
+
+.showing__variant span[lang='en'] {
+  color: var(--bone);
+}
+
 .showing__usage {
   margin: 0;
   display: grid;
