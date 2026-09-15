@@ -174,6 +174,15 @@ six pièces" or "en six pièces" as it pleases. A `BlazonGrammar` therefore offe
 the count in whichever of the two places its language puts it, and the shared
 rule takes whichever arrived.
 
+Drawing them, a piece can be laid perfectly correctly and still fall where the
+shield is not: a heater is inset from the edges of the drawing and comes to a
+point, so three corners of the box it is drawn in are not on it. The pieces are
+measured across what the shield actually reaches rather than across the drawing —
+a field blazoned in six would otherwise be drawn in five — and the shield is
+painted the first tincture entire with every other piece laid over it in the
+second, which halves the shapes and leaves no seam between two pieces of one
+tincture.
+
 An ordinary is laid on the field rather than cutting it, and carries a tincture of
 its own. Most are named after the same line as a partition, so what tells the two
 apart is the word in front: English divides `per fess` and charges `a fess`, while

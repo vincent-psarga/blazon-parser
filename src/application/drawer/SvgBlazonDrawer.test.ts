@@ -528,37 +528,47 @@ describe('a varied field', () => {
     }
   );
 
-  test('draws a barry of six as six bands across, the first in chief', () => {
+  test('draws a barry of six as six bands across, sharing the shield from head to foot', () => {
     const svg = varied(VariationType.barry, 6);
-    expect(svg).toContain('<rect x="0" y="40" width="200" height="40"');
-    expect(svg).toContain('<rect x="0" y="120" width="200" height="40"');
-    expect(svg).toContain('<rect x="0" y="200" width="200" height="40"');
+    // The shield runs from 6 to 234, not the drawing's 0 to 240, so the bands
+    // are 38 apiece and the first of them begins at the top of the shield.
+    expect(svg).toContain('<rect x="0" y="44" width="200" height="38"');
+    expect(svg).toContain('<rect x="0" y="120" width="200" height="38"');
+    expect(svg).toContain('<rect x="0" y="196" width="200" height="38"');
   });
 
   test('draws a paly of six as six bands down, the first at dexter', () => {
     const svg = varied(VariationType.paly, 6);
-    // Dexter is the viewer's left, so the second piece — the first one laid
-    // over — begins a third of the way across.
-    expect(svg).toContain('<rect x="33" y="0" width="34" height="240"');
-    expect(svg).toContain('<rect x="167" y="0" width="33" height="240"');
+    // Dexter is the viewer's left, and the bands share the shield's own width —
+    // 6 to 194 — so the second piece, which is the first one laid over, begins
+    // a sixth of that in rather than a sixth of the drawing.
+    expect(svg).toContain('<rect x="37" y="0" width="32" height="240"');
+    expect(svg).toContain('<rect x="163" y="0" width="31" height="240"');
   });
 
-  test('gives the dexter chief corner of a bendy to the first tincture', () => {
-    // Which is what the armorials draw: "Bandé de gueules et d'argent de six
-    // pièces" puts the gules against that corner, with the argent below it.
+  test('gives the sinister chief corner of a bendy to the first tincture', () => {
+    // Which is where the armorials start counting: "Bandé de gueules et d'argent
+    // de six pièces" puts the gules in that corner. The last piece is therefore
+    // never one of those laid over, so no piece reaches the top edge's far end.
     const svg = varied(VariationType.bendy, 6);
-    // The pieces laid over run from the corner in sinister chief downwards, so
-    // none of them opens on the top edge before a third of the way across.
-    expect(svg).toContain('<polygon points="67,0 133,0 333,240 267,240"');
-    expect(svg).not.toContain('<polygon points="0,0');
+    expect(svg).toContain('<polygon points="82,0 136,0 336,240 282,240"');
+    expect(svg).not.toContain('<polygon points="136,0');
+  });
+
+  test('spreads a bendy across the shield rather than across the drawing', () => {
+    // The lowest diagonal of a bendy falls where a square shield would have a
+    // corner and a heater has only its point, so the pieces are measured over
+    // what the shield actually reaches: six pieces, six of them drawn.
+    const svg = varied(VariationType.bendy, 6);
+    expect(svg).toContain('<polygon points="-131,0 -78,0 122,240 69,240"');
   });
 
   test('draws a pily as piles driven up between the piles from the chief', () => {
     const svg = varied(VariationType.pily, 6);
-    // Three piles from the chief share the top edge; the three laid over point
-    // up where two of those meet, the last of them at the sinister flank.
-    expect(svg).toContain('<polygon points="34,240 67,0 100,240"');
-    expect(svg).toContain('<polygon points="167,240 200,0 233,240"');
+    // Three piles from the chief share the shield's width; the three laid over
+    // point up where two of those meet, the last at the sinister flank.
+    expect(svg).toContain('<polygon points="38,240 69,0 100,240"');
+    expect(svg).toContain('<polygon points="163,240 194,0 225,240"');
   });
 
   test('counts a pily odd as readily as even, its piles interlocking', () => {
@@ -568,10 +578,10 @@ describe('a varied field', () => {
   test('draws a chevronny of six as six chevron pieces, the first in chief', () => {
     const svg = varied(VariationType.chevronny, 6);
     // A chevron reaches a hundred below its point, so the points share the room
-    // from a hundred above the field to the foot of it: the second piece — the
-    // first one laid over — has its point 43 below the top of the field.
-    expect(svg).toContain('<polygon points="0,57 100,-43 200,57');
-    expect(svg).toContain('<polygon points="0,283 100,183 200,283');
+    // from a hundred above the head of the shield down to its foot: the second
+    // piece — the first one laid over — points 39 above the top of the shield.
+    expect(svg).toContain('<polygon points="0,61 100,-39 200,61');
+    expect(svg).toContain('<polygon points="0,279 100,179 200,279');
   });
 
   test('cuts a field in two, which is the fewest it can be cut into', () => {

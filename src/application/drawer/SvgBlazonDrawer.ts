@@ -22,6 +22,29 @@ const HEIGHT = 240;
 /** A heater shield, inset far enough that its own outline is not clipped away. */
 const SHIELD = 'M6 6 H194 V128 C194 186 150 220 100 234 C50 220 6 186 6 128 Z';
 
+/**
+ * How far the shield itself reaches, which is not how far the drawing does: a
+ * heater is inset from the edges and comes to a point, so three corners of the
+ * box it is drawn in are not on it at all.
+ *
+ * A varied field cuts the shield rather than the box, so its pieces are measured
+ * across these rather than across the whole drawing. Measured across the box, a
+ * piece can fall entirely on ground the shield never covers — the lowest stripe
+ * of a bendy lies where a square shield would have a corner and a heater has
+ * only its point — and a field blazoned in six would be drawn in five.
+ *
+ * The first four are the path's own numbers. The last two are the furthest a
+ * line in bend can be pushed either way and still cross the shield, which the
+ * curve of the base decides rather than any corner: a bend line is placed by
+ * where it cuts the top edge, so they are read on that scale too.
+ */
+const SHIELD_TOP = 6;
+const SHIELD_BASE = 234;
+const SHIELD_DEXTER = 6;
+const SHIELD_SINISTER = 194;
+const SHIELD_BEND_FROM = -131;
+const SHIELD_BEND_TO = 189;
+
 const DEFAULT_OUTLINE = '#1a1a1a';
 const OUTLINE_WIDTH = 3;
 
@@ -239,9 +262,9 @@ const pileFromBase = ([at, across]: Band): Shape =>
  */
 const pilesFromBase = (pieces: number): readonly Band[] => {
   const fromChief = Math.ceil(pieces / 2);
-  const across = WIDTH / fromChief;
+  const across = (SHIELD_SINISTER - SHIELD_DEXTER) / fromChief;
   return Array.from({ length: pieces - fromChief }, (_, pile) => {
-    const point = Math.round((pile + 1) * across);
+    const point = Math.round(SHIELD_DEXTER + (pile + 1) * across);
     const at = Math.round(point - across / 2);
     return [at, Math.round(point + across / 2) - at] as const;
   });
@@ -256,21 +279,35 @@ const pilesFromBase = (pieces: number): readonly Band[] => {
  */
 const VARIATIONS: Record<VariationType, (pieces: number) => Shape> = {
   [VariationType.barry]: (pieces) =>
-    all(alternate(pieces, 0, HEIGHT).map(([at, across]) => rect(0, at, WIDTH, across))),
+    all(
+      alternate(pieces, SHIELD_TOP, SHIELD_BASE - SHIELD_TOP).map(([at, across]) =>
+        rect(0, at, WIDTH, across)
+      )
+    ),
   [VariationType.paly]: (pieces) =>
-    all(alternate(pieces, 0, WIDTH).map(([at, across]) => rect(at, 0, across, HEIGHT))),
-  // The diagonals are counted from the corner in sinister chief down to the one
-  // in dexter base, which is the order that puts the first tincture where the
-  // armorials put it: against the dexter chief corner, with the second below it.
-  // Counting from that end is counting the other way, so it is the first piece
-  // that is laid over rather than the second.
-  [VariationType.bendy]: (pieces) => all(alternate(pieces, -WIDTH, 2 * WIDTH, 0).map(bendBand)),
+    all(
+      alternate(pieces, SHIELD_DEXTER, SHIELD_SINISTER - SHIELD_DEXTER).map(([at, across]) =>
+        rect(at, 0, across, HEIGHT)
+      )
+    ),
+  // The diagonals are counted from the corner in sinister chief down towards the
+  // one in dexter base, which is where the armorials start them: "Bandé de
+  // gueules et d'argent de six pièces" puts the gules in that corner, and so
+  // does "Bandé d'or et d'azur" the or. Which tincture the dexter chief corner
+  // falls to is then the count's to decide rather than the rule's, and the two
+  // armorials differ on it — the one has the first tincture there and the other
+  // the second, both being drawn in six.
+  //
+  // Counting from that end is counting the other way round, so it is the first
+  // piece that is laid over rather than the second.
+  [VariationType.bendy]: (pieces) =>
+    all(alternate(pieces, SHIELD_BEND_FROM, SHIELD_BEND_TO - SHIELD_BEND_FROM, 0).map(bendBand)),
   [VariationType.pily]: (pieces) => all(pilesFromBase(pieces).map(pileFromBase)),
   // A chevron reaches as far below its point as the field is wide either side of
-  // it, so the points run from a rise above the field to the foot of it, and the
-  // pieces share that room rather than the height alone.
+  // it, so the points run from a rise above the top of the shield to its foot,
+  // and the pieces share that room rather than the height alone.
   [VariationType.chevronny]: (pieces) =>
-    all(alternate(pieces, -RISE, HEIGHT + RISE).map(chevronBand)),
+    all(alternate(pieces, SHIELD_TOP - RISE, SHIELD_BASE - SHIELD_TOP + RISE).map(chevronBand)),
 };
 
 /** Draws a blazon as an SVG shield. */
