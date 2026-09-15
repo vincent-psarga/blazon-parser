@@ -6,19 +6,31 @@ import {
   apply,
   betterError,
   kleft,
+  nil,
   resultOrError,
   rule,
   seq,
   tok,
 } from 'typescript-parsec';
+import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
+import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { Blazon } from '../../domain/models/Blazon';
-import { Division, DivisionType, Field } from '../../domain/models/Field';
+import {
+  Division,
+  DivisionType,
+  Field,
+  PIECES,
+  Variation,
+  cutInPieces,
+  usualPieces,
+} from '../../domain/models/Field';
 import { Ordinary } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
-import { optional, optionalUnlessBegun } from './Combinators';
+import { guard, optional, optionalUnlessBegun } from './Combinators';
 import { within } from './Failures';
 import { BorneOrdinary } from './Ordinaries';
+import { VariedField } from './Variations';
 
 /**
  * What one language contributes to reading a blazon. The shape of a blazon is
@@ -30,6 +42,17 @@ export interface BlazonGrammar {
   readonly tincture: Parser<TokenKind, Tincture>;
   /** The name of a partition. */
   readonly division: Parser<TokenKind, DivisionType>;
+  /**
+   * The name of a varied field, with however many pieces the language counts
+   * before naming the tinctures: "barry of six", where French says only "fascé".
+   */
+  readonly variation: Parser<TokenKind, VariedField>;
+  /**
+   * However many pieces the language counts after the tinctures — "de six
+   * pièces" — where it counts them there at all. English does not, and leaves
+   * this off.
+   */
+  readonly pieces?: Parser<TokenKind, number>;
   /** The name of an ordinary, with whatever says the field bears it, and how many. */
   readonly ordinary: Parser<TokenKind, BorneOrdinary>;
   /** The conjunction joining the halves of a divided field. */
@@ -55,12 +78,62 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
     )
   );
 
+  // A varied field is the same two tinctures cut along the same lines, over and
+  // over — so it is read as a division is, with a number of pieces around it.
+  //
+  // Where that number stands is the language's business: English counts before
+  // the tinctures, French after them, and either may leave it unsaid. What
+  // arrives is taken wherever it came from, and what never arrives is the number
+  // the term is understood to have — save for the pily, which is understood to
+  // have none and must therefore be counted.
+  const trailingPieces: Parser<TokenKind, number | undefined> =
+    grammar.pieces === undefined ? nil() : optional(grammar.pieces);
+
+  const variedField = within(
+    apply(
+      guard(
+        apply(
+          seq(grammar.variation, grammar.tincture, grammar.and, grammar.tincture, trailingPieces),
+          ([named, firstTincture, , secondTincture, counted]) => ({
+            named,
+            firstTincture,
+            secondTincture,
+            pieces: counted ?? named.pieces ?? usualPieces(named.type),
+          })
+        ),
+        ({ named, pieces }) => pieces !== undefined && cutInPieces(named.type, pieces),
+        ({ named, pieces }, position) =>
+          pieces === undefined
+            ? new MissingPieces(named.named, position)
+            : new BlazonParseError(
+                pieces < PIECES
+                  ? `A field is cut into pieces: ${pieces} is not more than one`
+                  : `A ${named.named} alternates its tinctures, so its pieces are even: ${pieces} is odd`,
+                position
+              )
+      ),
+      // Whatever reaches here was counted: the guard has refused every field
+      // whose pieces neither the blazon nor the term itself could say.
+      ({ named, firstTincture, secondTincture, pieces }): Variation => ({
+        type: named.type,
+        firstTincture,
+        secondTincture,
+        pieces: pieces as number,
+      })
+    )
+  );
+
   // What follows a partition's name: the two tinctures it divides the field
   // between. Reading it alone is how an unknown first word is told apart from a
   // word that was never meant to be a partition at all.
   const restOfDivision = seq(grammar.tincture, grammar.and, grammar.tincture);
 
-  const field = eitherReading(plainField, dividedField, restOfDivision);
+  // The varied reading is tried first of the two, because both name the line the
+  // field is cut along and both complain about the same word when they fail: a
+  // tie between them is settled in favour of whichever was listed first, and only
+  // the varied one has anything to say beyond the name — that the pieces were
+  // never counted, or counted in a number no such field is cut into.
+  const field = eitherReading(plainField, alt(variedField, dividedField), restOfDivision);
 
   // An ordinary is laid on the field and carries a tincture of its own, however
   // many of it are borne: two chevrons are two bands of one tincture, not two

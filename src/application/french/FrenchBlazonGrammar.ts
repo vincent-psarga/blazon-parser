@@ -1,5 +1,6 @@
-import { Parser, alt, apply, kright, seq, tok } from 'typescript-parsec';
+import { Parser, alt, apply, kleft, kright, seq, tok } from 'typescript-parsec';
 import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
+import { FrenchVariationType, PIECES } from '../../domain/translations/fr/Variations';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
 import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryArticle';
 import { WrongTinctureArticle } from '../../domain/errors/parsing/WrongTinctureArticle';
@@ -7,9 +8,11 @@ import { FrenchNumbers } from '../../domain/translations/fr/Numbers';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
-import { guard, optional, spelledTerm, term } from '../parser/Combinators';
+import { guard, keyword, optional, spelledTerm, term } from '../parser/Combinators';
 import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
 import { alone, several } from '../parser/Ordinaries';
+import { number } from '../parser/Numbers';
+import { varied } from '../parser/Variations';
 import {
   AND,
   AU,
@@ -72,9 +75,22 @@ const SEVERAL_ORDINARIES = kright(BEFORE_SEVERAL, several(FrenchOrdinaryType, Fr
 
 const ORDINARY = alt(ONE_ORDINARY, SEVERAL_ORDINARIES);
 
+// French counts the pieces of a varied field after naming the tinctures it
+// alternates — "bandé de gueules et d'argent de six pièces" — and an armorial
+// writes "en six pièces" as readily as "de", so both are read. The article is
+// the same "de" a tincture is introduced by, and is told apart by the number
+// that has to follow it.
+const IN_PIECES = alt(tok(TokenKind.Article), keyword('en'));
+
+const HOW_MANY_PIECES = kleft(kright(IN_PIECES, number(FrenchNumbers)), keyword(PIECES));
+
 export const FrenchBlazonGrammar: BlazonGrammar = {
   tincture: TINCTURE,
   division: term(FrenchDivisionType, asDivision),
+  // A varied field is named bare: nothing introduces it, the name being the
+  // first word of the blazon, and nothing agrees with it either.
+  variation: varied(FrenchVariationType, asDivision),
+  pieces: HOW_MANY_PIECES,
   ordinary: ORDINARY,
   and: AND,
 };

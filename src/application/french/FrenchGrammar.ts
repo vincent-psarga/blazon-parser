@@ -1,5 +1,6 @@
 import { alt, seq } from 'typescript-parsec';
 import { FrenchWord } from '../../domain/translations/fr/FrenchWord';
+import { PIECES } from '../../domain/translations/fr/Variations';
 import { TokenKind } from '../lexer/Lexer';
 import { keyword } from '../parser/Combinators';
 
@@ -32,6 +33,20 @@ export function bearing(word: FrenchWord, count?: string): string {
     return `à ${count} ${word.plural}`;
   }
   return word.isFeminine ? `à la ${word.value}` : `au ${word.value}`;
+}
+
+/**
+ * Renders a varied field as French cuts it: "fascé d'or et d'azur", and "bandé
+ * d'or et d'azur de huit pièces" where the pieces are not the six understood.
+ *
+ * French writes the number only when it has something to say — "le bandé est
+ * normalement divisé en six pièces, qu'on ne blasonne pas" — so the usual count
+ * is left unwritten and read back out of the name alone. Where a field has no
+ * usual count, as the émanché has not, no count is ever the usual one and the
+ * number is always written.
+ */
+export function cutIn(word: FrenchWord, tinctures: string, pieces: string, usual: boolean): string {
+  return usual ? `${word.value} ${tinctures}` : `${word.value} ${tinctures} de ${pieces} ${PIECES}`;
 }
 
 /** The conjunction joining the halves of a divided field. */

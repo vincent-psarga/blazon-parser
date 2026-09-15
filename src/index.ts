@@ -22,8 +22,16 @@ export type {
   ReadEntry,
   UnknownWords,
 } from './application/armorial/ArmorialReading';
-export { DivisionType, isDivision } from './domain/models/Field';
-export type { Division, Field } from './domain/models/Field';
+export {
+  DivisionType,
+  PIECES,
+  VariationType,
+  cutInPieces,
+  isDivision,
+  isVariation,
+  usualPieces,
+} from './domain/models/Field';
+export type { Division, Field, Variation } from './domain/models/Field';
 export { OrdinaryType, SEVERAL, borne, bornInNumber } from './domain/models/Ordinary';
 
 export { BlazonParseError } from './domain/errors/parsing/BlazonParseError';
@@ -32,6 +40,7 @@ export { UnknownTincture } from './domain/errors/parsing/UnknownTincture';
 export { UnknownDivision } from './domain/errors/parsing/UnknownDivision';
 export { UnknownOrdinary } from './domain/errors/parsing/UnknownOrdinary';
 export { RepeatedOrdinary } from './domain/errors/parsing/RepeatedOrdinary';
+export { MissingPieces } from './domain/errors/parsing/MissingPieces';
 export { MissingTincture } from './domain/errors/parsing/MissingTincture';
 export { MissingOrdinary } from './domain/errors/parsing/MissingOrdinary';
 export { WrongTinctureArticle } from './domain/errors/parsing/WrongTinctureArticle';
@@ -55,6 +64,7 @@ export type { NumberWords } from './domain/translations/Numbers';
 export { Word } from './domain/translations/Word';
 export { FrenchWord } from './domain/translations/fr/FrenchWord';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';
+export { EnglishVariationType } from './domain/translations/en/Variations';
 export { EnglishNumbers } from './domain/translations/en/Numbers';
 export { EnglishOrdinaryType } from './domain/translations/en/Ordinaries';
 export {
@@ -63,6 +73,7 @@ export {
   EnglishTinctures,
 } from './domain/translations/en/Tinctures';
 export { FrenchDivisionType } from './domain/translations/fr/Divisions';
+export { FrenchVariationType } from './domain/translations/fr/Variations';
 export { FrenchNumbers } from './domain/translations/fr/Numbers';
 export { FrenchOrdinaryType } from './domain/translations/fr/Ordinaries';
 export {
@@ -73,7 +84,7 @@ export {
 } from './domain/translations/fr/Tinctures';
 
 export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
-export { bearing, withArticle } from './application/french/FrenchGrammar';
+export { bearing, cutIn, withArticle } from './application/french/FrenchGrammar';
 
 export { HatchingColours } from './infra/colours/HatchingColours';
 export { WikipediaColours } from './infra/colours/WikipediaColours';

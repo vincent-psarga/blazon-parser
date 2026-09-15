@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
 import { MissingOrdinary } from '../../domain/errors/parsing/MissingOrdinary';
+import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
@@ -193,11 +194,62 @@ describe('an ordinary that never arrives', () => {
   });
 });
 
+describe('a varied field whose pieces were never counted', () => {
+  test.each([
+    ['the émanché, which no number is understood of', "Émanché d'argent et de gueules"],
+    ['the same, bearing something', "Émanché d'argent et de gueules à la bordure d'or"],
+  ])('%s', (_why, blazon) => {
+    expect(() => french.parse(blazon)).toThrow(MissingPieces);
+  });
+
+  test('the pily, in English', () => {
+    expect(() => english.parse('Pily argent and gules')).toThrow(MissingPieces);
+  });
+
+  test('carries the field that was left owing a number', () => {
+    const refusal = refused(() => french.parse("Émanché d'argent et de gueules")) as MissingPieces;
+    expect(refusal.variation).toBe('émanché');
+    expect(refusal.message).toBe('Missing pieces: émanché must say how many');
+  });
+
+  test('is not an unknown division: the word names a field the parser holds', () => {
+    expect(() => french.parse("Émanché d'argent et de gueules")).not.toThrow(UnknownDivision);
+    expect(() => english.parse('Pily argent and gules')).not.toThrow(UnknownDivision);
+  });
+
+  test('is not raised for a field whose number is understood', () => {
+    expect(() => french.parse("Fascé d'argent et de gueules")).not.toThrow();
+    expect(() => english.parse('Barry argent and gules')).not.toThrow();
+  });
+});
+
+describe('a field cut into a number of pieces it cannot be cut into', () => {
+  test.each([
+    ['an odd count, the tinctures having to alternate', "Fascé d'or et d'azur de cinq pièces"],
+    ['a count of one, which is no cutting at all', "Palé d'or et d'azur de 1 pièces"],
+  ])('%s', (_why, blazon) => {
+    expect(() => french.parse(blazon)).toThrow(BlazonParseError);
+  });
+
+  test('says which field was counted, and how it counts', () => {
+    const refusal = refused(() => french.parse("Fascé d'or et d'azur de cinq pièces"));
+    expect(refusal.message).toBe(
+      'A fascé alternates its tinctures, so its pieces are even: 5 is odd'
+    );
+  });
+
+  test('is no kind of unknown division: the word names a field the parser holds', () => {
+    expect(() => english.parse('Barry of five or and azure')).not.toThrow(UnknownDivision);
+  });
+});
+
 describe('every refusal', () => {
   const REFUSED = [
     'de fuchsia',
     "Écartelé d'azur et d'or",
     "D'azur à la champagne d'or",
+    "Émanché d'argent et de gueules",
+    "Fascé d'or et d'azur de cinq pièces",
     "D'azur à la fasce",
     "Parti d'azur",
     "D'azur fasce d'or",
@@ -218,6 +270,9 @@ describe('every refusal', () => {
     expect(refused(() => french.parse("Écartelé d'azur et d'or")).name).toBe('UnknownDivision');
     expect(refused(() => french.parse("D'azur à la champagne d'or")).name).toBe('UnknownOrdinary');
     expect(refused(() => french.parse("D'azur à la fasce")).name).toBe('MissingTincture');
+    expect(refused(() => french.parse("Émanché d'argent et de gueules")).name).toBe(
+      'MissingPieces'
+    );
     expect(refused(() => french.parse("D'azur à la")).name).toBe('MissingOrdinary');
     expect(refused(() => french.parse('de or')).name).toBe('WrongTinctureArticle');
   });

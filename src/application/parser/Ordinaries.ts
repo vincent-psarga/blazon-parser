@@ -1,4 +1,4 @@
-import { Parser, ParserOutput, Token, alt, apply, seq, tok } from 'typescript-parsec';
+import { Parser, ParserOutput, Token, apply, seq } from 'typescript-parsec';
 import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { OrdinaryType, SEVERAL, bornInNumber } from '../../domain/models/Ordinary';
@@ -7,7 +7,8 @@ import { Translation, asSeveral } from '../../domain/translations/Translation';
 import { Word } from '../../domain/translations/Word';
 import { TokenKind } from '../lexer/Lexer';
 import { guard, spelledTerm } from './Combinators';
-import { asCount, asOrdinary } from './Failures';
+import { asOrdinary } from './Failures';
+import { number } from './Numbers';
 
 /**
  * An ordinary as a blazon named it: which one, and how many of it where the
@@ -24,18 +25,6 @@ export interface BorneOrdinary {
 /** One of an ordinary, which is what a name with no number before it says. */
 export function alone(named: Parser<TokenKind, OrdinaryType>): Parser<TokenKind, BorneOrdinary> {
   return apply(named, (type): BorneOrdinary => ({ type }));
-}
-
-/**
- * A number, as a blazon writes one: in the language's own word for it — "à trois
- * chevrons" is how a blazon reads — or in figures, which is how a note about a
- * blazon reads and which costs nothing to accept.
- */
-function number<W extends Word>(numbers: NumberWords<W>): Parser<TokenKind, number> {
-  return alt(
-    apply(tok(TokenKind.Number), (token) => Number.parseInt(token.text, 10)),
-    apply(spelledTerm(numbers, asCount), ({ term }) => Number.parseInt(term, 10))
-  );
 }
 
 /**

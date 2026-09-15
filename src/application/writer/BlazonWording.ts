@@ -1,5 +1,14 @@
 import { Blazon } from '../../domain/models/Blazon';
-import { Division, DivisionType, Field, isDivision } from '../../domain/models/Field';
+import {
+  Division,
+  DivisionType,
+  Field,
+  Variation,
+  VariationType,
+  isDivision,
+  isVariation,
+  usualPieces,
+} from '../../domain/models/Field';
 import { Ordinary, OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords, counted } from '../../domain/translations/Numbers';
@@ -14,6 +23,7 @@ import { Word } from '../../domain/translations/Word';
 export interface BlazonWording<W extends Word = Word> {
   readonly tinctures: Translation<Tincture, W>;
   readonly divisions: Translation<DivisionType, W>;
+  readonly variations: Translation<VariationType, W>;
   readonly ordinaries: Translation<OrdinaryType, W>;
   /** How the language counts what a field bears several of. */
   readonly numbers: NumberWords<W>;
@@ -26,6 +36,17 @@ export interface BlazonWording<W extends Word = Word> {
    * its numbers; what stands around it is what differs.
    */
   readonly bear: (word: W, count?: string) => string;
+  /**
+   * How a varied field is written: its name, the two tinctures it alternates —
+   * already joined by the conjunction — and how many pieces it is cut into,
+   * spelled, and whether that is the number the term is understood to have.
+   *
+   * Where the count goes, and whether it is written at all, is what the two
+   * tongues disagree about: English counts between the name and the tinctures
+   * and counts always, French counts after them and keeps quiet when the number
+   * is the usual one. So the whole phrase is the language's to assemble.
+   */
+  readonly vary: (word: W, tinctures: string, pieces: string, usual: boolean) => string;
   /** The conjunction joining the halves of a divided field. */
   readonly conjunction: string;
 }
@@ -77,7 +98,28 @@ function writeOrdinary<W extends Word>(wording: BlazonWording<W>, ordinary: Ordi
 }
 
 function writeField<W extends Word>(wording: BlazonWording<W>, field: Field): string {
+  if (isVariation(field)) {
+    return writeVariation(wording, field);
+  }
   return isDivision(field) ? writeDivision(wording, field) : writeTincture(wording, field.tincture);
+}
+
+/**
+ * The number is written out of the model rather than left to be understood, and
+ * the language is told whether it is the usual one: a tongue that keeps quiet
+ * about six needs to know that six is what it was given.
+ */
+function writeVariation<W extends Word>(wording: BlazonWording<W>, variation: Variation): string {
+  return wording.vary(
+    wordOf(wording.variations, variation.type),
+    [
+      writeTincture(wording, variation.firstTincture),
+      wording.conjunction,
+      writeTincture(wording, variation.secondTincture),
+    ].join(' '),
+    counted(wording.numbers, variation.pieces),
+    variation.pieces === usualPieces(variation.type)
+  );
 }
 
 function writeDivision<W extends Word>(wording: BlazonWording<W>, division: Division): string {

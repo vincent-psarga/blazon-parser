@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Blazon } from '../../domain/models/Blazon';
-import { DivisionType } from '../../domain/models/Field';
+import { DivisionType, VariationType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { EnglishBlazonParser } from '../parser/EnglishBlazonParser';
@@ -241,5 +241,51 @@ describe('a field bearing more than one ordinary, in English', () => {
 
   test('writes the border back as the bordure blazon spells it', () => {
     expect(writer.write(parser.parse('Argent a border gules'))).toBe('Argent a bordure gules.');
+  });
+});
+
+describe('a varied field, in English', () => {
+  const varied = (type: VariationType, pieces: number): Blazon => ({
+    field: { type, firstTincture: Metals.argent, secondTincture: Colours.gules, pieces },
+  });
+
+  test('counts the pieces between the name and the tinctures', () => {
+    expect(writer.write(varied(VariationType.barry, 6))).toBe('Barry of six argent and gules.');
+  });
+
+  test('counts them even where the number is the one the term is understood to have', () => {
+    // English states the number of bands before their tinctures, always, where
+    // French keeps quiet about the usual six. The same model, written twice.
+    expect(writer.write(varied(VariationType.bendy, 6))).toBe('Bendy of six argent and gules.');
+    expect(writer.write(varied(VariationType.bendy, 8))).toBe('Bendy of eight argent and gules.');
+  });
+
+  test.each([
+    [VariationType.barry, 'Barry'],
+    [VariationType.paly, 'Paly'],
+    [VariationType.bendy, 'Bendy'],
+    [VariationType.pily, 'Pily'],
+    [VariationType.chevronny, 'Chevronny'],
+  ])('names %s in English', (type, name) => {
+    expect(writer.write(varied(type, 6))).toBe(`${name} of six argent and gules.`);
+  });
+
+  test('survives the round trip, the count and all', () => {
+    for (const type of Object.values(VariationType)) {
+      const blazon = varied(type, 8);
+      expect(parser.parse(writer.write(blazon))).toEqual(blazon);
+    }
+  });
+
+  test('writes the longer name of the pily back as the short one', () => {
+    expect(writer.write(parser.parse('Pily counter pily of six argent and gules'))).toBe(
+      'Pily of six argent and gules.'
+    );
+  });
+
+  test('writes what it bears after the pieces it is cut into', () => {
+    expect(writer.write(parser.parse('Bendy of eight or and azure a bordure gules'))).toBe(
+      'Bendy of eight or and azure a bordure gules.'
+    );
   });
 });

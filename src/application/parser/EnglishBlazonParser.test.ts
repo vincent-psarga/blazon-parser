@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { DivisionType } from '../../domain/models/Field';
+import { DivisionType, VariationType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
+import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
@@ -316,5 +317,95 @@ describe('a field bearing more than one ordinary, in English', () => {
 
   test('still owes every one of them a tincture', () => {
     expect(() => parser.parse('Azure a fess or, a chevron')).toThrow(MissingTincture);
+  });
+});
+
+describe('varied fields, in English', () => {
+  test('reads "Barry of six argent and gules" as a field cut in six', () => {
+    expect(parser.parse('Barry of six argent and gules')).toEqual({
+      field: {
+        type: VariationType.barry,
+        firstTincture: Metals.argent,
+        secondTincture: Colours.gules,
+        pieces: 6,
+      },
+    });
+  });
+
+  test.each([
+    ['barry', VariationType.barry],
+    ['paly', VariationType.paly],
+    ['bendy', VariationType.bendy],
+    ['chevronny', VariationType.chevronny],
+  ])('reads "%s" as that varied field', (name, type) => {
+    expect(parser.parse(`${name} of six or and azure`).field).toMatchObject({ type });
+  });
+
+  test('takes the number the term is understood to have where the blazon names none', () => {
+    expect(parser.parse('Barry argent and gules')).toEqual(
+      parser.parse('Barry of six argent and gules')
+    );
+  });
+
+  test('counts the pieces between the name and the tinctures, never after them', () => {
+    expect(parser.parse('Paly of eight argent and gules').field).toMatchObject({ pieces: 8 });
+    expect(() => parser.parse('Paly argent and gules of eight')).toThrow();
+  });
+
+  test('reads the count in figures as readily as in words', () => {
+    expect(parser.parse('Bendy of 10 or and azure')).toEqual(
+      parser.parse('Bendy of ten or and azure')
+    );
+  });
+
+  test('bears an ordinary over the pieces', () => {
+    expect(parser.parse('Bendy of eight or and azure a bordure gules')).toMatchObject({
+      field: { type: VariationType.bendy, pieces: 8 },
+      ordinaries: [{ type: OrdinaryType.bordure }],
+    });
+  });
+
+  describe('the pily, which no number is understood of', () => {
+    test('reads the count it is always written with', () => {
+      expect(parser.parse('Pily of eight argent and gules').field).toEqual({
+        type: VariationType.pily,
+        firstTincture: Metals.argent,
+        secondTincture: Colours.gules,
+        pieces: 8,
+      });
+    });
+
+    test('reads the longer name Parker gives it, which says the piles are counterposed', () => {
+      expect(parser.parse('Pily counter pily of seven argent and gules')).toEqual(
+        parser.parse('Pily of seven argent and gules')
+      );
+    });
+
+    test('is refused where the blazon never counted it', () => {
+      expect(() => parser.parse('Pily argent and gules')).toThrow(MissingPieces);
+    });
+  });
+
+  describe('rejections', () => {
+    test('refuses an odd number of pieces of a field whose tinctures alternate', () => {
+      expect(() => parser.parse('Barry of five argent and gules')).toThrow(/5 is odd/);
+    });
+
+    test('refuses a varied field the vocabulary does not know', () => {
+      expect(() => parser.parse('Lozengy argent and gules')).toThrow(UnknownDivision);
+    });
+
+    test('tells "barry" borne from "per fess" dividing', () => {
+      expect(parser.parse('Barry argent and gules').field).toMatchObject({
+        type: VariationType.barry,
+      });
+      expect(parser.parse('Per fess argent and gules').field).toMatchObject({
+        type: DivisionType.fess,
+      });
+    });
+
+    test('still owes both its tinctures', () => {
+      expect(() => parser.parse('Barry of six argent and')).toThrow(MissingTincture);
+    });
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Blazon } from '../../domain/models/Blazon';
-import { DivisionType } from '../../domain/models/Field';
+import { DivisionType, VariationType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
@@ -298,5 +298,71 @@ describe('the bordure', () => {
         ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
       })
     ).toBe("D'argent à la bordure de gueules.");
+  });
+});
+
+describe('a varied field', () => {
+  const barry = (pieces: number): Blazon => ({
+    field: {
+      type: VariationType.barry,
+      firstTincture: Metals.argent,
+      secondTincture: Colours.gules,
+      pieces,
+    },
+  });
+
+  test('keeps quiet about the number the term is understood to have', () => {
+    // "Le bandé est normalement divisé en six pièces, qu'on ne blasonne pas."
+    expect(writer.write(barry(6))).toBe("Fascé d'argent et de gueules.");
+  });
+
+  test('counts the pieces after the tinctures where they are not the six understood', () => {
+    expect(writer.write(barry(8))).toBe("Fascé d'argent et de gueules de huit pièces.");
+  });
+
+  test.each([
+    [VariationType.barry, 'Fascé'],
+    [VariationType.paly, 'Palé'],
+    [VariationType.bendy, 'Bandé'],
+    [VariationType.chevronny, 'Chevronné'],
+  ])('names %s in French', (type, name) => {
+    expect(writer.write({ ...barry(6), field: { ...barry(6).field, type } as never })).toBe(
+      `${name} d'argent et de gueules.`
+    );
+  });
+
+  test('counts the émanché always, no number being understood of it', () => {
+    expect(
+      writer.write({
+        field: {
+          type: VariationType.pily,
+          firstTincture: Metals.or,
+          secondTincture: Colours.azure,
+          pieces: 6,
+        },
+      })
+    ).toBe("Émanché d'or et d'azur de six pièces.");
+  });
+
+  test('survives the round trip, counted or not', () => {
+    for (const pieces of [4, 6, 8, 12]) {
+      expect(parser.parse(writer.write(barry(pieces)))).toEqual(barry(pieces));
+    }
+  });
+
+  test('normalises the count an armorial wrote where the term says it anyway', () => {
+    expect(writer.write(parser.parse("Bandé de gueules et d'argent de six pièces."))).toBe(
+      "Bandé de gueules et d'argent."
+    );
+  });
+
+  test('writes what it bears after the pieces it is cut into', () => {
+    expect(
+      writer.write(parser.parse("Bandé d'or et d'azur de huit pièces à la bordure de gueules"))
+    ).toBe("Bandé d'or et d'azur de huit pièces à la bordure de gueules.");
+  });
+
+  test('falls back on the figure where French has no word for the number', () => {
+    expect(writer.write(barry(20))).toBe("Fascé d'argent et de gueules de 20 pièces.");
   });
 });

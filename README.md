@@ -44,9 +44,10 @@ src/
       WrongOrdinaryArticle.ts an ordinary its article does not agree with
       MissingTincture.ts      no tincture at all, where one was owed
       MissingOrdinary.ts      no ordinary at all, where one was owed
+      MissingPieces.ts        a varied field nobody counted the pieces of
     models/                   what a blazon is, in English
       Blazon.ts               a blazon: its field, and the ordinaries laid on it
-      Field.ts                a plain or divided field; DivisionType
+      Field.ts                a plain, divided or varied field; DivisionType, VariationType
       Ordinary.ts             a band laid on the field; OrdinaryType
       Tinctures.ts            Metals, Colours, Furs, and the Tincture union
     services/                 what the library offers, as interfaces
@@ -55,7 +56,7 @@ src/
       IBlazonDrawer.ts        Blazon -> SVG; ColorModel
     translations/
       Translation.ts          Translation<T>, and reading a term back from a spelling
-      Numbers.ts              how a language counts what a field bears several of
+      Numbers.ts              how a language counts pieces, and what a field bears several of
       fr/  en/                the name of every term, per language
 
   application/
@@ -63,7 +64,9 @@ src/
       Lexer.ts                token kinds, the tokenizer, and NFC normalisation
     parser/
       Combinators.ts          guard, optional, keyword, term
+      Numbers.ts              a number, spelled out or in figures
       Ordinaries.ts           how many are borne, and which may be
+      Variations.ts           the name of a varied field, and its pieces
       BlazonGrammar.ts        what a language contributes; the shared rule
       Parser.ts               running a rule over some text
       FrenchBlazonParser.ts   implements IBlazonParser
@@ -98,7 +101,7 @@ demo/
   pages/
     BlazonPage.tsx            type a blazon, read its translation, see the arms
     TincturesPage.tsx         every tincture, named, painted and hatched
-    DivisionsPage.tsx         every partition, named and drawn
+    DivisionsPage.tsx         every partition and varied field, named and drawn
     OrdinariesPage.tsx        every ordinary, named and drawn
     DocIndexPage.tsx          what a blazon may be, and what it may not
     ArmorialsPage.tsx         the armorials on offer, and how much each parses
@@ -126,12 +129,50 @@ caught up. A term may be spelled several ways — `['mantelé-versé',
 'mantelé-renversé']` — with the first spelling used for writing it back out.
 
 A blazon has the same shape in every language — a field, plain or divided between
-two tinctures, bearing whatever ordinaries are laid on it, each once or several
-times over — so one rule reads them all and one
+two tinctures or cut into a row of pieces of them, bearing whatever ordinaries are
+laid on it, each once or several times over — so one rule reads them all and one
 sentence writes them all. A language supplies a `BlazonGrammar` for reading and a
-`BlazonWording` for writing: its tinctures, its partitions, its ordinaries, and
-its conjunction. French wraps its tinctures in an article that has to agree with
+`BlazonWording` for writing: its tinctures, its partitions, its varied fields, its
+ordinaries, and its conjunction. French wraps its tinctures in an article that has to agree with
 the word it introduces; English names them bare.
+
+A line may be taken over and over rather than once, cutting the field into a row
+of equal pieces of two tinctures laid alternately: that is a varied field, and it
+is named after the band rather than after the partition — `per fess` divides where
+`barry` repeats, and French says `fascé` after the `fasce`. Five so far — barry,
+paly, bendy, pily and chevronny; `fascé`, `palé`, `bandé`, `émanché`, `chevronné`
+— of which four repeat a line the partitions already divide along and the pily
+repeats none: it is a rank of long triangles driven into each other point first.
+
+How many pieces is part of the blazon, and it is the one thing the two tongues
+keep differently, so the model holds the number always and neither language is
+asked to remember it:
+
+```ts
+frenchParser.parse("Fascé d'argent et de gueules"); // pieces: 6
+englishWriter.write(blazon); // Barry of six argent and gules.
+```
+
+Four of the five are understood to be cut in six where the blazon says nothing —
+"le bandé est normalement divisé en six pièces, qu'on ne blasonne pas" — and that
+is what French writes back: the number only when it is some other. English states
+it either way, which is what the Canadian roll's own guide asks for, so the same
+model comes back out counted in one tongue and silent in the other. Where a
+tongue allows six or eight, as both do of the chevronny, six is what the armorials
+here write. The pily is understood to be cut in no number at all: Parker says its
+pieces "should be mentioned" and the French armorials write "émanché de deux
+pièces", so a pily that names none is refused rather than guessed at, by name.
+
+The pieces are even — the tinctures alternate, and an odd count is how heraldry
+says bars borne on a field instead — save for the pily again, whose pieces
+interlock rather than follow one another and leave a whole pile at either flank
+when the count is odd. Parker counts "seven traits" as readily as six.
+
+Where the number stands in the sentence is the language's too: English counts
+between the name and the tinctures, French after them, and an armorial writes "de
+six pièces" or "en six pièces" as it pleases. A `BlazonGrammar` therefore offers
+the count in whichever of the two places its language puts it, and the shared
+rule takes whichever arrived.
 
 An ordinary is laid on the field rather than cutting it, and carries a tincture of
 its own. Most are named after the same line as a partition, so what tells the two
@@ -264,6 +305,16 @@ would alone — and adds how it ought to have been written:
 frenchParser.parse('de or');
 // WrongTinctureArticle: Wrong elision: expected "d'or"
 //   tincture: 'or', expected: "d'or"
+```
+
+A varied field that names no number of pieces, and is of the one kind no number is
+understood of, is a `MissingPieces`: nothing was misnamed there either, and what it
+carries is the field that was left owing a number.
+
+```ts
+englishParser.parse('Pily argent and gules');
+// MissingPieces: Missing pieces: pily must say how many
+//   variation: 'pily'
 ```
 
 There is no `MissingDivision`, because a division is the first word of a

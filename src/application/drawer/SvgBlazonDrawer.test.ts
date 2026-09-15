@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { DivisionType } from '../../domain/models/Field';
+import { DivisionType, VariationType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { ColorModel, isPattern } from '../../domain/services/IBlazonDrawer';
@@ -490,5 +490,125 @@ describe('a field bearing more than one ordinary', () => {
       ...Array(3).fill(WikipediaColours[Colours.sable]),
       WikipediaColours[Colours.gules],
     ]);
+  });
+});
+
+describe('a varied field', () => {
+  const varied = (type: VariationType, pieces: number) =>
+    drawer.draw({
+      field: {
+        type,
+        firstTincture: Metals.argent,
+        secondTincture: Colours.gules,
+        pieces,
+      },
+    });
+
+  const ARGENT = WikipediaColours[Metals.argent];
+  const GULES = WikipediaColours[Colours.gules];
+
+  test.each(Object.values(VariationType))(
+    'cuts a field %s into pieces of both tinctures',
+    (type) => {
+      const painted = paints(varied(type, 6));
+      // The field is painted the first tincture entire and every other piece laid
+      // over it in the second, so the first paint is the field's own.
+      expect(painted[0]).toBe(ARGENT);
+      expect(painted.slice(1)).not.toHaveLength(0);
+      expect(painted.slice(1).every((paint) => paint === GULES)).toBe(true);
+    }
+  );
+
+  test.each(Object.values(VariationType))(
+    'lays half the pieces of %s over the other half',
+    (type) => {
+      // Six pieces are three laid over a field of three, whatever their shape.
+      expect(paints(varied(type, 6))).toHaveLength(1 + 3);
+      expect(paints(varied(type, 8))).toHaveLength(1 + 4);
+    }
+  );
+
+  test('draws a barry of six as six bands across, the first in chief', () => {
+    const svg = varied(VariationType.barry, 6);
+    expect(svg).toContain('<rect x="0" y="40" width="200" height="40"');
+    expect(svg).toContain('<rect x="0" y="120" width="200" height="40"');
+    expect(svg).toContain('<rect x="0" y="200" width="200" height="40"');
+  });
+
+  test('draws a paly of six as six bands down, the first at dexter', () => {
+    const svg = varied(VariationType.paly, 6);
+    // Dexter is the viewer's left, so the second piece — the first one laid
+    // over — begins a third of the way across.
+    expect(svg).toContain('<rect x="33" y="0" width="34" height="240"');
+    expect(svg).toContain('<rect x="167" y="0" width="33" height="240"');
+  });
+
+  test('gives the dexter chief corner of a bendy to the first tincture', () => {
+    // Which is what the armorials draw: "Bandé de gueules et d'argent de six
+    // pièces" puts the gules against that corner, with the argent below it.
+    const svg = varied(VariationType.bendy, 6);
+    // The pieces laid over run from the corner in sinister chief downwards, so
+    // none of them opens on the top edge before a third of the way across.
+    expect(svg).toContain('<polygon points="67,0 133,0 333,240 267,240"');
+    expect(svg).not.toContain('<polygon points="0,0');
+  });
+
+  test('draws a pily as piles driven up between the piles from the chief', () => {
+    const svg = varied(VariationType.pily, 6);
+    // Three piles from the chief share the top edge; the three laid over point
+    // up where two of those meet, the last of them at the sinister flank.
+    expect(svg).toContain('<polygon points="34,240 67,0 100,240"');
+    expect(svg).toContain('<polygon points="167,240 200,0 233,240"');
+  });
+
+  test('counts a pily odd as readily as even, its piles interlocking', () => {
+    expect(paints(varied(VariationType.pily, 7))).toHaveLength(1 + 3);
+  });
+
+  test('draws a chevronny of six as six chevron pieces, the first in chief', () => {
+    const svg = varied(VariationType.chevronny, 6);
+    // A chevron reaches a hundred below its point, so the points share the room
+    // from a hundred above the field to the foot of it: the second piece — the
+    // first one laid over — has its point 43 below the top of the field.
+    expect(svg).toContain('<polygon points="0,57 100,-43 200,57');
+    expect(svg).toContain('<polygon points="0,283 100,183 200,283');
+  });
+
+  test('cuts a field in two, which is the fewest it can be cut into', () => {
+    expect(paints(varied(VariationType.barry, 2))).toEqual([ARGENT, GULES]);
+  });
+
+  test('carries the patterns both its tinctures are painted with', () => {
+    const hatched = new SvgBlazonDrawer(HatchingColours);
+    const svg = hatched.draw({
+      field: {
+        type: VariationType.paly,
+        firstTincture: Colours.azure,
+        secondTincture: Colours.gules,
+        pieces: 6,
+      },
+    });
+    const defs = svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'));
+    expect(defs).toContain('hatch-azure');
+    expect(defs).toContain('hatch-gules');
+  });
+
+  test('lays an ordinary over the pieces', () => {
+    const svg = drawer.draw({
+      field: {
+        type: VariationType.bendy,
+        firstTincture: Metals.or,
+        secondTincture: Colours.azure,
+        pieces: 6,
+      },
+      ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+    });
+    expect(paints(svg).at(-1)).toBe(WikipediaColours[Colours.gules]);
+  });
+
+  test('draws what was read from a blazon', () => {
+    expect(drawer.draw(parser.parse("Fascé d'argent et de gueules"))).toBe(
+      varied(VariationType.barry, 6)
+    );
   });
 });

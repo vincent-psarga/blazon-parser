@@ -1,5 +1,12 @@
 import { Blazon } from '../../domain/models/Blazon';
-import { DivisionType, Field, isDivision } from '../../domain/models/Field';
+import {
+  DivisionType,
+  Field,
+  Variation,
+  VariationType,
+  isDivision,
+  isVariation,
+} from '../../domain/models/Field';
 import { Ordinary, OrdinaryType, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import {
@@ -77,6 +84,29 @@ function bands(count: number, from: number, extent: number): readonly Band[] {
   return Array.from({ length: count }, (_, band) => {
     const at = Math.round(from + (2 * band + 1) * part);
     return [at, Math.round(from + (2 * band + 2) * part) - at] as const;
+  });
+}
+
+/**
+ * Where the pieces of a varied field lie that are laid over it.
+ *
+ * A varied field is cut into equal pieces of two tinctures laid alternately, so
+ * it is painted the first tincture entire and every other piece laid over it in
+ * the second: half the shapes, and no seam anywhere between two pieces of the
+ * one tincture.
+ *
+ * The pieces laid over are the second, the fourth and so on — save where a field
+ * counts its pieces from the end this measures from, as the bendy does, and the
+ * first, third and fifth are the ones to lay.
+ *
+ * It is the edges that are rounded rather than the width, so that neighbouring
+ * pieces keep whole numbers between them.
+ */
+function alternate(pieces: number, from: number, extent: number, first = 1): readonly Band[] {
+  const piece = extent / pieces;
+  return Array.from({ length: Math.floor((pieces - first + 1) / 2) }, (_, laid) => {
+    const at = Math.round(from + (first + 2 * laid) * piece);
+    return [at, Math.round(from + (first + 2 * laid + 1) * piece) - at] as const;
   });
 }
 
@@ -185,6 +215,64 @@ const ORDINARIES: Record<OrdinaryType, (count: number) => Shape> = {
   [OrdinaryType.bordure]: () => bordureBand,
 };
 
+/**
+ * A pile: a long triangle driven into the field from one edge, point first.
+ *
+ * Those from the chief have their base on the top edge and their point at the
+ * base of the shield; those from the base are the same triangle turned over, and
+ * the two ranks driven into each other are what a pily field is.
+ */
+const pileFromBase = ([at, across]: Band): Shape =>
+  polygon(`${at},${HEIGHT} ${at + Math.round(across / 2)},0 ${at + across},${HEIGHT}`);
+
+/**
+ * The pieces a pily field lays over the piles from the chief.
+ *
+ * The piles from the chief share the top edge between them, so many as it takes
+ * to leave every other piece for the ones driven the other way, and those are
+ * the ones laid over: their points stand where two piles from the chief meet,
+ * and their bases fill the base between the points of those two.
+ *
+ * An odd count leaves whole piles at both flanks, which is the shape a pily
+ * falls into naturally and why its pieces are counted odd as readily as even. An
+ * even count spends the odd one on a half pile at sinister.
+ */
+const pilesFromBase = (pieces: number): readonly Band[] => {
+  const fromChief = Math.ceil(pieces / 2);
+  const across = WIDTH / fromChief;
+  return Array.from({ length: pieces - fromChief }, (_, pile) => {
+    const point = Math.round((pile + 1) * across);
+    const at = Math.round(point - across / 2);
+    return [at, Math.round(point + across / 2) - at] as const;
+  });
+};
+
+/**
+ * The pieces each varied field lays over itself, given how many it is cut into.
+ *
+ * Every one is drawn past the edges it meets and left to the clip path, as the
+ * ordinaries are. Being keyed on VariationType, a varied field added to the
+ * vocabulary breaks this until it is given a shape.
+ */
+const VARIATIONS: Record<VariationType, (pieces: number) => Shape> = {
+  [VariationType.barry]: (pieces) =>
+    all(alternate(pieces, 0, HEIGHT).map(([at, across]) => rect(0, at, WIDTH, across))),
+  [VariationType.paly]: (pieces) =>
+    all(alternate(pieces, 0, WIDTH).map(([at, across]) => rect(at, 0, across, HEIGHT))),
+  // The diagonals are counted from the corner in sinister chief down to the one
+  // in dexter base, which is the order that puts the first tincture where the
+  // armorials put it: against the dexter chief corner, with the second below it.
+  // Counting from that end is counting the other way, so it is the first piece
+  // that is laid over rather than the second.
+  [VariationType.bendy]: (pieces) => all(alternate(pieces, -WIDTH, 2 * WIDTH, 0).map(bendBand)),
+  [VariationType.pily]: (pieces) => all(pilesFromBase(pieces).map(pileFromBase)),
+  // A chevron reaches as far below its point as the field is wide either side of
+  // it, so the points run from a rise above the field to the foot of it, and the
+  // pieces share that room rather than the height alone.
+  [VariationType.chevronny]: (pieces) =>
+    all(alternate(pieces, -RISE, HEIGHT + RISE).map(chevronBand)),
+};
+
 /** Draws a blazon as an SVG shield. */
 export class SvgBlazonDrawer implements IBlazonDrawer {
   /**
@@ -226,6 +314,9 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
   }
 
   private paintField(field: Field, colours: ColorModel): string {
+    if (isVariation(field)) {
+      return paintVariation(field, colours);
+    }
     if (!isDivision(field)) {
       return `<path d="${SHIELD}" fill="${colourOf(colours, field.tincture)}"/>`;
     }
@@ -238,6 +329,18 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
   }
 }
 
+/**
+ * The whole field in the first tincture, and every other piece of it laid over in
+ * the second. The first piece is therefore the first tincture's, which is where
+ * the armorials put it: in chief, or against the dexter chief corner.
+ */
+function paintVariation(variation: Variation, colours: ColorModel): string {
+  return (
+    `<path d="${SHIELD}" fill="${colourOf(colours, variation.firstTincture)}"/>` +
+    VARIATIONS[variation.type](variation.pieces)(colourOf(colours, variation.secondTincture))
+  );
+}
+
 function paintOrdinary(ordinary: Ordinary, colours: ColorModel): string {
   return ORDINARIES[ordinary.type](borne(ordinary))(colourOf(colours, ordinary.tincture));
 }
@@ -248,9 +351,11 @@ function colourOf(colours: ColorModel, tincture: Tincture): string {
 }
 
 function tincturesOf(blazon: Blazon): readonly Tincture[] {
-  const field = isDivision(blazon.field)
-    ? [blazon.field.firstTincture, blazon.field.secondTincture]
-    : [blazon.field.tincture];
+  const painted = blazon.field;
+  const field =
+    isDivision(painted) || isVariation(painted)
+      ? [painted.firstTincture, painted.secondTincture]
+      : [painted.tincture];
   return [...field, ...(blazon.ordinaries ?? []).map((ordinary) => ordinary.tincture)];
 }
 
