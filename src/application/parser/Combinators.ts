@@ -8,8 +8,10 @@ import {
   resultOrError,
   tok,
 } from 'typescript-parsec';
+import { BlazonParseError, TextPosition } from '../../domain/errors/parsing/BlazonParseError';
 import { Translation, bySpelling } from '../../domain/translations/Translation';
 import { TokenKind } from '../lexer/Lexer';
+import { Vocabulary, complaining, owed, positionOf } from './Failures';
 
 /**
  * Keeps only the candidates a predicate accepts, reporting a rejection as a
@@ -22,7 +24,7 @@ import { TokenKind } from '../lexer/Lexer';
 export function guard<TKind, TResult>(
   parser: Parser<TKind, TResult>,
   accepts: (value: TResult) => boolean,
-  describe: (value: TResult) => string
+  complain: (value: TResult, position?: TextPosition) => BlazonParseError
 ): Parser<TKind, TResult> {
   return {
     parse(token: Token<TKind> | undefined): ParserOutput<TKind, TResult> {
@@ -37,11 +39,8 @@ export function guard<TKind, TResult>(
         if (accepts(candidate.result)) {
           kept.push(candidate);
         } else if (rejection === undefined) {
-          rejection = {
-            kind: 'Error',
-            pos: candidate.firstToken?.pos,
-            message: describe(candidate.result),
-          };
+          const pos = candidate.firstToken?.pos;
+          rejection = complaining(pos, complain(candidate.result, positionOf(pos)));
         }
       }
 
@@ -50,12 +49,18 @@ export function guard<TKind, TResult>(
   };
 }
 
-/** Matches one keyword whatever its casing: "et", "parti". */
+/**
+ * Matches one keyword whatever its casing: "et", "parti".
+ *
+ * A keyword names no term of the vocabulary — it is the grammar's own plumbing —
+ * so a missing one is a plain refusal rather than one of the named kinds.
+ */
 export function keyword(expected: string): Parser<TokenKind, Token<TokenKind>> {
   return guard(
     tok(TokenKind.Word),
     (token) => token.text.toLowerCase() === expected,
-    (token) => `Expected "${expected}", found "${token.text}"`
+    (token, position) =>
+      new BlazonParseError(`Expected "${expected}", found "${token.text}"`, position)
   );
 }
 
@@ -75,7 +80,7 @@ export interface TermMatch<T extends string> {
  */
 export function spelledTerm<T extends string>(
   translation: Translation<T>,
-  describe: (words: string) => string
+  vocabulary: Vocabulary
 ): Parser<TokenKind, TermMatch<T>> {
   const terms = bySpelling(translation);
   const longest = Math.max(...Array.from(terms.keys(), (spelling) => spelling.split(' ').length));
@@ -100,15 +105,16 @@ export function spelledTerm<T extends string>(
       if (candidates.length !== 0) {
         return { successful: true, candidates, error: undefined };
       }
+
+      // A word was read and named nothing, or there was no word at all: the
+      // second is not a misspelling and cannot be reported as one.
+      const found = spelling === '' ? token?.text : spelling.split(' ')[0];
       return {
         successful: false,
-        error: {
-          kind: 'Error',
-          pos: token?.pos,
-          message: describe(
-            spelling === '' ? (token?.text ?? '<end of input>') : spelling.split(' ')[0]
-          ),
-        },
+        error:
+          found === undefined
+            ? owed(vocabulary)
+            : complaining(token?.pos, vocabulary.unknown(found, positionOf(token?.pos))),
       };
     },
   };
@@ -117,9 +123,9 @@ export function spelledTerm<T extends string>(
 /** Matches a term, keeping only which term it is. */
 export function term<T extends string>(
   translation: Translation<T>,
-  describe: (words: string) => string
+  vocabulary: Vocabulary
 ): Parser<TokenKind, T> {
-  return apply(spelledTerm(translation, describe), (match) => match.term);
+  return apply(spelledTerm(translation, vocabulary), (match) => match.term);
 }
 
 /**

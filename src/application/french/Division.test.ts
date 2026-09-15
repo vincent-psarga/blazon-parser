@@ -2,6 +2,9 @@ import { describe, expect, test } from 'vitest';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { DivisionType } from '../../domain/models/Field';
 import { Colours, Metals } from '../../domain/models/Tinctures';
+import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
+import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
+import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 
 const parser = new FrenchBlazonParser();
 
@@ -68,19 +71,26 @@ describe('divided fields', () => {
       expect(() => parser.parse("Parti d'azur")).toThrow();
     });
 
+    test('reports a division whose tinctures never arrive as missing one', () => {
+      expect(() => parser.parse('Coupé')).toThrow(MissingTincture);
+    });
+
     test('rejects two tinctures without "et"', () => {
       expect(() => parser.parse("Parti d'azur d'or")).toThrow();
     });
 
-    test('rejects an unknown division', () => {
-      expect(() => parser.parse("Écartelé d'azur et d'or")).toThrow();
+    test('rejects an unknown division as a division it does not hold', () => {
+      expect(() => parser.parse("Écartelé d'azur et d'or")).toThrow(UnknownDivision);
+      expect(() => parser.parse("Écartelé d'azur et d'or")).toThrow(/Unknown division: écartelé/);
     });
 
     test('still reports an unknown tincture rather than an unknown division', () => {
+      expect(() => parser.parse('de fuchsia')).toThrow(UnknownTincture);
       expect(() => parser.parse('de fuchsia')).toThrow(/Unknown tincture: fuchsia/);
     });
 
     test('carries the elision rule into both halves', () => {
+      expect(() => parser.parse("Parti d'azur et de or")).toThrow(UnknownTincture);
       expect(() => parser.parse("Parti d'azur et de or")).toThrow(/expected "d'or"/);
     });
   });

@@ -34,6 +34,15 @@ script.
 ```
 src/
   domain/
+    errors/parsing/           what a blazon may fail to be
+      BlazonParseError.ts     the base: a message, and where it gave up
+      UnknownTincture.ts      a word naming no tincture
+      UnknownDivision.ts      a word naming no line of division
+      UnknownOrdinary.ts      a word naming no band
+      WrongTinctureArticle.ts a tincture its article does not agree with
+      WrongOrdinaryArticle.ts an ordinary its article does not agree with
+      MissingTincture.ts      no tincture at all, where one was owed
+      MissingOrdinary.ts      no ordinary at all, where one was owed
     models/                   what a blazon is, in English
       Blazon.ts               a blazon: its field, and what the field bears
       Field.ts                a plain or divided field; DivisionType
@@ -159,6 +168,64 @@ A term may be spelled across several words — English says "per bend sinister"
 where French says "taillé" — so `term` offers every prefix that names a term as a
 candidate and lets the surrounding grammar choose; the longest reading is not
 always the right one.
+
+Refusing a blazon is part of reading one, so a refusal says what kind of failure
+it was rather than only where, and carries what it knows as fields rather than
+leaving the message to be read back apart.
+
+A word naming no term the parser holds is an `Unknown` one, and names itself:
+
+```ts
+try {
+  frenchParser.parse("Écartelé d'azur et d'or");
+} catch (refusal) {
+  refusal instanceof UnknownDivision; // true
+  refusal.division; // 'écartelé'
+  refusal.position; // { index: 0, row: 1, column: 1 }
+}
+```
+
+No word at all is a different failure, and a different complaint. Nothing was
+misnamed, so there is nothing to name: what a `Missing` one carries instead is
+the phrase that was left owing a term.
+
+```ts
+frenchParser.parse("D'azur à la fasce");
+// MissingTincture: Missing tincture in: à la fasce
+//   context: 'à la fasce'
+```
+
+A term named under an article that does not agree with it is a kind of `Unknown`
+one — the words as written name no tincture, however well the word inside them
+would alone — and adds how it ought to have been written:
+
+```ts
+frenchParser.parse('de or');
+// WrongTinctureArticle: Wrong elision: expected "d'or"
+//   tincture: 'or', expected: "d'or"
+```
+
+There is no `MissingDivision`, because a division is the first word of a
+divided field and so is never owed and absent: a blazon ending before it names
+anything is owed a tincture, being a plain field that never arrived. Anything
+that is not one term going wrong — two tinctures with no conjunction, a word left
+over at the end — is the base `BlazonParseError`.
+
+A grammar tries alternatives, so most of its failures are not the blazon's fault
+and must not escape as exceptions — one rejected branch would take its viable
+siblings down with it. The complaint therefore travels as data beside the parse
+error and is thrown only once the whole parse has given up on it. This is also
+why `parseWith` reads the parser's output itself rather than calling
+typescript-parsec's `expectSingleResult`, which rebuilds the failure from the
+message and position alone and drops everything else.
+
+Which complaint survives is a question of its own when a word is in no
+vocabulary at all. A plain field and a divided one begin at the same word, so
+both readings fail in the same place, and whichever rule is listed first would
+otherwise always win. What follows decides it instead: if the rest of the blazon
+reads as the rest of a division — two tinctures and the conjunction between them
+— the word was meant to name the line, and `Écartelé d'azur et d'or` is reported
+as the unknown division it is rather than as an unknown tincture.
 
 Neither the parser nor the writer holds any heraldic word. They reach terms
 through the translations and keep only what is genuinely the language's own: its

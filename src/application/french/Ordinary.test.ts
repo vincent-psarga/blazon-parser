@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { OrdinaryType } from '../../domain/models/Ordinary';
+import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
+import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
+import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
@@ -95,6 +98,7 @@ describe('a field bearing an ordinary', () => {
     test.each(['fasce', 'bande', 'barre', 'croix'])(
       'rejects the feminine %s taking "au"',
       (word) => {
+        expect(() => parser.parse(`D'azur au ${word} d'or`)).toThrow(UnknownOrdinary);
         expect(() => parser.parse(`D'azur au ${word} d'or`)).toThrow(
           new RegExp(`expected "à la ${word}"`)
         );
@@ -111,6 +115,7 @@ describe('a field bearing an ordinary', () => {
     );
 
     test('rejects an ordinary the vocabulary does not know', () => {
+      expect(() => parser.parse("D'azur à la bordure d'or")).toThrow(UnknownOrdinary);
       expect(() => parser.parse("D'azur à la bordure d'or")).toThrow(/Unknown ordinary: bordure/);
     });
 
@@ -132,8 +137,8 @@ describe('a field bearing an ordinary', () => {
       expect(() => parser.parse("D'azur fasce d'or")).toThrow();
     });
 
-    test('rejects an ordinary with no tincture of its own', () => {
-      expect(() => parser.parse("D'azur à la fasce")).toThrow();
+    test('rejects an ordinary with no tincture of its own, as a missing tincture', () => {
+      expect(() => parser.parse("D'azur à la fasce")).toThrow(MissingTincture);
     });
 
     test('rejects a second ordinary: a field bears one at most', () => {
@@ -141,6 +146,7 @@ describe('a field bearing an ordinary', () => {
     });
 
     test("carries the elision rule into the ordinary's tincture", () => {
+      expect(() => parser.parse("D'azur à la fasce de or")).toThrow(UnknownTincture);
       expect(() => parser.parse("D'azur à la fasce de or")).toThrow(/expected "d'or"/);
     });
   });

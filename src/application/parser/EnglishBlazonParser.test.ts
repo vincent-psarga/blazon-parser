@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { DivisionType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
+import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
+import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
+import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
+import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
@@ -94,6 +98,7 @@ describe('EnglishBlazonParser', () => {
     });
 
     test('rejects an ordinary the vocabulary does not know', () => {
+      expect(() => parser.parse('Azure a bordure or')).toThrow(UnknownOrdinary);
       expect(() => parser.parse('Azure a bordure or')).toThrow(/Unknown ordinary: bordure/);
     });
 
@@ -116,13 +121,14 @@ describe('EnglishBlazonParser', () => {
       expect(parser.parse(`Per ${name} argent and gules`)).not.toHaveProperty('ordinary');
     });
 
-    test('rejects an ordinary with no tincture of its own', () => {
-      expect(() => parser.parse('Azure a fess')).toThrow();
+    test('rejects an ordinary with no tincture of its own, as a missing tincture', () => {
+      expect(() => parser.parse('Azure a fess')).toThrow(MissingTincture);
     });
   });
 
   describe('rejections', () => {
     test('rejects a tincture it does not know', () => {
+      expect(() => parser.parse('Fuchsia')).toThrow(UnknownTincture);
       expect(() => parser.parse('Fuchsia')).toThrow(/Unknown tincture: fuchsia/);
     });
 
@@ -139,8 +145,9 @@ describe('EnglishBlazonParser', () => {
       expect(() => parser.parse('Per pale azure or')).toThrow();
     });
 
-    test('rejects a division without its "per"', () => {
-      expect(() => parser.parse('Pale azure and or')).toThrow();
+    test('rejects a division without its "per", as a division it does not hold', () => {
+      expect(() => parser.parse('Pale azure and or')).toThrow(UnknownDivision);
+      expect(() => parser.parse('Pale azure and or')).toThrow(/Unknown division: pale/);
     });
   });
 });

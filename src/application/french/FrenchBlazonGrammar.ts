@@ -1,10 +1,13 @@
 import { Parser, alt, apply, kright, seq, tok } from 'typescript-parsec';
 import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
+import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryArticle';
+import { WrongTinctureArticle } from '../../domain/errors/parsing/WrongTinctureArticle';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
 import { guard, optional, spelledTerm, term } from '../parser/Combinators';
+import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
 import { AND, AU, A_LA, bearing, expectedArticle, withArticle } from './FrenchGrammar';
 
 // A tincture may be named bare ("or") or introduced by an article ("d'or"), so
@@ -12,10 +15,7 @@ import { AND, AU, A_LA, bearing, expectedArticle, withArticle } from './FrenchGr
 const ARTICLE = alt(tok(TokenKind.Elision), tok(TokenKind.Article));
 
 const ARTICLED_TINCTURE = apply(
-  seq(
-    optional(ARTICLE),
-    spelledTerm(FrenchTinctures, (words) => `Unknown tincture: ${words}`)
-  ),
+  seq(optional(ARTICLE), spelledTerm(FrenchTinctures, asTincture)),
   ([article, match]) => ({ ...match, article: article?.kind })
 );
 
@@ -25,7 +25,7 @@ const TINCTURE = apply(
   guard(
     ARTICLED_TINCTURE,
     ({ spelling, article }) => article === undefined || article === expectedArticle(spelling),
-    ({ spelling }) => `Wrong elision: expected "${withArticle(spelling)}"`
+    ({ spelling }, position) => new WrongTinctureArticle(spelling, withArticle(spelling), position)
   ),
   ({ term }) => term
 );
@@ -43,9 +43,9 @@ const borneAs = (article: Parser<TokenKind, unknown>, expected: string) =>
     article,
     apply(
       guard(
-        spelledTerm(FrenchOrdinaryType, (words) => `Unknown ordinary: ${words}`),
+        spelledTerm(FrenchOrdinaryType, asOrdinary),
         ({ spelling }) => `${expected} ${spelling}` === bearing(spelling),
-        ({ spelling }) => `Wrong article: expected "${bearing(spelling)}"`
+        ({ spelling }, position) => new WrongOrdinaryArticle(spelling, bearing(spelling), position)
       ),
       ({ term }) => term
     )
@@ -57,7 +57,7 @@ const ORDINARY = alt(borneAs(A_LA, 'à la'), borneAs(AU, 'au'));
 
 export const FrenchBlazonGrammar: BlazonGrammar = {
   tincture: TINCTURE,
-  division: term(FrenchDivisionType, (words) => `Unknown division: ${words}`),
+  division: term(FrenchDivisionType, asDivision),
   ordinary: ORDINARY,
   and: AND,
 };

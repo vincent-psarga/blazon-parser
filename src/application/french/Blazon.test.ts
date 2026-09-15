@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
+import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { withArticle } from './FrenchGrammar';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { nameOf } from '../../domain/translations/Translation';
@@ -23,10 +24,12 @@ describe('parseBlazon', () => {
   });
 
   test('rejects an unknown tincture', () => {
+    expect(() => parser.parse('de fuchsia')).toThrow(UnknownTincture);
     expect(() => parser.parse('de fuchsia')).toThrow(/Unknown tincture: fuchsia/);
   });
 
-  test('rejects a wrong elision', () => {
+  test('rejects a wrong elision as a tincture it could not read', () => {
+    expect(() => parser.parse('de or')).toThrow(UnknownTincture);
     expect(() => parser.parse('de or')).toThrow(/expected "d'or"/);
   });
 

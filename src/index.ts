@@ -21,6 +21,16 @@ export type { ArmorialReading, ReadEntry } from './application/armorial/Armorial
 export { DivisionType, isDivision } from './domain/models/Field';
 export type { Division, Field } from './domain/models/Field';
 export { OrdinaryType } from './domain/models/Ordinary';
+
+export { BlazonParseError } from './domain/errors/parsing/BlazonParseError';
+export type { TextPosition } from './domain/errors/parsing/BlazonParseError';
+export { UnknownTincture } from './domain/errors/parsing/UnknownTincture';
+export { UnknownDivision } from './domain/errors/parsing/UnknownDivision';
+export { UnknownOrdinary } from './domain/errors/parsing/UnknownOrdinary';
+export { MissingTincture } from './domain/errors/parsing/MissingTincture';
+export { MissingOrdinary } from './domain/errors/parsing/MissingOrdinary';
+export { WrongTinctureArticle } from './domain/errors/parsing/WrongTinctureArticle';
+export { WrongOrdinaryArticle } from './domain/errors/parsing/WrongOrdinaryArticle';
 export type { Ordinary } from './domain/models/Ordinary';
 export { Colours, Furs, Metals, TINCTURES, isTincture } from './domain/models/Tinctures';
 export type { Tincture } from './domain/models/Tinctures';
