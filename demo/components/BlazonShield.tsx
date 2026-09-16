@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { SvgBlazonDrawer } from '../../src/application/drawer/SvgBlazonDrawer';
+import { SvgBlazonDrawer } from '../../src/application/drawer/svg/SvgBlazonDrawer';
 import { Blazon } from '../../src/domain/models/Blazon';
 import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';

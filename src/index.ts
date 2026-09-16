@@ -9,7 +9,7 @@ export type {
 export { isPattern } from './domain/services/IBlazonDrawer';
 export type { IBlazonParser } from './domain/services/IBlazonParser';
 export type { IBlazonWriter } from './domain/services/IBlazonWriter';
-export { SvgBlazonDrawer } from './application/drawer/SvgBlazonDrawer';
+export { SvgBlazonDrawer } from './application/drawer/svg/SvgBlazonDrawer';
 export { EnglishBlazonParser } from './application/parser/EnglishBlazonParser';
 export { FrenchBlazonParser } from './application/parser/FrenchBlazonParser';
 export { EnglishBlazonWriter } from './application/writer/EnglishBlazonWriter';

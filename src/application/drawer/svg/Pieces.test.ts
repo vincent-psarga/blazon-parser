@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import { VariationType } from '../../domain/models/Field';
-import { OrdinaryType } from '../../domain/models/Ordinary';
-import { Colours, Metals } from '../../domain/models/Tinctures';
-import { WikipediaColours } from '../../infra/colours/WikipediaColours';
+import { VariationType } from '../../../domain/models/Field';
+import { OrdinaryType } from '../../../domain/models/Ordinary';
+import { Colours, Metals } from '../../../domain/models/Tinctures';
+import { WikipediaColours } from '../../../infra/colours/WikipediaColours';
 import { SvgBlazonDrawer } from './SvgBlazonDrawer';
 
 /**

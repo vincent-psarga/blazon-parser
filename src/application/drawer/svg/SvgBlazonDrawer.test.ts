@@ -1,13 +1,13 @@
 import { describe, expect, test } from 'vitest';
-import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
-import { ChargeType } from '../../domain/models/Charge';
-import { OrdinaryType } from '../../domain/models/Ordinary';
-import { Colours, Furs, Metals, TINCTURES, Tincture } from '../../domain/models/Tinctures';
-import { ColorModel, Paint, isPattern } from '../../domain/services/IBlazonDrawer';
-import { cutFurs } from '../../infra/colours/Furs';
-import { HatchingColours } from '../../infra/colours/HatchingColours';
-import { WikipediaColours } from '../../infra/colours/WikipediaColours';
-import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
+import { DivisionType, FurType, VariationType } from '../../../domain/models/Field';
+import { ChargeType } from '../../../domain/models/Charge';
+import { OrdinaryType } from '../../../domain/models/Ordinary';
+import { Colours, Furs, Metals, TINCTURES, Tincture } from '../../../domain/models/Tinctures';
+import { ColorModel, Paint, isPattern } from '../../../domain/services/IBlazonDrawer';
+import { cutFurs } from '../../../infra/colours/Furs';
+import { HatchingColours } from '../../../infra/colours/HatchingColours';
+import { WikipediaColours } from '../../../infra/colours/WikipediaColours';
+import { FrenchBlazonParser } from '../../parser/FrenchBlazonParser';
 import { SvgBlazonDrawer } from './SvgBlazonDrawer';
 
 const drawer = new SvgBlazonDrawer(WikipediaColours);

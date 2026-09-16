@@ -80,8 +80,17 @@ src/
       EnglishGrammar.ts       the conjunction, and "a" or "an" before what the field bears
       EnglishBlazonGrammar.ts the English BlazonGrammar
       EnglishBlazonWording.ts the English BlazonWording
-    drawer/
+    drawer/svg/
       SvgBlazonDrawer.ts      implements IBlazonDrawer
+      Arms.ts                 a blazon read into the vocabulary that draws it
+      Document.ts             the SVG envelope, the clip path, the definitions
+      Ground.ts               Frame, Ground, Ink, Painter — where a figure is drawn
+      shapes/                 geometry, knowing no heraldry: rectangle, polygon,
+                              ring, path, shield, bands, triangles, diamond
+      painting/               how geometry is inked: plain, split, laid, over, arrange
+      vocabulary/             one file per enum value, knowing no SVG
+        tinctures/metals|colors|furs/   divisions/  variations/
+        furred/  ordinaries/  charges/
     writer/
       BlazonWording.ts        what a language contributes; the shared sentence
       FrenchBlazonWriter.ts   implements IBlazonWriter
@@ -353,6 +362,20 @@ Drawing is a third service over the same models, and needs no language at all: a
 `ColorModel` says what each tincture is painted with, so the shades stay out of
 the drawer. Heraldry fixes no shade, which is why they are supplied rather than
 assumed — `WikipediaColours` is one convention among many.
+
+The drawer is three folders, each knowing less than the one above it. `shapes/`
+is geometry and `painting/` is how geometry is inked, and neither may name a term
+of heraldry — the same rectangle is a fess, a billet, and half a field divided
+per pale. `vocabulary/` is the terms, one file per enum value, and writes no SVG
+of its own: what a tag looks like is settled in four primitive shapes and nowhere
+else. `Arms.ts` is the one place the model and the drawing meet. A test reads
+that layering off the files rather than trusting the convention to hold.
+
+Every figure is handed the **frame** it is drawn in rather than measuring itself
+against the drawing — its box, its outline, and how far the shape inside that box
+actually reaches. There is one frame today, the shield. A quarter is the same
+frame made smaller and a charged band is a frame turned to its own angle, so
+neither costs a rewrite of the terms.
 
 A tincture is not always a flat colour. A `Paint` is either a colour or a
 `Pattern`, which pairs the fill a shape asks for with the definition that fill
