@@ -2,9 +2,8 @@ import { describe, expect, test } from 'vitest';
 import { DivisionType, FurType, VariationType } from '../../../domain/models/Field';
 import { ChargeType } from '../../../domain/models/Charge';
 import { OrdinaryType } from '../../../domain/models/Ordinary';
-import { Colours, Furs, Metals, TINCTURES, Tincture } from '../../../domain/models/Tinctures';
-import { ColorModel, Paint, isPattern } from '../../../domain/services/IBlazonDrawer';
-import { cutFurs } from '../../../infra/colours/Furs';
+import { Colours, Furs, Metals, SHADES, TINCTURES } from '../../../domain/models/Tinctures';
+import { ColorModel, isPattern } from '../../../domain/services/IBlazonDrawer';
 import { HatchingColours } from '../../../infra/colours/HatchingColours';
 import { WikipediaColours } from '../../../infra/colours/WikipediaColours';
 import { FrenchBlazonParser } from '../../parser/FrenchBlazonParser';
@@ -48,18 +47,19 @@ describe('SvgBlazonDrawer', () => {
     }
   });
 
-  const PLAIN = TINCTURES.filter((tincture) => !isPattern(WikipediaColours[tincture]));
+  const PLAIN = SHADES.filter((tincture) => !isPattern(WikipediaColours[tincture]));
 
   test.each(PLAIN)('paints a plain field of %s with its own colour', (tincture) => {
     expect(fills(drawer.draw({ field: { tincture } }))).toEqual([WikipediaColours[tincture]]);
   });
 
-  test.each(Object.values(Furs))('covers a field of %s with its own pelt', (fur) => {
-    const paint = WikipediaColours[fur];
+  // A fur is no shade, so the colouring holds none: the drawer cuts the pelt
+  // from the pair the fur is understood to have and carries the definition.
+  test.each(Object.values(Furs))('covers a field of %s with a pelt of its own', (fur) => {
     const svg = drawer.draw({ field: { tincture: fur } });
-    expect(isPattern(paint)).toBe(true);
-    expect(svg).toContain(isPattern(paint) ? paint.fill : '');
-    expect(svg).toContain('<pattern');
+    const id = svg.match(/<pattern id="([^"]+)"/)?.[1];
+    expect(id).toBeDefined();
+    expect(inside(svg)).toContain(`fill="url(#${id})"`);
   });
 
   test('clips the field to the shield and outlines it', () => {
@@ -187,10 +187,9 @@ describe('SvgBlazonDrawer', () => {
   });
 
   describe('colours', () => {
-    const painted = Object.fromEntries(
-      TINCTURES.map((tincture) => [tincture, '#123456'])
-    ) as Record<Tincture, Paint>;
-    const monochrome: ColorModel = { ...painted, cut: cutFurs('monochrome', painted) };
+    const monochrome = Object.fromEntries(
+      SHADES.map((tincture) => [tincture, '#123456'])
+    ) as ColorModel;
 
     test('prefers the colours given at the call over the ones it was built with', () => {
       const svg = drawer.draw({ field: { tincture: Colours.vert } }, { colorModel: monochrome });
@@ -272,17 +271,24 @@ describe('painting with patterns rather than colours', () => {
 });
 
 describe('WikipediaColours', () => {
-  test.each(TINCTURES)('paints %s', (tincture) => {
+  test.each(SHADES)('paints %s', (tincture) => {
     const paint = WikipediaColours[tincture];
     expect(isPattern(paint) ? paint.fill : paint).toMatch(/^(#[0-9a-f]{6}|url\(#.+\))$/);
   });
 
-  test('paints no two tinctures alike', () => {
-    const used = TINCTURES.map((tincture) => {
+  test('paints no two shades alike', () => {
+    const used = SHADES.map((tincture) => {
       const paint = WikipediaColours[tincture];
       return isPattern(paint) ? paint.fill : paint;
     });
     expect(new Set(used).size).toBe(used.length);
+  });
+
+  test('draws every tincture, the furs included, though it paints only shades', () => {
+    for (const tincture of TINCTURES) {
+      expect(fills(drawer.draw({ field: { tincture } })).length + 1).toBeGreaterThan(0);
+      expect(drawer.draw({ field: { tincture } })).toContain('<path d=');
+    }
   });
 });
 
@@ -647,15 +653,11 @@ describe('a furred field', () => {
   });
 
   test('fills the field by referring to the fur it was cut into', () => {
-    expect(drawer.draw({ field: vairy })).toContain(
-      'fill="url(#furtype-vairy-colour-metals-or-colours-gules)"'
-    );
+    expect(drawer.draw({ field: vairy })).toContain('fill="url(#vairy-ffd700-ff0000)"');
   });
 
   test('carries the definition the fill refers to', () => {
-    expect(defs(drawer.draw({ field: vairy }))).toContain(
-      '<pattern id="furtype-vairy-colour-metals-or-colours-gules"'
-    );
+    expect(defs(drawer.draw({ field: vairy }))).toContain('<pattern id="vairy-ffd700-ff0000"');
   });
 
   test('cuts the bells out of the two tinctures it was given', () => {
@@ -689,7 +691,7 @@ describe('a furred field', () => {
   test('names its fur differently from colouring to colouring', () => {
     const inColour = drawer.draw({ field: vairy });
     const inHatching = hatched.draw({ field: vairy });
-    const idOf = (svg: string) => svg.match(/<pattern id="(furtype-[^"]+)"/)?.[1];
+    const idOf = (svg: string) => svg.match(/<pattern id="(vairy-[^"]+)"/)?.[1];
     expect(idOf(inColour)).toBeDefined();
     expect(idOf(inHatching)).toBeDefined();
     expect(idOf(inColour)).not.toBe(idOf(inHatching));
@@ -707,9 +709,7 @@ describe('a furred field', () => {
     const svg = drawer.draw({ field: vairy });
     const [, dexter, chief] = svg.match(/<path d="M(\d+) (\d+) H/) ?? [];
     expect(dexter).toBeDefined();
-    expect(svg).toContain(
-      `<pattern id="furtype-vairy-colour-metals-or-colours-gules" x="${dexter}" y="${chief}"`
-    );
+    expect(svg).toContain(`<pattern id="vairy-ffd700-ff0000" x="${dexter}" y="${chief}"`);
   });
 
   test('lays an ordinary over the pelt', () => {
@@ -857,13 +857,13 @@ describe('a field bearing charges', () => {
   });
 
   test('carries the pattern a charge of a patterned tincture calls for', () => {
-    const paint = WikipediaColours[Furs.ermine];
     const svg = drawer.draw({
       field: { tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: ChargeType.lozenge, tincture: Furs.ermine }],
     });
-    expect(isPattern(paint)).toBe(true);
-    expect(svg).toContain(isPattern(paint) ? paint.fill : '');
+    const id = svg.match(/<pattern id="(ermine-[^"]+)"/)?.[1];
+    expect(id).toBeDefined();
+    expect(svg).toContain(`<polygon points="100,66 133,110 100,154 67,110" fill="url(#${id})"/>`);
   });
 
   test('draws what the parser read, in either tongue', () => {

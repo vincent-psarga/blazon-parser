@@ -50,17 +50,21 @@ describe('what each folder is allowed to know', () => {
     expect(writing.map(({ name }) => name)).toEqual([]);
   });
 
-  test('every tag in the drawing is written in one of the primitive shapes', () => {
-    // The rest of shapes/ composes these rather than writing markup of its own,
-    // so what a tag looks like is settled in four short files and nowhere else.
-    // The document's own envelope is the exception, being the drawing rather
-    // than anything drawn in it.
+  test('every tag in the drawing is written in one of these shapes', () => {
+    // Four primitives, two figures whose own shape is theirs alone — the ermine
+    // spot and the vair bell — and the tile that repeats one over a plane. The
+    // rest of shapes/ composes these rather than writing markup of its own, and
+    // nothing above shapes/ writes any. The document's own envelope is the
+    // exception, being the drawing rather than anything drawn in it.
     const drawing = sourcesUnder('shapes').filter(({ text }) => A_TAG.test(text));
     expect(drawing.map(({ name }) => name).sort()).toEqual([
+      'shapes/bell.ts',
       'shapes/path.ts',
       'shapes/polygon.ts',
       'shapes/rectangle.ts',
       'shapes/ring.ts',
+      'shapes/spot.ts',
+      'shapes/tile.ts',
     ]);
   });
 });

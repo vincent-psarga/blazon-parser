@@ -3,7 +3,7 @@ import { cleanup, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { mount } from '../testing/Mounting';
 import { afterEach, describe, expect, test } from 'vitest';
-import { Colours, Furs, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
+import { Colours, Furs, Metals, SHADES, TINCTURES } from '../../src/domain/models/Tinctures';
 import { Paint, isPattern } from '../../src/domain/services/IBlazonDrawer';
 import { nameOf } from '../../src/domain/translations/Translation';
 import { EnglishTinctures } from '../../src/domain/translations/en/Tinctures';
@@ -70,11 +70,20 @@ describe('TincturesPage', () => {
     expect(french).toHaveAttribute('lang', 'fr');
   });
 
-  test.each(TINCTURES)('paints %s in colour and in hatching when struck', async (tincture) => {
+  test.each(SHADES)('paints %s in colour and in hatching when struck', async (tincture) => {
     mount(<TincturesPage />);
     await userEvent.setup().click(ghost(tincture));
     expect(painting('colour')).toContain(`fill="${fillOf(WikipediaColours[tincture])}"`);
     expect(painting('hatching')).toContain(`fill="${fillOf(HatchingColours[tincture])}"`);
+  });
+
+  // A fur is no shade, so no colouring holds one: it is a figure the drawer cuts
+  // from the pair the fur is understood to have, and the drawing carries it.
+  test.each(Object.values(Furs))('covers %s with a pelt in either painting', async (fur) => {
+    mount(<TincturesPage />);
+    await userEvent.setup().click(ghost(fur));
+    expect(painting('colour')).toContain('<pattern');
+    expect(painting('hatching')).toContain('<pattern');
   });
 
   describe('the terms a newcomer would stumble on', () => {

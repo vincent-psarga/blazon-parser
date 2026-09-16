@@ -1,7 +1,8 @@
 import { Tincture } from '../../../domain/models/Tinctures';
-import { ColorModel, Pattern, isPattern } from '../../../domain/services/IBlazonDrawer';
-import { Frame } from './Ground';
+import { Pattern, isPattern } from '../../../domain/services/IBlazonDrawer';
+import { Frame, Ground } from './Ground';
 import { escapeAttribute } from './escaping';
+import { painted } from './vocabulary/tinctures/paint';
 
 // Two SVGs inlined in one document share an id space, so this one is spelled out
 // rather than left to collide with whatever else the page calls its clip path.
@@ -44,19 +45,27 @@ export function document(frame: Frame, definitions: string, arms: string, outlin
  * colour model is written in code alongside the drawer, not taken from a reader.
  */
 export function definitions(
-  colours: ColorModel,
+  ground: Ground,
   tinctures: readonly Tincture[],
-  cut?: Pattern
+  pelt?: Pattern
 ): string {
   const placed = new Map<string, string>();
-  for (const tincture of tinctures) {
-    const paint = colours[tincture];
-    if (isPattern(paint)) {
-      placed.set(paint.fill, paint.definition);
+
+  // A pattern may refer to another — the bells of a hatched vair are filled with
+  // the ruling that stands for azure — so what a tincture refers to is placed
+  // beside it, and the map settles whatever two of them ask for alike.
+  const place = (tincture: Tincture): void => {
+    const { paint, refersTo } = painted(ground, tincture);
+    if (!isPattern(paint) || placed.has(paint.fill)) {
+      return;
     }
-  }
-  if (cut !== undefined) {
-    placed.set(cut.fill, cut.definition);
+    placed.set(paint.fill, paint.definition);
+    refersTo.forEach(place);
+  };
+  tinctures.forEach(place);
+
+  if (pelt !== undefined) {
+    placed.set(pelt.fill, pelt.definition);
   }
   return [...placed.values()].join('');
 }

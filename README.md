@@ -86,7 +86,8 @@ src/
       Document.ts             the SVG envelope, the clip path, the definitions
       Ground.ts               Frame, Ground, Ink, Painter — where a figure is drawn
       shapes/                 geometry, knowing no heraldry: rectangle, polygon,
-                              ring, path, shield, bands, triangles, diamond
+                              ring, path, shield, bands, triangles, diamond,
+                              spot, bell, tile
       painting/               how geometry is inked: plain, split, laid, over, arrange
       vocabulary/             one file per enum value, knowing no SVG
         tinctures/metals|colors|furs/
@@ -101,8 +102,6 @@ src/
     colours/
       WikipediaColours.ts     the shades Wikipedia paints its tinctures with
       HatchingColours.ts      the marks that stand in for colour in monochrome
-      Furs.ts                 ermine and vair, built from whichever two tinctures,
-                              and how a colouring cuts a vairé from a pair of them
 
   index.ts                    public API
 
@@ -216,11 +215,24 @@ because cutting a line four times and cutting it eight say two different things,
 where a pelt is cut to no such number and neither tongue asks for one. A vairé of
 argent and azure would simply be vair, and is blazoned so.
 
-Drawing one is the colouring's business rather than the drawer's, because only the
-colouring knows what its tinctures are made of: a `ColorModel` says how it cuts a
-fur from a pair of them, and a hatched shield cuts the bells out of ruling where a
-coloured one cuts them out of colour. The bells themselves are the same bells, and
-the same shapes that paint the vair tincture.
+A fur is drawn rather than painted. A `ColorModel` answers for the **shades** —
+`Record<Shade, Paint>`, which is the metals and the colours — and the figures are
+the drawer's, because an ermine spot is the same spot in every armorial where the
+red of gules is a convention and nothing more. So the two furs that are tinctures
+fall out of the two that are fields: `vair` is vairy of argent and azure, and
+`ermine` is argent strewn with sable.
+
+What a colouring adds for them is one optional scalar, its `ink` — the colour it
+draws its marks in. A colouring that paints in colour has none: its tinctures tell
+themselves apart, an ermine spot is simply sable, and bells of two colours need no
+line between them. A colouring that rules its tinctures has one and needs it
+twice: an ermine spot is a mark and is drawn solid rather than hatched — a spot
+six units tall filled with ruling ten wide reads as a smudge — and bells cut out
+of ruling against more ruling read as neither without an edge.
+
+Pattern ids are named after the paints a figure is cut from rather than after the
+colouring, so two colourings never collide and two that painted a pelt identically
+share the one definition.
 
 An ordinary is laid on the field rather than cutting it, and carries a tincture of
 its own. Most are named after the same line as a partition, so what tells the two

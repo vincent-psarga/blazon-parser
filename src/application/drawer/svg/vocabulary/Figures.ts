@@ -1,6 +1,6 @@
-import { Tincture } from '../../../../domain/models/Tinctures';
-import { Frame, Ink } from '../Ground';
+import { Frame } from '../Ground';
 import { Shape } from '../shapes/Shape';
+import { Tile } from '../shapes/tile';
 
 /*
  * What each kind of term contributes to a drawing.
@@ -32,11 +32,15 @@ export type VariationFigure = {
 };
 
 /**
- * A field covered with a pelt cut from two tinctures it names. The cutting is
- * the colouring's, so what a fur contributes is an ink rather than a shape.
+ * A pelt: a figure tiled over a ground, cut from two paints rather than two
+ * tinctures.
+ *
+ * It is handed the paints already resolved, because a pelt may be cut from a
+ * fur as readily as from a colour — "vairé d'hermine et de gueules" — and
+ * resolving one is the tinctures' business rather than the pelt's.
  */
 export type FurredFigure = {
-  readonly ink: (first: Tincture, second: Tincture) => Ink;
+  readonly pelt: (frame: Frame, ground: string, figure: string, edge?: string) => Tile;
 };
 
 /**

@@ -1,7 +1,5 @@
-import { Colours, Furs, Metals } from '../../domain/models/Tinctures';
-import { Tincture } from '../../domain/models/Tinctures';
+import { Colours, Metals, Shade } from '../../domain/models/Tinctures';
 import { ColorModel, Paint, Pattern } from '../../domain/services/IBlazonDrawer';
-import { cutFurs, ermine, vair } from './Furs';
 
 /**
  * Hatching: the convention for standing in for the tinctures where colour cannot
@@ -34,14 +32,12 @@ function hatch(name: string, marks: string, transform = ''): Pattern {
 }
 
 /**
- * What this colouring names its patterns after. Ids are shared across a whole
- * page rather than owned by one drawing, so a shield shown hatched beside the
- * same shield in colour would otherwise ask for one definition and get the
- * other's, whichever the page had placed first.
+ * The furs are not among these. A fur is a figure repeated over the field rather
+ * than a shade, and the figure is the drawer's: what this contributes to an
+ * ermine is the paper it is strewn on and the ink its spots are drawn in, and to
+ * a vair the ruling its bells are cut out of.
  */
-const COLOURING = 'hatched';
-
-const TINCTURES: Record<Tincture, Paint> = {
+const TINCTURES: Record<Shade, Paint> = {
   // Argent carries no marks at all: in this system the paper is the metal.
   [Metals.argent]: PAPER,
   [Metals.or]: hatch('or', DOTS),
@@ -50,29 +46,12 @@ const TINCTURES: Record<Tincture, Paint> = {
   [Colours.sable]: hatch('sable', HORIZONTAL + VERTICAL),
   // Ruled lines turned onto the diagonal a bend runs along.
   [Colours.vert]: hatch('vert', HORIZONTAL, ' patternTransform="rotate(45)"'),
-  // Ermine is blank paper and solid spots, both of which hatching already has.
-  [Furs.ermine]: ermine(`ermine-${COLOURING}`, PAPER, INK),
-  // Vair needs its azure ruled, so it carries the ruling it refers to with it.
-  [Furs.vair]: vairHatched(),
 };
 
 /**
- * Every tincture here is ruling or blank paper, so a vairé cut from two of them
- * would be one mark against another with nothing between: the bells are given an
- * edge, as the vair's own are.
+ * Everything here is ruling or blank paper, so the ink is worth declaring twice
+ * over: an ermine spot is a mark and is drawn solid rather than hatched — a spot
+ * six units tall filled with hatching ten wide reads as a smudge — and bells cut
+ * out of ruling against more ruling read as neither without a line between them.
  */
-export const HatchingColours: ColorModel = {
-  ...TINCTURES,
-  cut: cutFurs(COLOURING, TINCTURES, INK),
-};
-
-/**
- * A pattern may carry more than one definition, so vair brings along the ruling
- * its bells are filled with. The ruling is given a name of its own rather than
- * sharing azure's, since a shield bearing both would otherwise define it twice.
- */
-function vairHatched(): Pattern {
-  const ruling = hatch('vair-azure', HORIZONTAL);
-  const bells = vair(`vair-${COLOURING}`, PAPER, ruling.fill, INK);
-  return { fill: bells.fill, definition: ruling.definition + bells.definition };
-}
+export const HatchingColours: ColorModel = { ...TINCTURES, ink: INK };

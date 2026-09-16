@@ -65,8 +65,10 @@ Supported vocabulary as it stands:
 - **Languages (2)** — French and English, both reading and writing. French agrees its article with
   the word it introduces, elision included — "à la billette", "au losange", "à l'annelet"; English
   chooses "a" or "an".
-- **Colourings (2)** — a colour model and the monochrome hatching convention. A tincture's paint is
-  either a flat colour or a pattern.
+- **Colourings (2)** — a colour model and the monochrome hatching convention. A colouring answers for
+  the shades only — the metals and the colours — plus the ink it draws marks in. The furs are figures
+  and are drawn by the drawer, so vair is vairy of argent and azure and ermine is argent strewn with
+  sable. A shade's paint is either a flat colour or a pattern.
 
 Constraints and facts future work must preserve:
 
@@ -75,7 +77,9 @@ Constraints and facts future work must preserve:
   is drawn, and no disposition is read.
 - The rule of tincture (metal may not lie on metal, nor colour on colour) is why the tinctures carry
   three ranks. The furs answer to neither rank.
-- Heraldry fixes no shade. Colours are supplied to the drawer, never assumed by it.
+- Heraldry fixes no shade. Colours are supplied to the drawer, never assumed by it. A fur's figure is
+  not a shade — an ermine spot is the same spot in every armorial — so the figures belong to the
+  drawer and only what they are cut from is supplied.
 - French elision depends on the word, not its spelling — "d'hermine" but "de hérisson" — so mute-h
   words are named rather than inferred. Gender is declared the same way, and a word heraldry and the
   language at large disagree about — "la losange" against "le losange" — is read under either

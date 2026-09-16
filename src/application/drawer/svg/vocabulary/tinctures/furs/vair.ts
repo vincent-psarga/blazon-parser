@@ -1,5 +1,13 @@
-import { Furs } from '../../../../../../domain/models/Tinctures';
-import { tincture } from '../tincture';
+import { Colours, Metals } from '../../../../../../domain/models/Tinctures';
+import { vairy } from '../../coverings/furred/vairy';
+import { FurTincture } from './FurTincture';
 
-/** A lattice of bells, always argent and azure, which is why it names no pair. */
-export const vair = tincture(Furs.vair);
+/**
+ * Vairy of argent and azure, which is what vair is: the tincture carries its
+ * pair with it and names no other, where a vairé is owed the pair it is cut
+ * from.
+ */
+export const vair: FurTincture = {
+  pelt: vairy,
+  from: [Metals.argent, Colours.azure],
+};

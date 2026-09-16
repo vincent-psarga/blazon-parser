@@ -1,6 +1,5 @@
 import { Blazon } from '../models/Blazon';
-import { FurType } from '../models/Field';
-import { Tincture } from '../models/Tinctures';
+import { Shade } from '../models/Tinctures';
 
 /**
  * A texture a tincture is painted with, rather than a flat colour: the hatching
@@ -20,25 +19,25 @@ export type Pattern = {
 export type Paint = string | Pattern;
 
 /**
- * How a fur is cut from two tinctures which are not its own: vair is a tincture
- * and is painted like any other, where vairé is the same bells asked for in
- * whatever pair a blazon names.
+ * What every shade is painted with.
  *
- * It belongs to the colouring rather than to the drawer because only the
- * colouring knows what its tinctures are made of — a hatched shield cuts the
- * bells out of ruling where a coloured one cuts them out of colour — and it must
- * be a pattern rather than a paint, the bells being a figure repeated over the
- * field however much of it the fur covers.
+ * The furs are not among them: a fur is a figure repeated over the field, and
+ * the figure is the drawer's — an ermine spot is the same spot in every
+ * armorial. What a colouring contributes to a fur is the shades its figures are
+ * cut from, which it has already given.
  */
-export type FurCutting = (type: FurType, first: Tincture, second: Tincture) => Pattern;
-
-/**
- * What every tincture is painted with, and how the furs are cut from pairs of
- * them. A colouring answers for both: the tinctures it lays are what the bells
- * are filled with.
- */
-export type ColorModel = Record<Tincture, Paint> & {
-  readonly cut: FurCutting;
+export type ColorModel = Record<Shade, Paint> & {
+  /**
+   * The colour this colouring draws its marks in, where it draws in marks at
+   * all.
+   *
+   * A colouring that paints in colour has none: its tinctures tell themselves
+   * apart, so an ermine spot is simply sable and bells of one ruling against
+   * another never arise. A colouring that rules its tinctures has one, and needs
+   * it twice over — the spots of an ermine are marks rather than a tincture, and
+   * bells cut out of ruling read as neither without a line between them.
+   */
+  readonly ink?: string;
 };
 
 export type DrawOptions = {

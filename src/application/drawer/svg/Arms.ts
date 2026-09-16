@@ -7,9 +7,10 @@ import { laid } from './painting/laid';
 import { over } from './painting/over';
 import { plain } from './painting/plain';
 import { split } from './painting/split';
+import { escapeAttribute } from './escaping';
 import { CHARGES } from './vocabulary/charges';
 import { DIVISIONS } from './vocabulary/coverings/divisions';
-import { FURRED } from './vocabulary/coverings/furred';
+import { peltOf } from './vocabulary/coverings/furred';
 import { ORDINARIES } from './vocabulary/ordinaries';
 import { INKS } from './vocabulary/tinctures';
 import { VARIATIONS } from './vocabulary/coverings/variations';
@@ -51,7 +52,7 @@ function field(field: Field): Painter {
     );
   }
   if (isFurred(field)) {
-    return plain(FURRED[field.type].ink(field.firstTincture, field.secondTincture));
+    return plain((ground) => escapeAttribute(peltOf(ground, field).fill));
   }
   if (isDivision(field)) {
     return split(

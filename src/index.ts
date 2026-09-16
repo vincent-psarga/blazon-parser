@@ -2,7 +2,6 @@ export type {
   IBlazonDrawer,
   ColorModel,
   DrawOptions,
-  FurCutting,
   Paint,
   Pattern,
 } from './domain/services/IBlazonDrawer';
@@ -58,8 +57,16 @@ export { MissingOrdinary } from './domain/errors/parsing/MissingOrdinary';
 export { WrongTinctureArticle } from './domain/errors/parsing/WrongTinctureArticle';
 export { WrongOrdinaryArticle } from './domain/errors/parsing/WrongOrdinaryArticle';
 export type { Ordinary } from './domain/models/Ordinary';
-export { Colours, Furs, Metals, TINCTURES, isTincture } from './domain/models/Tinctures';
-export type { Tincture } from './domain/models/Tinctures';
+export {
+  Colours,
+  Furs,
+  Metals,
+  SHADES,
+  TINCTURES,
+  isFur,
+  isTincture,
+} from './domain/models/Tinctures';
+export type { Shade, Tincture } from './domain/models/Tinctures';
 
 export {
   asOne,
@@ -103,6 +110,5 @@ export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
 export { bearing, cutIn, everyBearing, withArticle } from './application/french/FrenchGrammar';
 export { bearing as englishBearing, indefiniteArticle } from './application/english/EnglishGrammar';
 
-export { cutFurs } from './infra/colours/Furs';
 export { HatchingColours } from './infra/colours/HatchingColours';
 export { WikipediaColours } from './infra/colours/WikipediaColours';
