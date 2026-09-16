@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { Blazon } from '../../domain/models/Blazon';
 import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
+import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { EnglishBlazonParser } from '../parser/EnglishBlazonParser';
@@ -47,7 +48,7 @@ describe('EnglishBlazonWriter', () => {
       expect(
         writer.write({
           field: { tincture: Colours.azure },
-          ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
+          chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
         })
       ).toBe('Azure a fess or.');
     });
@@ -65,7 +66,7 @@ describe('EnglishBlazonWriter', () => {
       expect(
         writer.write({
           field: { tincture: Colours.gules },
-          ordinaries: [{ type, tincture: Metals.argent }],
+          chargesOrOrdinaries: [{ type, tincture: Metals.argent }],
         })
       ).toBe(`Gules ${borne} argent.`);
     });
@@ -73,7 +74,7 @@ describe('EnglishBlazonWriter', () => {
     test('keeps the article that tells a borne fess from a divided field', () => {
       const borne = writer.write({
         field: { tincture: Colours.azure },
-        ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
+        chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
       });
       const divided = writer.write({
         field: {
@@ -102,7 +103,7 @@ describe('EnglishBlazonWriter', () => {
         expect(
           writer.write({
             field: { tincture: Metals.argent },
-            ordinaries: [{ type: borne, tincture: Colours.gules }],
+            chargesOrOrdinaries: [{ type: borne, tincture: Colours.gules }],
           })
         ).toBe(`Argent ${article} gules.`);
         expect(
@@ -125,7 +126,7 @@ describe('EnglishBlazonWriter', () => {
             firstTincture: Colours.azure,
             secondTincture: Metals.or,
           },
-          ordinaries: [{ type: OrdinaryType.saltire, tincture: Colours.gules }],
+          chargesOrOrdinaries: [{ type: OrdinaryType.saltire, tincture: Colours.gules }],
         })
       ).toBe('Per pale azure and or a saltire gules.');
     });
@@ -153,7 +154,7 @@ describe('round trip', () => {
   test.each(Object.values(OrdinaryType))('a field bearing %s survives the round trip', (type) => {
     const blazon: Blazon = {
       field: { tincture: Colours.azure },
-      ordinaries: [{ type, tincture: Metals.or }],
+      chargesOrOrdinaries: [{ type, tincture: Metals.or }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);
   });
@@ -161,7 +162,7 @@ describe('round trip', () => {
   test.each(TINCTURES)('an ordinary of %s survives with its own tincture', (tincture) => {
     const blazon: Blazon = {
       field: { tincture: Colours.sable },
-      ordinaries: [{ type: OrdinaryType.fess, tincture }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);
   });
@@ -173,7 +174,7 @@ describe('round trip', () => {
         firstTincture: Colours.gules,
         secondTincture: Metals.argent,
       },
-      ordinaries: [{ type: OrdinaryType.chevron, tincture: Colours.sable }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Colours.sable }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);
   });
@@ -184,7 +185,7 @@ describe('several of one ordinary', () => {
     expect(
       writer.write({
         field: { tincture: Metals.or },
-        ordinaries: [{ type: OrdinaryType.chevron, tincture: Colours.gules, count: 2 }],
+        chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Colours.gules, count: 2 }],
       })
     ).toBe('Or two chevrons gules.');
   });
@@ -193,7 +194,9 @@ describe('several of one ordinary', () => {
     expect(
       writer.write({
         field: { tincture: Metals.or },
-        ordinaries: [{ type: OrdinaryType.bendSinister, tincture: Colours.gules, count: 3 }],
+        chargesOrOrdinaries: [
+          { type: OrdinaryType.bendSinister, tincture: Colours.gules, count: 3 },
+        ],
       })
     ).toBe('Or three bends sinister gules.');
   });
@@ -202,7 +205,7 @@ describe('several of one ordinary', () => {
     expect(
       writer.write({
         field: { tincture: Metals.or },
-        ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.gules, count: 1 }],
+        chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.gules, count: 1 }],
       })
     ).toBe('Or a fess gules.');
   });
@@ -210,7 +213,7 @@ describe('several of one ordinary', () => {
   test('survives the round trip, count and all', () => {
     const blazon: Blazon = {
       field: { tincture: Colours.azure },
-      ordinaries: [{ type: OrdinaryType.pale, tincture: Metals.argent, count: 2 }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.pale, tincture: Metals.argent, count: 2 }],
     };
     expect(parser.parse(writer.write(blazon))).toEqual(blazon);
   });
@@ -219,7 +222,7 @@ describe('several of one ordinary', () => {
 describe('a field bearing more than one ordinary, in English', () => {
   const ARMS: Blazon = {
     field: { tincture: Metals.or },
-    ordinaries: [
+    chargesOrOrdinaries: [
       { type: OrdinaryType.bend, tincture: Colours.sable, count: 3 },
       { type: OrdinaryType.bordure, tincture: Colours.gules },
     ],
@@ -230,9 +233,9 @@ describe('a field bearing more than one ordinary, in English', () => {
   });
 
   test('writes them in the order they are laid', () => {
-    expect(writer.write({ ...ARMS, ordinaries: [...ARMS.ordinaries!].reverse() })).toBe(
-      'Or a bordure gules, three bends sable.'
-    );
+    expect(
+      writer.write({ ...ARMS, chargesOrOrdinaries: [...ARMS.chargesOrOrdinaries!].reverse() })
+    ).toBe('Or a bordure gules, three bends sable.');
   });
 
   test('survives the round trip, the order and all', () => {
@@ -315,5 +318,54 @@ describe('a furred field, in English', () => {
     expect(writer.write(parser.parse('Vairy or and azure a bordure gules'))).toBe(
       'Vairy or and azure a bordure gules.'
     );
+  });
+});
+
+describe('a field bearing charges, in English', () => {
+  test.each([
+    [ChargeType.annulet, 'Azure an annulet or.'],
+    [ChargeType.billet, 'Azure a billet or.'],
+    [ChargeType.lozenge, 'Azure a lozenge or.'],
+  ])('writes %s under the article its name calls for', (type, expected) => {
+    expect(
+      writer.write({
+        field: { tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type, tincture: Metals.or }],
+      })
+    ).toBe(expected);
+  });
+
+  test('writes the count before the plural, with no article at all', () => {
+    expect(
+      writer.write({
+        field: { tincture: Metals.argent },
+        chargesOrOrdinaries: [{ type: ChargeType.lozenge, tincture: Metals.or, count: 3 }],
+      })
+    ).toBe('Argent three lozenges or.');
+  });
+
+  test('writes bands and charges in the order the model holds them, a comma between', () => {
+    const laid: Blazon = {
+      field: { tincture: Metals.or },
+      chargesOrOrdinaries: [
+        { type: OrdinaryType.fess, tincture: Colours.gules },
+        { type: ChargeType.billet, tincture: Colours.azure, count: 3 },
+      ],
+    };
+    expect(writer.write(laid)).toBe('Or a fess gules, three billets azure.');
+    expect(
+      writer.write({
+        ...laid,
+        chargesOrOrdinaries: [...laid.chargesOrOrdinaries!].reverse(),
+      })
+    ).toBe('Or three billets azure, a fess gules.');
+  });
+
+  test('survives the round trip, count and all', () => {
+    const blazon: Blazon = {
+      field: { tincture: Metals.or },
+      chargesOrOrdinaries: [{ type: ChargeType.annulet, tincture: Colours.gules, count: 6 }],
+    };
+    expect(parser.parse(writer.write(blazon))).toEqual(blazon);
   });
 });

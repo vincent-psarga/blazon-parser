@@ -14,7 +14,7 @@ import {
 } from 'typescript-parsec';
 import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
-import { Blazon } from '../../domain/models/Blazon';
+import { Blazon, ChargeOrOrdinary } from '../../domain/models/Blazon';
 import {
   Division,
   DivisionType,
@@ -26,12 +26,11 @@ import {
   cutInPieces,
   usualPieces,
 } from '../../domain/models/Field';
-import { Ordinary } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
+import { BorneTerm } from './Borne';
 import { guard, optional, optionalUnlessBegun } from './Combinators';
 import { within } from './Failures';
-import { BorneOrdinary } from './Ordinaries';
 import { VariedField } from './Variations';
 
 /**
@@ -61,8 +60,11 @@ export interface BlazonGrammar {
    * this off.
    */
   readonly pieces?: Parser<TokenKind, number>;
-  /** The name of an ordinary, with whatever says the field bears it, and how many. */
-  readonly ordinary: Parser<TokenKind, BorneOrdinary>;
+  /**
+   * The name of a band or a charge, with whatever says the field bears it, and
+   * how many. Both are named by the same phrase, so both are read by one rule.
+   */
+  readonly borne: Parser<TokenKind, BorneTerm>;
   /** The conjunction joining the halves of a divided field. */
   readonly and: Parser<TokenKind, unknown>;
 }
@@ -161,16 +163,17 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
     restOfDivision
   );
 
-  // An ordinary is laid on the field and carries a tincture of its own, however
+  // What the field bears is laid on it and carries a tincture of its own, however
   // many of it are borne: two chevrons are two bands of one tincture, not two
-  // charges each with its own. A plain band, at that: a charge upon a charge,
-  // and a band drawn with a modified line, are both still outside the
+  // charges each with its own, and three billets are three of one tincture too.
+  // A plain thing, at that: a charge upon a charge, a band drawn with a modified
+  // line, and where on the field a charge stands are all still outside the
   // vocabulary.
   //
-  // The count is left off rather than set to one when a single band is borne, so
+  // The count is left off rather than set to one when a single one is borne, so
   // that a fess reads back as the fess it was before a field could bear two.
-  const ordinary = within(
-    apply(seq(grammar.ordinary, grammar.tincture), ([borne, tincture]): Ordinary =>
+  const bearing = within(
+    apply(seq(grammar.borne, grammar.tincture), ([borne, tincture]): ChargeOrOrdinary =>
       borne.count === undefined
         ? { type: borne.type, tincture }
         : { type: borne.type, tincture, count: borne.count }
@@ -184,17 +187,19 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // A blazon may set a mark between the phrases — French writes the semicolon as
   // readily as the comma — or set none at all and let the article do the work,
   // so the mark is read and discarded rather than required.
-  const borne = rule<TokenKind, readonly Ordinary[]>();
+  const borne = rule<TokenKind, readonly ChargeOrOrdinary[]>();
   borne.setPattern(
-    apply(optionalUnlessBegun(seq(ordinary, borne), SEPARATOR), (laid): readonly Ordinary[] =>
-      laid === undefined ? [] : [laid[0], ...laid[1]]
+    apply(
+      optionalUnlessBegun(seq(bearing, borne), SEPARATOR),
+      (laid): readonly ChargeOrOrdinary[] => (laid === undefined ? [] : [laid[0], ...laid[1]])
     )
   );
 
   // The key is left off rather than set to an empty list when nothing is borne,
-  // so a plain field reads back as the blazon it was before ordinaries existed.
-  const arms = apply(seq(field, borne), ([field, ordinaries]): Blazon =>
-    ordinaries.length === 0 ? { field } : { field, ordinaries }
+  // so a plain field reads back as the blazon it was before anything could be
+  // laid on one.
+  const arms = apply(seq(field, borne), ([field, laid]): Blazon =>
+    laid.length === 0 ? { field } : { field, chargesOrOrdinaries: laid }
   );
 
   // A blazon is written as a sentence and closed with a full stop, but the stop

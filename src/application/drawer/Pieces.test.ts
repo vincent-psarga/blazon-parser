@@ -180,7 +180,7 @@ describe('every piece a blazon counts is drawn on the shield', () => {
         secondTincture: Colours.azure,
         pieces: 6,
       },
-      ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
     });
 
     // A bordure is the shield's own outline stroked thickly and clipped to

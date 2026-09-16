@@ -90,3 +90,14 @@ export type Ordinary = {
 export function borne(ordinary: Ordinary): number {
   return bornInNumber(ordinary.type) ? (ordinary.count ?? 1) : 1;
 }
+
+/**
+ * Which vocabulary a term belongs to is what tells an ordinary from a charge:
+ * both are borne by the same phrase and carry the same tincture and count, and
+ * nothing about the shape of the object says which it is.
+ */
+const ORDINARIES: ReadonlySet<string> = new Set(Object.values(OrdinaryType));
+
+export function isOrdinaryType(type: string): type is OrdinaryType {
+  return ORDINARIES.has(type);
+}

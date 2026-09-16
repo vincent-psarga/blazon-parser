@@ -78,7 +78,9 @@ const COUNTS: readonly (readonly [string, number])[] = [
 
 const armsOf = (type: OrdinaryType, count?: number): Blazon => ({
   field: { tincture: FIELD },
-  ordinaries: [count === undefined ? { type, tincture: BORNE } : { type, tincture: BORNE, count }],
+  chargesOrOrdinaries: [
+    count === undefined ? { type, tincture: BORNE } : { type, tincture: BORNE, count },
+  ],
 });
 
 /** The same ordinary borne twice and thrice, for the five that may be. */

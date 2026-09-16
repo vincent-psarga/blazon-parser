@@ -1,4 +1,5 @@
-import { Blazon } from '../../domain/models/Blazon';
+import { Blazon, ChargeOrOrdinary, isOrdinary } from '../../domain/models/Blazon';
+import { Charge, ChargeType, numberBorne } from '../../domain/models/Charge';
 import {
   DivisionType,
   Field,
@@ -242,6 +243,113 @@ const ORDINARIES: Record<OrdinaryType, (count: number) => Shape> = {
 };
 
 /**
+ * The room the charges share: a box well inside the shield, clear of the edges
+ * on every side and of the point at the base.
+ *
+ * A charge is not measured against a line the way a band is, so nothing decides
+ * its place but the room left for it. The box is the same whatever is borne, and
+ * the charges are fitted into it: what a count changes is how small they are
+ * drawn, exactly as it changes how narrow a band is drawn.
+ */
+const CHARGES_FROM_X = 26;
+const CHARGES_TO_X = 174;
+const CHARGES_FROM_Y = 24;
+const CHARGES_TO_Y = 196;
+
+/** How many charges stand side by side, at most. */
+const ABREAST = 2;
+
+/**
+ * How big a single charge is drawn, whatever room it has.
+ *
+ * A lone charge fills the shield the way a band does — about a third of it —
+ * rather than swelling to whatever box it was given. What multiplies it shrinks
+ * it; nothing enlarges it.
+ */
+const CHARGE = 88;
+
+/** How much of the room it is given a charge actually takes, leaving the rest around it. */
+const OF_ITS_ROOM = 0.66;
+
+/** A billet is a rectangle standing on end, half as wide as it is tall. */
+const BILLET_WIDE = 0.5;
+
+/** A lozenge is a diamond standing on end, and stands a little less narrow. */
+const LOZENGE_WIDE = 0.75;
+
+/** An annulet is a ring: what it encloses is the field, not its own tincture. */
+const ANNULET_BAND = 0.22;
+
+/** Where one charge stands, and how big it is drawn there. */
+type Spot = {
+  readonly x: number;
+  readonly y: number;
+  readonly size: number;
+};
+
+/**
+ * How many charges stand in each rank, from chief to base.
+ *
+ * Two abreast, the odd one last — which is what heraldry does when a blazon
+ * names a number and no disposition: three are two in chief and one in base, and
+ * six are three ranks of two. Where an armorial would have laid five out two,
+ * one and two, this lays them two, two and one, which is a stand-in and is
+ * blazoned no differently until dispositions are read.
+ */
+function ranks(count: number): readonly number[] {
+  const rows = Math.ceil(count / ABREAST);
+  return Array.from({ length: rows }, (_, row) => Math.min(ABREAST, count - row * ABREAST));
+}
+
+/**
+ * Where a given number of charges stand in the room they share.
+ *
+ * The ranks share the height between them and each charge its rank's share of
+ * the width, every charge taking the same part of its own cell so that all of
+ * them are drawn alike however many there are. A rank of one is centred, which
+ * is what puts the odd charge under the pair above it.
+ */
+function spots(count: number): readonly Spot[] {
+  const rows = ranks(count);
+  const cell = (CHARGES_TO_X - CHARGES_FROM_X) / Math.min(count, ABREAST);
+  const rank = (CHARGES_TO_Y - CHARGES_FROM_Y) / rows.length;
+  const size = Math.round(Math.min(CHARGE, cell * OF_ITS_ROOM, rank * OF_ITS_ROOM));
+
+  return rows.flatMap((abreast, row) => {
+    const y = Math.round(CHARGES_FROM_Y + (row + 0.5) * rank);
+    return Array.from({ length: abreast }, (_, along) => ({
+      x: Math.round(WIDTH / 2 + (along - (abreast - 1) / 2) * cell),
+      y,
+      size,
+    }));
+  });
+}
+
+/**
+ * The shape each charge is drawn as, at the place and the size it was given.
+ *
+ * Being keyed on ChargeType, a charge added to the vocabulary breaks this until
+ * it is given a shape.
+ */
+const CHARGES: Record<ChargeType, (spot: Spot) => Shape> = {
+  [ChargeType.annulet]: ({ x, y, size }) => {
+    const band = Math.round(size * ANNULET_BAND);
+    const radius = (size - band) / 2;
+    return (fill) =>
+      `<circle cx="${x}" cy="${y}" r="${radius}" fill="none" stroke="${fill}" stroke-width="${band}"/>`;
+  },
+  [ChargeType.billet]: ({ x, y, size }) => {
+    const across = Math.round(size * BILLET_WIDE);
+    return rect(x - Math.round(across / 2), y - Math.round(size / 2), across, size);
+  },
+  [ChargeType.lozenge]: ({ x, y, size }) => {
+    const across = Math.round((size * LOZENGE_WIDE) / 2);
+    const tall = Math.round(size / 2);
+    return polygon(`${x},${y - tall} ${x + across},${y} ${x},${y + tall} ${x - across},${y}`);
+  },
+};
+
+/**
  * A pile: a long triangle driven into the field from one edge, point first.
  *
  * Those from the chief have their base on the top edge and their point at the
@@ -345,11 +453,13 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
    *
    * Several are painted in the order the blazon named them, each over the last,
    * which is what that order is for — a bordure blazoned after three bends
-   * covers where they meet the edge, and blazoned before them is covered by them.
+   * covers where they meet the edge, and blazoned before them is covered by
+   * them. A band and a charge answer to the same order: a bend blazoned after a
+   * billet is drawn over the billet, and before it is drawn under.
    */
   private paintArms(blazon: Blazon, colours: ColorModel): string {
     const field = this.paintField(blazon.field, colours);
-    const borne = (blazon.ordinaries ?? []).map((ordinary) => paintOrdinary(ordinary, colours));
+    const borne = (blazon.chargesOrOrdinaries ?? []).map((one) => paintBorne(one, colours));
     return field + borne.join('');
   }
 
@@ -397,8 +507,22 @@ function cutFor(field: Furred, colours: ColorModel): Pattern {
   return colours.cut(field.type, field.firstTincture, field.secondTincture);
 }
 
+/** Whichever it is, painted where its own vocabulary puts it. */
+function paintBorne(one: ChargeOrOrdinary, colours: ColorModel): string {
+  return isOrdinary(one) ? paintOrdinary(one, colours) : paintCharge(one, colours);
+}
+
 function paintOrdinary(ordinary: Ordinary, colours: ColorModel): string {
   return ORDINARIES[ordinary.type](borne(ordinary))(colourOf(colours, ordinary.tincture));
+}
+
+/**
+ * Every one of a charge in the one tincture: three billets are three shapes of
+ * one paint, as three bends are three bands of one.
+ */
+function paintCharge(charge: Charge, colours: ColorModel): string {
+  const drawn = CHARGES[charge.type];
+  return all(spots(numberBorne(charge)).map(drawn))(colourOf(colours, charge.tincture));
 }
 
 function colourOf(colours: ColorModel, tincture: Tincture): string {
@@ -412,14 +536,14 @@ function tincturesOf(blazon: Blazon): readonly Tincture[] {
     isDivision(painted) || isVariation(painted) || isFurred(painted)
       ? [painted.firstTincture, painted.secondTincture]
       : [painted.tincture];
-  return [...field, ...(blazon.ordinaries ?? []).map((ordinary) => ordinary.tincture)];
+  return [...field, ...(blazon.chargesOrOrdinaries ?? []).map(({ tincture }) => tincture)];
 }
 
 /**
  * The definitions the blazon's own tinctures call for, and no others — a shield
  * carries the patterns it is painted with, not every pattern that exists. An
- * An ordinary counts among them: it is painted with a tincture like anything
- * else.
+ * ordinary counts among them, and so does a charge: both are painted with a
+ * tincture like anything else.
  *
  * A definition is markup, so it is placed as it stands rather than escaped. A
  * colour model is written in code alongside the drawer, not taken from a reader.

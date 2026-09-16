@@ -46,7 +46,7 @@ describe('furred fields', () => {
   test('bears an ordinary over the pelt, as any other field does', () => {
     expect(parser.parse("Vairé d'or et de gueules à la fasce d'azur")).toEqual({
       field: { type: FurType.vairy, firstTincture: Metals.or, secondTincture: Colours.gules },
-      ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
     });
   });
 
@@ -58,7 +58,7 @@ describe('furred fields', () => {
   test('leaves "de vair" the plain field of the tincture it is', () => {
     expect(parser.parse("De vair à la fasce d'or")).toEqual({
       field: { tincture: Furs.vair },
-      ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
     });
   });
 

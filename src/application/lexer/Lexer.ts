@@ -3,6 +3,8 @@ import { Token, buildLexer } from 'typescript-parsec';
 export enum TokenKind {
   Elision,
   Article,
+  /** The definite article elided before a vowel: "à l'annelet". */
+  ElidedArticle,
   Word,
   Number,
   Period,
@@ -16,6 +18,9 @@ export enum TokenKind {
 export const lexer = buildLexer<TokenKind>([
   [true, /^[Dd]['’]/g, TokenKind.Elision],
   [true, /^[Dd][Ee]\b/g, TokenKind.Article],
+  // "l'" is longer than the word "l" the letter pattern would otherwise read, so
+  // the longest match takes it; "la" and "le" are words and are untouched.
+  [true, /^[Ll]['’]/g, TokenKind.ElidedArticle],
   [true, /^[A-Za-zÀ-ÖØ-öø-ÿ]+/g, TokenKind.Word],
   // How many of a charge are borne, written in figures. A blazon more often
   // writes the number out in words, which are words like any other and are not

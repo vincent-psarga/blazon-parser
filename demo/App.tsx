@@ -11,6 +11,7 @@ import {
 import { ArmorialPage } from './pages/ArmorialPage';
 import { ArmorialsPage } from './pages/ArmorialsPage';
 import { BlazonPage } from './pages/BlazonPage';
+import { ChargesPage } from './pages/ChargesPage';
 import { DivisionsPage } from './pages/DivisionsPage';
 import { DocIndexPage } from './pages/DocIndexPage';
 import { OrdinariesPage } from './pages/OrdinariesPage';
@@ -22,6 +23,7 @@ const DOCS = [
   { path: '/doc/tinctures', label: 'Tinctures' },
   { path: '/doc/divisions', label: 'Divisions' },
   { path: '/doc/ordinaries', label: 'Ordinaries' },
+  { path: '/doc/charges', label: 'Charges' },
 ];
 
 /**
@@ -43,6 +45,7 @@ export function App() {
         <Route path="/doc/tinctures" element={<TincturesPage />} />
         <Route path="/doc/divisions" element={<DivisionsPage />} />
         <Route path="/doc/ordinaries" element={<OrdinariesPage />} />
+        <Route path="/doc/charges" element={<ChargesPage />} />
         <Route path="/armorials" element={<ArmorialsPage armorials={ARMORIALS} />} />
         <Route path="/armorial/:slug" element={<ReadArmorial />} />
         <Route path="*" element={<NotFound />} />

@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { DivisionType, FurType, VariationType, usualPieces } from '../../src/domain/models/Field';
+import { ChargeType } from '../../src/domain/models/Charge';
 import { OrdinaryType } from '../../src/domain/models/Ordinary';
 import { Colours, Metals, TINCTURES } from '../../src/domain/models/Tinctures';
 import { nameOf } from '../../src/domain/translations/Translation';
@@ -7,6 +8,7 @@ import { EnglishTinctures } from '../../src/domain/translations/en/Tinctures';
 import { EnglishDivisionType } from '../../src/domain/translations/en/Divisions';
 import { EnglishFurType } from '../../src/domain/translations/en/Furs';
 import { EnglishVariationType } from '../../src/domain/translations/en/Variations';
+import { EnglishChargeType } from '../../src/domain/translations/en/Charges';
 import { EnglishOrdinaryType } from '../../src/domain/translations/en/Ordinaries';
 import { BlazonShield } from '../components/BlazonShield';
 import { COLOURINGS, OUTLINE } from '../utils/Colourings';
@@ -15,6 +17,7 @@ const DIVISIONS = Object.values(DivisionType);
 const VARIATIONS = Object.values(VariationType);
 const FURS = Object.values(FurType);
 const ORDINARIES = Object.values(OrdinaryType);
+const CHARGES = Object.values(ChargeType);
 
 // A varied field is drawn in the pieces its term is understood to have, and the
 // one no number is understood of is drawn in eight.
@@ -71,7 +74,20 @@ const PAGES = [
       label: nameOf(EnglishOrdinaryType, type),
       blazon: {
         field: { tincture: Metals.argent },
-        ordinaries: [{ type, tincture: Colours.gules }],
+        chargesOrOrdinaries: [{ type, tincture: Colours.gules }],
+      },
+    })),
+  },
+  {
+    path: '/doc/charges',
+    name: 'Charges',
+    note: 'The figures a field bears that follow no line across it, each borne gules on the same argent field. Any of them may be borne in number.',
+    arms: CHARGES.map((type) => ({
+      key: type,
+      label: nameOf(EnglishChargeType, type),
+      blazon: {
+        field: { tincture: Metals.argent },
+        chargesOrOrdinaries: [{ type, tincture: Colours.gules }],
       },
     })),
   },
@@ -83,13 +99,15 @@ export function DocIndexPage() {
       <h1>The vocabulary</h1>
       <p className="plane__extent">
         {TINCTURES.length} tinctures · {DIVISIONS.length} partitions · {VARIATIONS.length} varied
-        fields · {FURS.length} furred field · {ORDINARIES.length} ordinaries
+        fields · {FURS.length} furred field · {ORDINARIES.length} ordinaries · {CHARGES.length}{' '}
+        charges
       </p>
       <p className="plane__lead">
         Everything the parser reads, in French and in English. A blazon it accepts is a field — one
         tincture, or two divided by a line, or two alternating down a row of pieces, or two cut into
-        the bells of a fur — and whatever plain bands are laid over it, in the order they were laid.
-        There are no other charges yet, and nothing here promises any.
+        the bells of a fur — with whatever plain bands and plain charges are laid on it, in the
+        order they were laid, which is the order they are drawn. Nothing may be charged upon a
+        charge, nothing says where on the field a charge stands, and nothing here promises either.
       </p>
 
       <nav className="index" aria-label="Documentation">

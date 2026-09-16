@@ -15,7 +15,8 @@ export { FrenchBlazonParser } from './application/parser/FrenchBlazonParser';
 export { EnglishBlazonWriter } from './application/writer/EnglishBlazonWriter';
 export { FrenchBlazonWriter } from './application/writer/FrenchBlazonWriter';
 
-export type { Blazon } from './domain/models/Blazon';
+export { isCharge, isOrdinary } from './domain/models/Blazon';
+export type { Blazon, ChargeOrOrdinary } from './domain/models/Blazon';
 export type { Armorial, ArmorialEntry, ArmorialSource } from './domain/models/Armorial';
 export { readArmorial } from './application/armorial/ArmorialReading';
 export type {
@@ -35,7 +36,15 @@ export {
   usualPieces,
 } from './domain/models/Field';
 export type { Division, Field, Furred, Variation } from './domain/models/Field';
-export { OrdinaryType, SEVERAL, borne, bornInNumber } from './domain/models/Ordinary';
+export {
+  OrdinaryType,
+  SEVERAL,
+  borne,
+  bornInNumber,
+  isOrdinaryType,
+} from './domain/models/Ordinary';
+export { ChargeType, isChargeType, numberBorne } from './domain/models/Charge';
+export type { Charge } from './domain/models/Charge';
 
 export { BlazonParseError } from './domain/errors/parsing/BlazonParseError';
 export type { TextPosition } from './domain/errors/parsing/BlazonParseError';
@@ -71,6 +80,7 @@ export { EnglishFurType } from './domain/translations/en/Furs';
 export { EnglishVariationType } from './domain/translations/en/Variations';
 export { EnglishNumbers } from './domain/translations/en/Numbers';
 export { EnglishOrdinaryType } from './domain/translations/en/Ordinaries';
+export { EnglishChargeType } from './domain/translations/en/Charges';
 export {
   EnglishColours,
   EnglishMetals,
@@ -81,6 +91,7 @@ export { FrenchFurType } from './domain/translations/fr/Furs';
 export { FrenchVariationType } from './domain/translations/fr/Variations';
 export { FrenchNumbers } from './domain/translations/fr/Numbers';
 export { FrenchOrdinaryType } from './domain/translations/fr/Ordinaries';
+export { FrenchChargeType } from './domain/translations/fr/Charges';
 export {
   FrenchColours,
   FrenchFurs,
@@ -89,7 +100,8 @@ export {
 } from './domain/translations/fr/Tinctures';
 
 export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
-export { bearing, cutIn, withArticle } from './application/french/FrenchGrammar';
+export { bearing, cutIn, everyBearing, withArticle } from './application/french/FrenchGrammar';
+export { bearing as englishBearing, indefiniteArticle } from './application/english/EnglishGrammar';
 
 export { cutFurs } from './infra/colours/Furs';
 export { HatchingColours } from './infra/colours/HatchingColours';

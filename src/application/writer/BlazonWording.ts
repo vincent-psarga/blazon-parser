@@ -1,4 +1,5 @@
-import { Blazon } from '../../domain/models/Blazon';
+import { Blazon, ChargeOrOrdinary, isOrdinary } from '../../domain/models/Blazon';
+import { ChargeType, numberBorne } from '../../domain/models/Charge';
 import {
   Division,
   DivisionType,
@@ -12,7 +13,7 @@ import {
   isVariation,
   usualPieces,
 } from '../../domain/models/Field';
-import { Ordinary, OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
+import { OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords, counted } from '../../domain/translations/Numbers';
 import { Translation, nameOf, wordOf } from '../../domain/translations/Translation';
@@ -29,12 +30,13 @@ export interface BlazonWording<W extends Word = Word> {
   readonly variations: Translation<VariationType, W>;
   readonly furs: Translation<FurType, W>;
   readonly ordinaries: Translation<OrdinaryType, W>;
+  readonly charges: Translation<ChargeType, W>;
   /** How the language counts what a field bears several of. */
   readonly numbers: NumberWords<W>;
   /** How a tincture is introduced: "d'or" in French, plain "or" in English. */
   readonly introduce: (word: W) => string;
   /**
-   * How an ordinary is introduced: "à la fasce" in French, "a fess" in English,
+   * How something borne is introduced: "à la fasce" in French, "a fess" in English,
    * and, where several are borne, how many — "à trois chevrons", "three
    * chevrons". The count arrives spelled, the language having said how it spells
    * its numbers; what stands around it is what differs.
@@ -73,32 +75,49 @@ const SEPARATOR = ',';
  * blazon read from a synonym comes back out spelled differently. The blazon it
  * describes is the same, which is what the round trip preserves.
  *
- * The ordinaries are written in the order the model holds them, which is the
- * order they are laid on the field: what is named last is drawn over the rest,
- * so writing them in any other order would say something else.
+ * What the field bears is written in the order the model holds it, which is the
+ * order it was laid on the field: what is named last is drawn over the rest, so
+ * writing it in any other order would say something else — and a band named
+ * after a charge covers that charge exactly as a bordure named after three bends
+ * covers the bends.
  */
 export function writeBlazon<W extends Word>(wording: BlazonWording<W>, blazon: Blazon): string {
   const field = capitalise(writeField(wording, blazon.field));
-  const borne = (blazon.ordinaries ?? [])
-    .map((ordinary) => writeOrdinary(wording, ordinary))
+  const borne = (blazon.chargesOrOrdinaries ?? [])
+    .map((one) => writeBorne(wording, one))
     .join(`${SEPARATOR} `);
   return `${borne === '' ? field : `${field} ${borne}`}.`;
 }
 
 /**
- * How many are borne is asked of the model rather than read off the blazon, so
- * that an ordinary borne but once — whatever count it was handed — is written as
- * the one band it is, and comes back as itself when read again.
+ * A band or a charge, written the one way both are: what introduces it, its
+ * name, and the tincture it carries. The count is written only where there is
+ * more than one, a single one being named on its own in either tongue.
  */
-function writeOrdinary<W extends Word>(wording: BlazonWording<W>, ordinary: Ordinary): string {
-  const count = borne(ordinary);
+function writeBorne<W extends Word>(wording: BlazonWording<W>, one: ChargeOrOrdinary): string {
+  const { word, count } = named(wording, one);
   return [
-    wording.bear(
-      wordOf(wording.ordinaries, ordinary.type),
-      count < SEVERAL ? undefined : counted(wording.numbers, count)
-    ),
-    writeTincture(wording, ordinary.tincture),
+    wording.bear(word, count < SEVERAL ? undefined : counted(wording.numbers, count)),
+    writeTincture(wording, one.tincture),
   ].join(' ');
+}
+
+/**
+ * The word naming what is borne, and how many are borne, both asked of the
+ * vocabulary it belongs to — which is the only thing a band and a charge differ
+ * in here.
+ *
+ * How many is asked of the model rather than read off the blazon, so that an
+ * ordinary borne but once — whatever count it was handed — is written as the one
+ * band it is, and comes back as itself when read again.
+ */
+function named<W extends Word>(
+  wording: BlazonWording<W>,
+  one: ChargeOrOrdinary
+): { readonly word: W; readonly count: number } {
+  return isOrdinary(one)
+    ? { word: wordOf(wording.ordinaries, one.type), count: borne(one) }
+    : { word: wordOf(wording.charges, one.type), count: numberBorne(one) };
 }
 
 function writeField<W extends Word>(wording: BlazonWording<W>, field: Field): string {

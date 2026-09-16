@@ -163,14 +163,14 @@ describe('varied fields', () => {
           secondTincture: Colours.azure,
           pieces: 6,
         },
-        ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+        chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
       });
     });
 
     test('tells the count of its pieces from the count of what it bears', () => {
       const arms = parser.parse("Fascé d'or et d'azur de huit pièces à trois chevrons de gueules");
       expect(arms.field).toMatchObject({ pieces: 8 });
-      expect(arms.ordinaries).toMatchObject([{ count: 3 }]);
+      expect(arms.chargesOrOrdinaries).toMatchObject([{ count: 3 }]);
     });
   });
 });

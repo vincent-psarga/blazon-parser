@@ -1,5 +1,6 @@
 import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
 import { FrenchFurType } from '../../domain/translations/fr/Furs';
+import { FrenchChargeType } from '../../domain/translations/fr/Charges';
 import { FrenchNumbers } from '../../domain/translations/fr/Numbers';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
@@ -14,6 +15,7 @@ export const FrenchBlazonWording: BlazonWording<FrenchWord> = {
   variations: FrenchVariationType,
   furs: FrenchFurType,
   ordinaries: FrenchOrdinaryType,
+  charges: FrenchChargeType,
   numbers: FrenchNumbers,
   introduce: withArticle,
   bear: bearing,

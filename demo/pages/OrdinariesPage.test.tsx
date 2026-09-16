@@ -87,7 +87,7 @@ describe('OrdinariesPage', () => {
     mount(<OrdinariesPage />);
     await userEvent.setup().click(ghost(type));
     const written = showing().querySelector('.showing__usage [lang="fr"]')?.textContent ?? '';
-    expect(new FrenchBlazonParser().parse(written).ordinaries).toMatchObject([{ type }]);
+    expect(new FrenchBlazonParser().parse(written).chargesOrOrdinaries).toMatchObject([{ type }]);
   });
 
   test('separates bearing a fess from being divided per fess', async () => {
@@ -153,8 +153,8 @@ describe('whether an ordinary may be borne in number', () => {
       const written = borne().map(
         (figure) => figure.querySelector('[lang="fr"]')?.textContent ?? ''
       );
-      expect(parser.parse(written[0]).ordinaries).toMatchObject([{ type, count: 2 }]);
-      expect(parser.parse(written[1]).ordinaries).toMatchObject([{ type, count: 3 }]);
+      expect(parser.parse(written[0]).chargesOrOrdinaries).toMatchObject([{ type, count: 2 }]);
+      expect(parser.parse(written[1]).chargesOrOrdinaries).toMatchObject([{ type, count: 3 }]);
     }
   );
 

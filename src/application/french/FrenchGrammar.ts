@@ -1,4 +1,4 @@
-import { alt, seq } from 'typescript-parsec';
+import { alt, seq, tok } from 'typescript-parsec';
 import { FrenchWord } from '../../domain/translations/fr/FrenchWord';
 import { PIECES } from '../../domain/translations/fr/Variations';
 import { TokenKind } from '../lexer/Lexer';
@@ -20,19 +20,40 @@ export function withArticle(word: FrenchWord): string {
 }
 
 /**
- * Renders an ordinary as the field bears it: "à la fasce", "au chevron", and
- * "à trois chevrons" where several are borne.
+ * Every way a blazon may say the field bears a word, the one it is written back
+ * out in first.
+ *
+ * Usually there is only one, the article agreeing in gender: "à la fasce", "au
+ * chevron". Two things widen it. Before a word that begins on a vowel the
+ * article elides and the two genders fall together, so "annelet" is borne "à
+ * l'annelet" and nothing in the phrase says it is masculine — which words elide
+ * is the word's own to declare, the same declaration "de" already reads. And a
+ * word whose gender heraldry and the language at large disagree about is read
+ * under either article, the armorials being written both ways.
+ */
+export function everyBearing(word: FrenchWord): readonly string[] {
+  if (word.needsElision) {
+    return [`à l'${word.value}`];
+  }
+  const feminine = `à la ${word.value}`;
+  const masculine = `au ${word.value}`;
+  if (word.acceptsBothGender) {
+    return word.isFeminine ? [feminine, masculine] : [masculine, feminine];
+  }
+  return [word.isFeminine ? feminine : masculine];
+}
+
+/**
+ * Renders what the field bears as it bears it: "à la fasce", "au chevron", "à
+ * l'annelet", and "à trois chevrons" where several are borne.
  *
  * The count takes the article's place rather than joining it: blazonry says "à
  * trois chevrons", where ordinary French would say "aux trois chevrons". There
- * is no gender left to agree with either, the number having taken the phrase
- * over from the name.
+ * is no gender left to agree with there, the number having taken the phrase over
+ * from the name.
  */
 export function bearing(word: FrenchWord, count?: string): string {
-  if (count !== undefined) {
-    return `à ${count} ${word.plural}`;
-  }
-  return word.isFeminine ? `à la ${word.value}` : `au ${word.value}`;
+  return count === undefined ? everyBearing(word)[0] : `à ${count} ${word.plural}`;
 }
 
 /**
@@ -54,10 +75,12 @@ export const CONJUNCTION = 'et';
 
 export const AND = keyword(CONJUNCTION);
 
-// The two shapes "à" takes before one ordinary. Each is a fixed phrase, so a
-// rule built on one knows which article it read without having to carry it along.
+// The three shapes "à" takes before one band or charge. Each is a fixed phrase,
+// so a rule built on one knows which article it read without having to carry it
+// along.
 export const A_LA = seq(keyword('à'), keyword('la'));
 export const AU = keyword('au');
+export const A_L = seq(keyword('à'), tok(TokenKind.ElidedArticle));
 
 // What stands before several of an ordinary. Blazonry says "à trois bandes de
 // gueules", where ordinary French would contract the article: that is the form

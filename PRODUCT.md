@@ -43,8 +43,8 @@ language's grammar, so a second language means a second parser.
   `demo/`, which is not published, so installing the library on a backend pulls no React in.
 - The demo is run locally with `npm run dev`. It is **not yet published**, and is intended to be put in
   front of other people eventually, with no deadline. Build as though it will be seen.
-- Documentation pages (`/doc/tinctures`, `/doc/divisions`) are today the only statement of what the
-  parser accepts.
+- Documentation pages (`/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`, `/doc/charges`) are
+  today the only statement of what the parser accepts.
 
 ## Capabilities and Constraints
 
@@ -53,27 +53,40 @@ Supported vocabulary as it stands:
 - **Tinctures (8)** in three ranks — metals (or, argent), colours (azure, gules, sable, vert),
   furs (ermine, vair).
 - **Divisions (4)** — per pale, per fess, per bend, per bend sinister.
+- **Varied fields (5)** — barry, paly, bendy, pily, chevronny, cut into a counted number of pieces.
 - **Furred fields (1)** — vairy: the bells of vair cut from two tinctures the blazon names, rather
   than from the argent and azure vair itself is always drawn in. Nothing about it is counted.
-- **Languages (2)** — French and English, both reading and writing.
+- **Ordinaries (10)** — chief, pale, fess, bar gemel, bend, bend sinister, chevron, cross, saltire,
+  bordure. Laid on the field in the order the blazon names them, which is the order they are drawn.
+  That order is the model's to keep: sorting what a field bears into separate lists would lose it.
+- **Charges (3)** — annulet, billet, lozenge. Plain shapes, borne once or in number. They share the
+  ordinaries' list and their order, so what is blazoned last is drawn over the rest. Where they
+  stand on the field — the disposition — is not read.
+- **Languages (2)** — French and English, both reading and writing. French agrees its article with
+  the word it introduces, elision included — "à la billette", "au losange", "à l'annelet"; English
+  chooses "a" or "an".
 - **Colourings (2)** — a colour model and the monochrome hatching convention. A tincture's paint is
   either a flat colour or a pattern.
 
 Constraints and facts future work must preserve:
 
-- A blazon is a field, plain or divided between two tinctures. There are no charges or ordinaries yet.
+- A blazon is a field, plain or divided between two tinctures, with whatever bands are laid on it
+  and whatever charges it bears. Nothing may be charged upon a charge, no line but the straight one
+  is drawn, and no disposition is read.
 - The rule of tincture (metal may not lie on metal, nor colour on colour) is why the tinctures carry
   three ranks. The furs answer to neither rank.
 - Heraldry fixes no shade. Colours are supplied to the drawer, never assumed by it.
 - French elision depends on the word, not its spelling — "d'hermine" but "de hérisson" — so mute-h
-  words are named rather than inferred.
+  words are named rather than inferred. Gender is declared the same way, and a word heraldry and the
+  language at large disagree about — "la losange" against "le losange" — is read under either
+  article and written back in the one it declares.
 
 **Scope is explicitly undecided.** The vocabulary grows as curiosity holds; there is no committed
 roadmap toward full blazon. Pages must state what is supported and must not promise what is coming.
 
 ## Evidence on Hand
 
-- The working library itself: parser, writer and drawer, with 306 passing tests. Any claim a page makes
+- The working library itself: parser, writer and drawer, with 1193 passing tests. Any claim a page makes
   can be demonstrated live rather than asserted.
 - Tincture shades and hatching marks are taken from Wikipedia's own tables
   (`https://en.wikipedia.org/wiki/Tincture_(heraldry)`, `https://en.wikipedia.org/wiki/Hatching_(heraldry)`),

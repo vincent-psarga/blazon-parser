@@ -2,7 +2,9 @@ import { Parser, alt, apply, kleft, kright, seq, tok } from 'typescript-parsec';
 import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
 import { FrenchFurType } from '../../domain/translations/fr/Furs';
 import { FrenchVariationType, PIECES } from '../../domain/translations/fr/Variations';
+import { FrenchChargeType } from '../../domain/translations/fr/Charges';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
+import { FrenchWord } from '../../domain/translations/fr/FrenchWord';
 import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryArticle';
 import { WrongTinctureArticle } from '../../domain/errors/parsing/WrongTinctureArticle';
 import { FrenchNumbers } from '../../domain/translations/fr/Numbers';
@@ -11,15 +13,17 @@ import { TokenKind } from '../lexer/Lexer';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
 import { guard, keyword, optional, spelledTerm, term } from '../parser/Combinators';
 import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
-import { alone, several } from '../parser/Ordinaries';
+import { NOT_IN_NUMBER, alone, bearings, several } from '../parser/Borne';
 import { number } from '../parser/Numbers';
 import { varied } from '../parser/Variations';
 import {
   AND,
   AU,
+  A_L,
   A_LA,
   BEFORE_SEVERAL,
   bearing,
+  everyBearing,
   expectedArticle,
   withArticle,
 } from './FrenchGrammar';
@@ -44,37 +48,55 @@ const TINCTURE = apply(
   ({ term }) => term
 );
 
+// A band and a charge are borne by the same phrase and are read from one
+// vocabulary: "à la fasce" and "à la billette" differ in nothing a grammar can
+// see.
+const BEARINGS = bearings(FrenchOrdinaryType, FrenchChargeType);
+
 /**
- * An ordinary introduced by one known article.
+ * Something borne, introduced by one known article.
  *
- * The article agrees with the ordinary's name in gender, as a tincture's agrees
- * in elision, so what was written is rebuilt and compared with what the name
- * calls for. Reading each article in its own branch keeps the check on the name
- * itself, which is where the mistake is and where it should be reported.
+ * The article agrees with the name in gender, as a tincture's agrees in elision,
+ * so what was written is rebuilt and looked for among the phrases the name
+ * accepts. Reading each article in its own branch keeps the check on the name
+ * itself, which is where the mistake is and where it should be reported — and
+ * the complaint names the one phrase the word is written back out in, whatever
+ * others it would have answered to.
  */
-const borneAs = (article: Parser<TokenKind, unknown>, expected: string) =>
+const borneAs = (article: Parser<TokenKind, unknown>, written: (word: FrenchWord) => string) =>
   kright(
     article,
     apply(
       guard(
-        spelledTerm(FrenchOrdinaryType, asOrdinary),
-        ({ word }) => `${expected} ${word.value}` === bearing(word),
+        spelledTerm(BEARINGS, asOrdinary),
+        ({ word }) => everyBearing(word).includes(written(word)),
         ({ word }, position) => new WrongOrdinaryArticle(word.value, bearing(word), position)
       ),
       ({ term }) => term
     )
   );
 
-// An ordinary is never named bare: the article is what says the field bears one
-// rather than is divided by one.
-const ONE_ORDINARY = alone(alt(borneAs(A_LA, 'à la'), borneAs(AU, 'au')));
+// Nothing borne is ever named bare: the article is what says the field bears it
+// rather than is divided by it. Three articles, the third being the two others
+// elided before a vowel — "à l'annelet", which says nothing about gender and is
+// therefore accepted for either.
+const ONE = alone(
+  alt(
+    borneAs(A_LA, (word) => `à la ${word.value}`),
+    borneAs(AU, (word) => `au ${word.value}`),
+    borneAs(A_L, (word) => `à l'${word.value}`)
+  )
+);
 
-// Several of one ordinary, named in the plural after the count: "à trois
-// chevrons". No gender is agreed with here, so unlike the singular there is but
-// one shape of the phrase to read.
-const SEVERAL_ORDINARIES = kright(BEFORE_SEVERAL, several(FrenchOrdinaryType, FrenchNumbers));
+// Several of one, named in the plural after the count: "à trois chevrons", "à
+// trois billettes". No gender is agreed with here, so unlike the singular there
+// is but one shape of the phrase to read.
+const SEVERAL_BORNE = kright(
+  BEFORE_SEVERAL,
+  several(BEARINGS, FrenchNumbers, asOrdinary, NOT_IN_NUMBER)
+);
 
-const ORDINARY = alt(ONE_ORDINARY, SEVERAL_ORDINARIES);
+const BORNE = alt(ONE, SEVERAL_BORNE);
 
 // French counts the pieces of a varied field after naming the tinctures it
 // alternates — "bandé de gueules et d'argent de six pièces" — and an armorial
@@ -95,6 +117,6 @@ export const FrenchBlazonGrammar: BlazonGrammar = {
   // first word of the blazon, and nothing agrees with it either.
   variation: varied(FrenchVariationType, asDivision),
   pieces: HOW_MANY_PIECES,
-  ordinary: ORDINARY,
+  borne: BORNE,
   and: AND,
 };

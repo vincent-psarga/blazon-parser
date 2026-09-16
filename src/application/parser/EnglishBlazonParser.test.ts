@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
+import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
@@ -8,8 +9,10 @@ import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
-import { nameOf } from '../../domain/translations/Translation';
+import { nameOf, wordOf } from '../../domain/translations/Translation';
+import { EnglishChargeType } from '../../domain/translations/en/Charges';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
+import { bearing } from '../english/EnglishGrammar';
 import { EnglishBlazonParser } from './EnglishBlazonParser';
 import { FrenchBlazonParser } from './FrenchBlazonParser';
 
@@ -59,7 +62,7 @@ describe('EnglishBlazonParser', () => {
     test('reads "Azure a fess or" as a fess on an azure field', () => {
       expect(parser.parse('Azure a fess or')).toEqual({
         field: { tincture: Colours.azure },
-        ordinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
+        chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
       });
     });
 
@@ -75,13 +78,13 @@ describe('EnglishBlazonParser', () => {
     ])('reads "a %s" as that ordinary', (name, type) => {
       expect(parser.parse(`Gules a ${name} argent`)).toEqual({
         field: { tincture: Colours.gules },
-        ordinaries: [{ type, tincture: Metals.argent }],
+        chargesOrOrdinaries: [{ type, tincture: Metals.argent }],
       });
     });
 
     test('tells "a fess" laid on a field from "per fess" dividing one', () => {
       expect(parser.parse('Azure a fess or').field).toEqual({ tincture: Colours.azure });
-      expect(parser.parse('Per fess azure and or')).not.toHaveProperty('ordinaries');
+      expect(parser.parse('Per fess azure and or')).not.toHaveProperty('chargesOrOrdinaries');
     });
 
     test('lays an ordinary on a divided field', () => {
@@ -91,7 +94,7 @@ describe('EnglishBlazonParser', () => {
           firstTincture: Colours.azure,
           secondTincture: Metals.or,
         },
-        ordinaries: [{ type: OrdinaryType.saltire, tincture: Colours.gules }],
+        chargesOrOrdinaries: [{ type: OrdinaryType.saltire, tincture: Colours.gules }],
       });
     });
 
@@ -105,12 +108,12 @@ describe('EnglishBlazonParser', () => {
     });
 
     test('prefers the longer ordinary name over the shorter one it starts with', () => {
-      expect(parser.parse('Argent a bend sinister gules').ordinaries).toMatchObject([
+      expect(parser.parse('Argent a bend sinister gules').chargesOrOrdinaries).toMatchObject([
         {
           type: OrdinaryType.bendSinister,
         },
       ]);
-      expect(parser.parse('Argent a bend gules').ordinaries).toMatchObject([
+      expect(parser.parse('Argent a bend gules').chargesOrOrdinaries).toMatchObject([
         {
           type: OrdinaryType.bend,
         },
@@ -123,8 +126,10 @@ describe('EnglishBlazonParser', () => {
       ['bend', OrdinaryType.bend],
       ['bend sinister', OrdinaryType.bendSinister],
     ])('tells "a %s" borne from "per %s" dividing', (name, type) => {
-      expect(parser.parse(`Argent a ${name} gules`).ordinaries).toMatchObject([{ type }]);
-      expect(parser.parse(`Per ${name} argent and gules`)).not.toHaveProperty('ordinaries');
+      expect(parser.parse(`Argent a ${name} gules`).chargesOrOrdinaries).toMatchObject([{ type }]);
+      expect(parser.parse(`Per ${name} argent and gules`)).not.toHaveProperty(
+        'chargesOrOrdinaries'
+      );
     });
 
     test('rejects an ordinary with no tincture of its own, as a missing tincture', () => {
@@ -193,7 +198,7 @@ describe('a field bearing several of one ordinary', () => {
   test('reads "Or three chevrons gules" as three chevrons on an or field', () => {
     expect(parser.parse('Or three chevrons gules')).toEqual({
       field: { tincture: Metals.or },
-      ordinaries: [{ type: OrdinaryType.chevron, tincture: Colours.gules, count: 3 }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Colours.gules, count: 3 }],
     });
   });
 
@@ -205,7 +210,7 @@ describe('a field bearing several of one ordinary', () => {
     ['six bends sinister', OrdinaryType.bendSinister, 6],
     ['sixteen chevrons', OrdinaryType.chevron, 16],
   ])('reads "%s" as that many of that ordinary', (borne, type, count) => {
-    expect(parser.parse(`Azure ${borne} or`).ordinaries).toEqual([
+    expect(parser.parse(`Azure ${borne} or`).chargesOrOrdinaries).toEqual([
       {
         type,
         tincture: Metals.or,
@@ -215,7 +220,7 @@ describe('a field bearing several of one ordinary', () => {
   });
 
   test('names the count with nothing in front of it, where one takes an article', () => {
-    expect(parser.parse('Or a chevron gules').ordinaries?.[0]).not.toHaveProperty('count');
+    expect(parser.parse('Or a chevron gules').chargesOrOrdinaries?.[0]).not.toHaveProperty('count');
     expect(() => parser.parse('Or a three chevrons gules')).toThrow();
   });
 
@@ -255,13 +260,13 @@ describe('a field bearing several of one ordinary', () => {
 
 describe('the bar gemel', () => {
   test('reads a name of two words, and the noun that pluralises inside it', () => {
-    expect(parser.parse('Argent a bar gemel gules').ordinaries).toEqual([
+    expect(parser.parse('Argent a bar gemel gules').chargesOrOrdinaries).toEqual([
       {
         type: OrdinaryType.barGemel,
         tincture: Colours.gules,
       },
     ]);
-    expect(parser.parse('Argent three bars gemel gules').ordinaries).toEqual([
+    expect(parser.parse('Argent three bars gemel gules').chargesOrOrdinaries).toEqual([
       {
         type: OrdinaryType.barGemel,
         tincture: Colours.gules,
@@ -279,7 +284,7 @@ describe('the bordure, in English', () => {
   test('reads "Argent a bordure gules" as a bordure on an argent field', () => {
     expect(parser.parse('Argent a bordure gules.')).toEqual({
       field: { tincture: Metals.argent },
-      ordinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
     });
   });
 
@@ -296,7 +301,7 @@ describe('a field bearing more than one ordinary, in English', () => {
   test('reads the bends and the bordure', () => {
     expect(parser.parse('Or three bends sable, a bordure gules.')).toEqual({
       field: { tincture: Metals.or },
-      ordinaries: [
+      chargesOrOrdinaries: [
         { type: OrdinaryType.bend, tincture: Colours.sable, count: 3 },
         { type: OrdinaryType.bordure, tincture: Colours.gules },
       ],
@@ -305,7 +310,9 @@ describe('a field bearing more than one ordinary, in English', () => {
 
   test('keeps them in the order the blazon laid them', () => {
     expect(
-      parser.parse('Or a bordure gules, three bends sable').ordinaries?.map(({ type }) => type)
+      parser
+        .parse('Or a bordure gules, three bends sable')
+        .chargesOrOrdinaries?.map(({ type }) => type)
     ).toEqual([OrdinaryType.bordure, OrdinaryType.bend]);
   });
 
@@ -361,7 +368,7 @@ describe('varied fields, in English', () => {
   test('bears an ordinary over the pieces', () => {
     expect(parser.parse('Bendy of eight or and azure a bordure gules')).toMatchObject({
       field: { type: VariationType.bendy, pieces: 8 },
-      ordinaries: [{ type: OrdinaryType.bordure }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.bordure }],
     });
   });
 
@@ -432,7 +439,7 @@ describe('furred fields, in English', () => {
   test('bears an ordinary over the pelt, as any other field does', () => {
     expect(parser.parse('Vairy or and gules a fess azure')).toEqual({
       field: { type: FurType.vairy, firstTincture: Metals.or, secondTincture: Colours.gules },
-      ordinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
+      chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
     });
   });
 
@@ -447,5 +454,103 @@ describe('furred fields, in English', () => {
 
   test('counts nothing after the tinctures either', () => {
     expect(() => parser.parse('Vairy of six or and gules')).toThrow();
+  });
+});
+
+describe('charges, in English', () => {
+  test('reads "Argent three billets or" as three billets on an argent field', () => {
+    expect(parser.parse('Argent three billets or')).toEqual({
+      field: { tincture: Metals.argent },
+      chargesOrOrdinaries: [{ type: ChargeType.billet, tincture: Metals.or, count: 3 }],
+    });
+  });
+
+  test.each([
+    ['an annulet', ChargeType.annulet],
+    ['a billet', ChargeType.billet],
+    ['a lozenge', ChargeType.lozenge],
+  ])('reads "%s" as that charge', (borne, type) => {
+    expect(parser.parse(`Gules ${borne} argent`)).toEqual({
+      field: { tincture: Colours.gules },
+      chargesOrOrdinaries: [{ type, tincture: Metals.argent }],
+    });
+  });
+
+  test('reads "an" before a word that begins on a vowel, which is what English writes', () => {
+    expect(bearing(wordOf(EnglishChargeType, ChargeType.annulet))).toBe('an annulet');
+    expect(bearing(wordOf(EnglishChargeType, ChargeType.billet))).toBe('a billet');
+  });
+
+  test('names every charge with an article the parser then accepts', () => {
+    for (const type of Object.values(ChargeType)) {
+      const borne = bearing(wordOf(EnglishChargeType, type));
+      expect(parser.parse(`Azure ${borne} or`).chargesOrOrdinaries).toEqual([
+        { type, tincture: Metals.or },
+      ]);
+    }
+  });
+
+  test.each([
+    ['two annulets', ChargeType.annulet, 2],
+    ['six lozenges', ChargeType.lozenge, 6],
+  ])('reads "%s" as that many of that charge', (borne, type, count) => {
+    expect(parser.parse(`Azure ${borne} or`).chargesOrOrdinaries).toEqual([
+      { type, tincture: Metals.or, count },
+    ]);
+  });
+
+  test('bears every charge in number, none of them being a place on the shield', () => {
+    for (const type of Object.values(ChargeType)) {
+      const word = wordOf(EnglishChargeType, type);
+      expect(parser.parse(`Azure three ${word.plural} or`).chargesOrOrdinaries).toEqual([
+        { type, tincture: Metals.or, count: 3 },
+      ]);
+    }
+  });
+
+  test('holds a charge in the list a band is held in, there being one list', () => {
+    expect(parser.parse('Azure a fess or').chargesOrOrdinaries).toEqual([
+      { type: OrdinaryType.fess, tincture: Metals.or },
+    ]);
+    expect(parser.parse('Azure a billet or').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.billet, tincture: Metals.or },
+    ]);
+  });
+
+  test('reads bands and charges into one list, in the order the blazon laid them', () => {
+    expect(parser.parse('Or a fess gules, three billets azure.')).toEqual({
+      field: { tincture: Metals.or },
+      chargesOrOrdinaries: [
+        { type: OrdinaryType.fess, tincture: Colours.gules },
+        { type: ChargeType.billet, tincture: Colours.azure, count: 3 },
+      ],
+    });
+  });
+
+  test('keeps a charge blazoned before a band before it', () => {
+    expect(
+      parser
+        .parse('Or three billets azure, a fess gules')
+        .chargesOrOrdinaries?.map(({ type }) => type)
+    ).toEqual([ChargeType.billet, OrdinaryType.fess]);
+  });
+
+  test('says the same thing as the French, which is the whole point', () => {
+    const french = new FrenchBlazonParser();
+    expect(parser.parse('Argent three billets or')).toEqual(
+      french.parse("D'argent à trois billettes d'or")
+    );
+    expect(parser.parse('Azure an annulet or')).toEqual(french.parse("D'azur à l'annelet d'or"));
+    expect(parser.parse('Gules a lozenge argent')).toEqual(
+      french.parse('De gueules au losange d’argent')
+    );
+  });
+
+  test('still owes the charge a tincture of its own', () => {
+    expect(() => parser.parse('Argent three billets')).toThrow(MissingTincture);
+  });
+
+  test('refuses the singular name after a count', () => {
+    expect(() => parser.parse('Argent three billet or')).toThrow(UnknownOrdinary);
   });
 });

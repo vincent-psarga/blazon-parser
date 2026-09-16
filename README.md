@@ -38,17 +38,18 @@ src/
       BlazonParseError.ts     the base: a message, and where it gave up
       UnknownTincture.ts      a word naming no tincture
       UnknownDivision.ts      a word naming no line of division
-      UnknownOrdinary.ts      a word naming no band
+      UnknownOrdinary.ts      a word naming no band and no charge
       RepeatedOrdinary.ts     more of a band than a field can bear
       WrongTinctureArticle.ts a tincture its article does not agree with
       WrongOrdinaryArticle.ts an ordinary its article does not agree with
       MissingTincture.ts      no tincture at all, where one was owed
-      MissingOrdinary.ts      no ordinary at all, where one was owed
+      MissingOrdinary.ts      nothing named at all, where a band or a charge was owed
       MissingPieces.ts        a varied field nobody counted the pieces of
     models/                   what a blazon is, in English
-      Blazon.ts               a blazon: its field, and the ordinaries laid on it
+      Blazon.ts               a blazon: its field, and the bands and charges laid on it, in order
       Field.ts                a plain, divided, varied or furred field; DivisionType, VariationType, FurType
       Ordinary.ts             a band laid on the field; OrdinaryType
+      Charge.ts               a figure the field bears; ChargeType
       Tinctures.ts            Metals, Colours, Furs, and the Tincture union
     services/                 what the library offers, as interfaces
       IBlazonParser.ts        text -> Blazon
@@ -65,7 +66,7 @@ src/
     parser/
       Combinators.ts          guard, optional, keyword, term
       Numbers.ts              a number, spelled out or in figures
-      Ordinaries.ts           how many are borne, and which may be
+      Borne.ts                what a field bears, band or charge: how many, and which may be
       Variations.ts           the name of a varied field, and its pieces
       BlazonGrammar.ts        what a language contributes; the shared rule
       Parser.ts               running a rule over some text
@@ -76,7 +77,7 @@ src/
       FrenchBlazonGrammar.ts  the French BlazonGrammar
       FrenchBlazonWording.ts  the French BlazonWording
     english/
-      EnglishGrammar.ts       the conjunction; English needs no article
+      EnglishGrammar.ts       the conjunction, and "a" or "an" before what the field bears
       EnglishBlazonGrammar.ts the English BlazonGrammar
       EnglishBlazonWording.ts the English BlazonWording
     drawer/
@@ -104,11 +105,12 @@ demo/
     TincturesPage.tsx         every tincture, named, painted and hatched
     DivisionsPage.tsx         every partition, varied field and furred field, named and drawn
     OrdinariesPage.tsx        every ordinary, named and drawn
+    ChargesPage.tsx           every charge, named and drawn
     DocIndexPage.tsx          what a blazon may be, and what it may not
     ArmorialsPage.tsx         the armorials on offer, and how much each parses
     ArmorialPage.tsx          one armorial, read entry by entry
   components/
-    Reference.tsx             the anatomy both vocabulary pages are built on
+    Reference.tsx             the anatomy every vocabulary page is built on
     BlazonShield.tsx          one blazon, drawn
   utils/
     Anchors.ts                the anchor a term of the vocabulary answers to
@@ -131,10 +133,11 @@ caught up. A term may be spelled several ways — `['mantelé-versé',
 
 A blazon has the same shape in every language — a field, plain or divided between
 two tinctures or cut into a row of pieces of them or covered with a fur cut from
-them, bearing whatever ordinaries are laid on it, each once or several times over
-— so one rule reads them all and one sentence writes them all. A language supplies
-a `BlazonGrammar` for reading and a `BlazonWording` for writing: its tinctures, its
-partitions, its varied fields, its furs, its ordinaries, and its conjunction.
+them, bearing whatever ordinaries are laid on it and whatever charges it carries,
+each once or several times over — so one rule reads them all and one sentence
+writes them all. A language supplies a `BlazonGrammar` for reading and a
+`BlazonWording` for writing: its tinctures, its partitions, its varied fields, its
+furs, its ordinaries, its charges, and its conjunction.
 French wraps its tinctures in an article that has to agree with the word it
 introduces; English names them bare.
 
@@ -245,9 +248,9 @@ frenchParser.parse("D'or à deux chefs de gueules");
 
 A field may also bear more than one kind, which is how a bordure is usually
 borne: "D'or à trois bandes de sable ; à la bordure de gueules", "Or three bends
-sable, a bordure gules". They are read into `Blazon.ordinaries` in the order the
-blazon named them, and that order is the whole of what it says — what is named
-last is drawn last, and so over the rest:
+sable, a bordure gules". They are read into `Blazon.chargesOrOrdinaries` in the
+order the blazon named them, and that order is the whole of what it says — what is
+named last is drawn last, and so over the rest:
 
 ```ts
 frenchParser.parse("D'or à trois bandes de sable ; à la bordure de gueules");
@@ -276,6 +279,75 @@ trois bandes de gueules" where ordinary French would contract the article into
 the first is what is written back. English would give the repeated band a name of
 its own, the diminutive — pallets, bars, bendlets, chevronels — which the
 vocabulary does not hold, so it writes the plural of the ordinary itself.
+
+A field bears charges as well as bands. An ordinary takes its place and its size
+from the line it is named after; a charge is named after the thing it is a
+picture of and owes the field nothing, so it is simply set on it. Three so far —
+annulet, billet, lozenge; `annelet`, `billette`, `losange` — all of them plain
+shapes, and all of them read by exactly the phrase an ordinary is read by:
+
+```ts
+frenchParser.parse("D'argent à trois billettes d'or"); // ChargeType.billet, count: 3
+englishWriter.write(blazon); // Argent three billets or.
+```
+
+Being the same phrase, the two are read from one vocabulary rather than tried one
+after the other: a word in neither list would otherwise fail both readings at the
+same place, and the complaint would be settled by whichever happened to be listed
+first. `UnknownOrdinary` is therefore what an unreadable word in that place is
+still called, whichever of the two it was meant to name — a naming this owes to
+the ordinaries having come first, and no more than that.
+
+Every charge may be borne in number, none of them being a place on the shield the
+way a chief or a bordure is, so `Charge.ts` keeps no list of which may. Where they
+stand is the **disposition** — "en chef", "mal ordonnées", "en orle" — which is
+not read yet: a count with no disposition is drawn two abreast with the odd one
+last, which puts three as two in chief and one in base, and six as three ranks of
+two. That is a stand-in for the blazon's own arrangement rather than a reading of
+it.
+
+Bands and charges share the one list, `Blazon.chargesOrOrdinaries`, and are kept
+in it in the order the blazon named them, because that order says which covers
+which between them exactly as it does between two bands:
+
+```ts
+frenchParser.parse("D'or à la billette d'azur ; à la bande de gueules");
+// the bend covers the billet
+frenchParser.parse("D'or à la bande de gueules ; à la billette d'azur");
+// the billet covers the bend
+```
+
+Sorted into a list apiece, that order would be lost, and the blazon would come
+back saying something it never said. `isOrdinary` and `isCharge` tell an entry's
+kind from the vocabulary its term belongs to, which is the only thing the two
+differ in: both carry a tincture and a count, and nothing about the shape of the
+object says which it is.
+
+The article has to agree in French here too, and the charges bring two things the
+ordinaries never asked for. `annelet` begins on a vowel, so the article elides and
+the two genders fall together — "à l'annelet", which says nothing about gender and
+is accepted for either. English has the same thing in "an annulet", the first term
+in the vocabulary to take `an` rather than `a`. Which words elide is the word's own
+to declare in French, where English still reads it off the spelling:
+
+```ts
+frenchParser.parse("D'azur au annelet d'or");
+// WrongOrdinaryArticle: Wrong article: expected "à l'annelet"
+```
+
+And a word may have no settled gender at all. Blazon kept the feminine "la
+losange" where the language at large went masculine, and armorials are written
+both ways, so a `FrenchWord` may declare `acceptsBothGender`: it is read under
+either article and written back out in the gender it declares. Every other word is
+held to the one it has.
+
+```ts
+frenchParser.parse("D'azur au losange d'or");
+frenchWriter.write(blazon); // D'azur à la losange d'or.
+```
+
+Whether heraldry calls a lozenge a charge or a sub-ordinary is a quarrel this does
+not enter. French calls all three meubles and is done with it.
 
 Drawing is a third service over the same models, and needs no language at all: a
 `ColorModel` says what each tincture is painted with, so the shades stay out of
@@ -392,8 +464,8 @@ into `lib`.
 
 `BlazonPage` takes a blazon, shows it translated, and draws the arms — in colour
 and in hatching, since both are ways of saying the same tinctures.
-`TincturesPage`, `DivisionsPage` and `OrdinariesPage` document the vocabulary on
-one shared anatomy: the whole closed set hangs present at once, and the term being read is
+`TincturesPage`, `DivisionsPage`, `OrdinariesPage` and `ChargesPage` document the
+vocabulary on one shared anatomy: the whole closed set hangs present at once, and the term being read is
 struck forward at full measure in both languages and both paintings — the English
 name and the French standing level, English first. What the documentation never
 shows is the enum value behind a term: a reader of it is learning heraldry, and
@@ -415,7 +487,8 @@ ask for: adding a word uncovers the next.
 The pages are components and nothing more — routing belongs to whatever mounts
 them, so `App.tsx` mounts a router over them and they link rather than call back.
 It serves `/`, `/doc`, `/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`,
-`/armorials` and `/armorial/<slug>`, under whatever base the demo is served from:
+`/doc/charges`, `/armorials` and `/armorial/<slug>`, under whatever base the demo
+is served from:
 GitHub Pages serves it from a subdirectory, which is the router's `basename` and
 nothing else's business.
 

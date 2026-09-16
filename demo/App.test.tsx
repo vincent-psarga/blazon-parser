@@ -37,7 +37,7 @@ describe('the rail', () => {
   test('offers the index alongside every page when opened', async () => {
     render(<App />);
     await openDoc();
-    for (const name of ['Everything', 'Tinctures', 'Divisions', 'Ordinaries']) {
+    for (const name of ['Everything', 'Tinctures', 'Divisions', 'Ordinaries', 'Charges']) {
       expect(inMenu(name)).toBeInTheDocument();
     }
   });
@@ -47,6 +47,7 @@ describe('the rail', () => {
     ['Tinctures', 'Tinctures', '/doc/tinctures'],
     ['Divisions', 'Divisions', '/doc/divisions'],
     ['Ordinaries', 'Ordinaries', '/doc/ordinaries'],
+    ['Charges', 'Charges', '/doc/charges'],
   ])('goes to %s', async (link, title, path) => {
     render(<App />);
     await openDoc();
@@ -80,7 +81,7 @@ describe('the index', () => {
   test('says what a blazon may be, and promises nothing more', async () => {
     window.history.pushState(null, '', '/doc');
     render(<App />);
-    expect(screen.getByText(/no other charges yet/)).toBeInTheDocument();
+    expect(screen.getByText(/nothing here promises either/)).toBeInTheDocument();
   });
 
   test.each([
@@ -228,7 +229,7 @@ describe('the armorials', () => {
 
 describe('a path no page answers to', () => {
   test('says so rather than showing nothing', () => {
-    window.history.pushState(null, '', '/doc/charges');
+    window.history.pushState(null, '', '/doc/crowns');
     render(<App />);
     expect(heading()).toBe('Nothing here');
   });
