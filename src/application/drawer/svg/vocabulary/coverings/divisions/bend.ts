@@ -1,5 +1,5 @@
-import { polygon } from '../../shapes/polygon';
-import { DivisionFigure } from '../Figures';
+import { polygon } from '../../../shapes/polygon';
+import { DivisionFigure } from '../../Figures';
 
 /**
  * The field cut from dexter chief to sinister base. The half in chief is the

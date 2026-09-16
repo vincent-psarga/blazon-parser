@@ -1,6 +1,6 @@
-import { alternate } from '../../painting/arrange';
-import { down } from '../../shapes/bands';
-import { VariationFigure } from '../Figures';
+import { alternate } from '../../../painting/arrange';
+import { down } from '../../../shapes/bands';
+import { VariationFigure } from '../../Figures';
 
 /** The pale repeated: a row of stripes down the field. */
 export const paly: VariationFigure = {

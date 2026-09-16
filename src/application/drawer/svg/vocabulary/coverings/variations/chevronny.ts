@@ -1,6 +1,6 @@
-import { alternate } from '../../painting/arrange';
-import { RISE, bent } from '../../shapes/bands';
-import { VariationFigure } from '../Figures';
+import { alternate } from '../../../painting/arrange';
+import { RISE, bent } from '../../../shapes/bands';
+import { VariationFigure } from '../../Figures';
 
 /**
  * The chevron repeated.

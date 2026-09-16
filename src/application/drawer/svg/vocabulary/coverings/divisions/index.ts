@@ -1,5 +1,5 @@
-import { DivisionType } from '../../../../../domain/models/Field';
-import { DivisionFigure } from '../Figures';
+import { DivisionType } from '../../../../../../domain/models/Field';
+import { DivisionFigure } from '../../Figures';
 import { bend } from './bend';
 import { bendSinister } from './bendSinister';
 import { fess } from './fess';

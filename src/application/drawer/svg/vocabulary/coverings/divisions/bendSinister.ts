@@ -1,5 +1,5 @@
-import { polygon } from '../../shapes/polygon';
-import { DivisionFigure } from '../Figures';
+import { polygon } from '../../../shapes/polygon';
+import { DivisionFigure } from '../../Figures';
 
 /** The mirror of a bend, cut from sinister chief. */
 export const bendSinister: DivisionFigure = {

@@ -1,6 +1,6 @@
-import { alternate } from '../../painting/arrange';
-import { across } from '../../shapes/bands';
-import { VariationFigure } from '../Figures';
+import { alternate } from '../../../painting/arrange';
+import { across } from '../../../shapes/bands';
+import { VariationFigure } from '../../Figures';
 
 /** The fess repeated: a row of stripes across the field. */
 export const barry: VariationFigure = {

@@ -1,6 +1,6 @@
-import { alternate } from '../../painting/arrange';
-import { inBend } from '../../shapes/bands';
-import { VariationFigure } from '../Figures';
+import { alternate } from '../../../painting/arrange';
+import { inBend } from '../../../shapes/bands';
+import { VariationFigure } from '../../Figures';
 
 /**
  * The bend repeated: a row of stripes corner to corner.

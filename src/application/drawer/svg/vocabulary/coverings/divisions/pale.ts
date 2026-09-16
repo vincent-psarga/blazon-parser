@@ -1,5 +1,5 @@
-import { rectangle } from '../../shapes/rectangle';
-import { DivisionFigure } from '../Figures';
+import { rectangle } from '../../../shapes/rectangle';
+import { DivisionFigure } from '../../Figures';
 
 /** The field cut straight down the middle: the half at dexter first. */
 export const pale: DivisionFigure = {

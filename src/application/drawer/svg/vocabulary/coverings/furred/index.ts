@@ -1,5 +1,5 @@
-import { FurType } from '../../../../../domain/models/Field';
-import { FurredFigure } from '../Figures';
+import { FurType } from '../../../../../../domain/models/Field';
+import { FurredFigure } from '../../Figures';
 import { vairy } from './vairy';
 
 /**

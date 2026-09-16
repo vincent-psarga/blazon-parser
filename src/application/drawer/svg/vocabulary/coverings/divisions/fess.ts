@@ -1,5 +1,5 @@
-import { rectangle } from '../../shapes/rectangle';
-import { DivisionFigure } from '../Figures';
+import { rectangle } from '../../../shapes/rectangle';
+import { DivisionFigure } from '../../Figures';
 
 /** The field cut straight across the waist: the half in chief first. */
 export const fess: DivisionFigure = {

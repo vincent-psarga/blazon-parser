@@ -1,7 +1,7 @@
-import { Frame } from '../../Ground';
-import { Band } from '../../shapes/bands';
-import { fromBase } from '../../shapes/triangles';
-import { VariationFigure } from '../Figures';
+import { Frame } from '../../../Ground';
+import { Band } from '../../../shapes/bands';
+import { fromBase } from '../../../shapes/triangles';
+import { VariationFigure } from '../../Figures';
 
 /**
  * The pieces a pily field lays over the piles from the chief.

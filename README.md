@@ -89,8 +89,9 @@ src/
                               ring, path, shield, bands, triangles, diamond
       painting/               how geometry is inked: plain, split, laid, over, arrange
       vocabulary/             one file per enum value, knowing no SVG
-        tinctures/metals|colors|furs/   divisions/  variations/
-        furred/  ordinaries/  charges/
+        tinctures/metals|colors|furs/
+        coverings/divisions|variations|furred/
+        ordinaries/  charges/
     writer/
       BlazonWording.ts        what a language contributes; the shared sentence
       FrenchBlazonWriter.ts   implements IBlazonWriter
@@ -368,7 +369,10 @@ is geometry and `painting/` is how geometry is inked, and neither may name a ter
 of heraldry — the same rectangle is a fess, a billet, and half a field divided
 per pale. `vocabulary/` is the terms, one file per enum value, and writes no SVG
 of its own: what a tag looks like is settled in four primitive shapes and nowhere
-else. `Arms.ts` is the one place the model and the drawing meet. A test reads
+else. Its `coverings/` holds the three kinds `Field.ts` holds — divided, varied,
+furred — under one roof because all three answer the same question, which is how
+a region is covered rather than what is laid on it. A region, not a field: a
+charge divided per pale is the same operation somewhere else. `Arms.ts` is the one place the model and the drawing meet. A test reads
 that layering off the files rather than trusting the convention to hold.
 
 Every figure is handed the **frame** it is drawn in rather than measuring itself

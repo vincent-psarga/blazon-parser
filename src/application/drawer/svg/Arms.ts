@@ -8,11 +8,11 @@ import { over } from './painting/over';
 import { plain } from './painting/plain';
 import { split } from './painting/split';
 import { CHARGES } from './vocabulary/charges';
-import { DIVISIONS } from './vocabulary/divisions';
-import { FURRED } from './vocabulary/furred';
+import { DIVISIONS } from './vocabulary/coverings/divisions';
+import { FURRED } from './vocabulary/coverings/furred';
 import { ORDINARIES } from './vocabulary/ordinaries';
 import { INKS } from './vocabulary/tinctures';
-import { VARIATIONS } from './vocabulary/variations';
+import { VARIATIONS } from './vocabulary/coverings/variations';
 
 /**
  * A blazon read into the vocabulary that knows how to draw it.

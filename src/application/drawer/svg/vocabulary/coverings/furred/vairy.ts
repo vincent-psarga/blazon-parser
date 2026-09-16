@@ -1,6 +1,6 @@
-import { FurType } from '../../../../../domain/models/Field';
-import { escapeAttribute } from '../../escaping';
-import { FurredFigure } from '../Figures';
+import { FurType } from '../../../../../../domain/models/Field';
+import { escapeAttribute } from '../../../escaping';
+import { FurredFigure } from '../../Figures';
 
 /**
  * The bells of vair, cut from whatever two tinctures a blazon names rather than

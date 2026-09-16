@@ -1,5 +1,5 @@
-import { VariationType } from '../../../../../domain/models/Field';
-import { VariationFigure } from '../Figures';
+import { VariationType } from '../../../../../../domain/models/Field';
+import { VariationFigure } from '../../Figures';
 import { barry } from './barry';
 import { bendy } from './bendy';
 import { chevronny } from './chevronny';
