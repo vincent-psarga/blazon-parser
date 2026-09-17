@@ -5,6 +5,12 @@
 - Handle modifiers (eg: "à la billette percée d'or")
 - Allow complex partition (eg: "per fess azur a bend or and argent")
 - Add "semy of"
+- Support for "shortcuts" (eg: "du même", "l'un dans l'autre", "brochant sur le tout")
+
+# Display
+
+- Cross display seems too low
+- Bends and saltire have a "weird" rendering - angles seem wrong.
 
 # Documentation
 
