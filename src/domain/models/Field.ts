@@ -1,3 +1,4 @@
+import { ChargeType } from './Charge';
 import { Tincture } from './Tinctures';
 
 /**
@@ -5,13 +6,40 @@ import { Tincture } from './Tinctures';
  * line, cut along that line over and over into a row of equal pieces, or covered
  * with a fur cut from the pair.
  */
-export type Field =
-  | {
-      tincture: Tincture;
-    }
-  | Division
-  | Variation
-  | Furred;
+export type Field = Plain | Division | Variation | Furred;
+
+/**
+ * A field of one tincture, which a blazon may have sown a charge over.
+ *
+ * Being sown is the field's own state and not something it bears: a semy is
+ * drawn small, runs off every edge, and is past counting, where a charge is
+ * counted and will one day be placed. So it is held here rather than among the
+ * charges, and a field with nothing sown on it is the plain field it always was.
+ */
+export type Plain = {
+  tincture: Tincture;
+  /** What the field is sown with, where it is sown at all. */
+  semy?: Semy;
+};
+
+/**
+ * A charge sown over the field: "the field is sown or strewed over with several
+ * of the charges named, drawn small and without any reference to the number".
+ *
+ * There is no count here and there never will be one — that is what the word
+ * means. Nor is there a place: a semy covers the field entire.
+ *
+ * One charge, for now. A field sown with two of them alternately — "semé alterné
+ * de tours et de fleurs de lys" — is a second list and is not read.
+ *
+ * Only a plain field carries one. Heraldry sows a divided field as readily, but
+ * which half is sown is a thing the blazon says in words this does not yet read,
+ * and a model able to hold the answer would be claiming to have read it.
+ */
+export type Semy = {
+  type: ChargeType;
+  tincture: Tincture;
+};
 
 export enum DivisionType {
   fess = 'DivisionType.fess',
@@ -169,4 +197,12 @@ export function isVariation(field: Field): field is Variation {
 
 export function isFurred(field: Field): field is Furred {
   return 'type' in field && FURS.has(field.type);
+}
+
+/**
+ * A plain field is the one no term names a cut of: the other three open on a
+ * word of their own vocabulary, and this one opens on its tincture.
+ */
+export function isPlain(field: Field): field is Plain {
+  return !('type' in field);
 }

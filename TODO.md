@@ -4,7 +4,8 @@
 - Handle the disposition of charges (en chef, en orle, mal ordonnées)
 - Handle modifiers (eg: "à la billette percée d'or")
 - Allow complex partition (eg: "per fess azur a bend or and argent")
-- Add "semy of"
+- Handle a semy of more than one figure ("semé alterné de tours et de fleurs de lys")
+- Sow a divided field, once the blazon can say which half was sown
 - Support for "shortcuts" (eg: "du même", "l'un dans l'autre", "brochant sur le tout")
 
 # Display

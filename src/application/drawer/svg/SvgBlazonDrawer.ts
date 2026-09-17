@@ -36,12 +36,18 @@ export class SvgBlazonDrawer implements IBlazonDrawer {
   }
 }
 
+/**
+ * Every tincture the drawing will ask for, so that whatever each is painted with
+ * is defined beside it. What a field is sown with counts among them: a semy is
+ * painted with a tincture like anything else, and a hatched one needs its ruling
+ * placed or it is drawn in nothing at all.
+ */
 function tincturesOf(blazon: Blazon): readonly Tincture[] {
   const painted = blazon.field;
   const field =
     isDivision(painted) || isVariation(painted) || isFurred(painted)
       ? [painted.firstTincture, painted.secondTincture]
-      : [painted.tincture];
+      : [painted.tincture, ...(painted.semy === undefined ? [] : [painted.semy.tincture])];
   return [...field, ...(blazon.chargesOrOrdinaries ?? []).map(({ tincture }) => tincture)];
 }
 

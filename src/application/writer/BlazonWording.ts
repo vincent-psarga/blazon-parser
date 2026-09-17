@@ -6,6 +6,8 @@ import {
   Field,
   FurType,
   Furred,
+  Plain,
+  Semy,
   Variation,
   VariationType,
   isDivision,
@@ -16,6 +18,7 @@ import {
 import { OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords, counted } from '../../domain/translations/Numbers';
+import { Strewings, strewnIn } from '../../domain/translations/Strewings';
 import { Translation, nameOf, wordIn, wordOf } from '../../domain/translations/Translation';
 import { Word } from '../../domain/translations/Word';
 
@@ -31,6 +34,8 @@ export interface BlazonWording<W extends Word = Word> {
   readonly furs: Translation<FurType, W>;
   readonly ordinaries: Translation<OrdinaryType, W>;
   readonly charges: Translation<ChargeType, W>;
+  /** What the language calls a field sown with each charge, where it has a word. */
+  readonly strewings: Strewings<W>;
   /** How the language counts what a field bears several of. */
   readonly numbers: NumberWords<W>;
   /** How a tincture is introduced: "d'or" in French, plain "or" in English. */
@@ -53,6 +58,13 @@ export interface BlazonWording<W extends Word = Word> {
    * is the usual one. So the whole phrase is the language's to assemble.
    */
   readonly vary: (word: W, tinctures: string, pieces: string, usual: boolean) => string;
+  /**
+   * How a field says it is sown with a figure the language has no word of its
+   * own for: "semé de billettes" in French, "semy of billets" in English. The
+   * figure arrives as the word for one of it, and both tongues sow it in the
+   * plural.
+   */
+  readonly strew: (word: W) => string;
   /** The conjunction joining the halves of a divided field. */
   readonly conjunction: string;
 }
@@ -138,7 +150,35 @@ function writeField<W extends Word>(wording: BlazonWording<W>, field: Field): st
   if (isDivision(field)) {
     return writeDivision(wording, field);
   }
-  return isFurred(field) ? writeFurred(wording, field) : writeTincture(wording, field.tincture);
+  return isFurred(field) ? writeFurred(wording, field) : writePlain(wording, field);
+}
+
+/** A field of one tincture, and what it has been sown with where it has been. */
+function writePlain<W extends Word>(wording: BlazonWording<W>, field: Plain): string {
+  const tincture = writeTincture(wording, field.tincture);
+  return field.semy === undefined ? tincture : [tincture, writeSemy(wording, field.semy)].join(' ');
+}
+
+/**
+ * What a field was sown with, under the field's own word for the strewing where
+ * the language has one and sown in as many words where it has not.
+ *
+ * Heraldry would rather name a strewing than describe one — Parker calls the
+ * special term preferable — so "billeté" is written where "semé de billettes"
+ * would have said the same, and French and English each write whichever of the
+ * two they have.
+ *
+ * The tincture is written only where the word has not already said it, by the
+ * same rule that governs anything borne: a besanté is gold entire, and the gold
+ * written after it would be saying the one thing twice.
+ */
+function writeSemy<W extends Word>(wording: BlazonWording<W>, semy: Semy): string {
+  const named = strewnIn(wording.strewings, semy.type, semy.tincture);
+  const word = named ?? wordIn(wording.charges, semy.type, semy.tincture);
+  const sowing = named === undefined ? wording.strew(word) : word.value;
+  return word.defaultTincture === semy.tincture
+    ? sowing
+    : [sowing, writeTincture(wording, semy.tincture)].join(' ');
 }
 
 /**

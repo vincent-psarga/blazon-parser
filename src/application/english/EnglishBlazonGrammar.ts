@@ -3,14 +3,18 @@ import { EnglishDivisionType } from '../../domain/translations/en/Divisions';
 import { EnglishFurType } from '../../domain/translations/en/Furs';
 import { EnglishVariationType, OF } from '../../domain/translations/en/Variations';
 import { EnglishChargeType } from '../../domain/translations/en/Charges';
+import { EnglishStrewings, OF as SOWN_OF, SOWN } from '../../domain/translations/en/Strewings';
+import { strewnTerms } from '../../domain/translations/Strewings';
+import { asSeveral } from '../../domain/translations/Translation';
 import { EnglishOrdinaryType } from '../../domain/translations/en/Ordinaries';
 import { EnglishNumbers } from '../../domain/translations/en/Numbers';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
-import { keyword, optional, spelledTerm, term } from '../parser/Combinators';
+import { anyKeyword, keyword, optional, spelledTerm, term } from '../parser/Combinators';
 import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
 import { NOT_IN_NUMBER, alone, bearings, several } from '../parser/Borne';
 import { number } from '../parser/Numbers';
+import { strewing } from '../parser/Treatment';
 import { VariedField, varied } from '../parser/Variations';
 import { ARTICLE, AND } from './EnglishGrammar';
 
@@ -30,6 +34,23 @@ const VARIATION = apply(
 // vocabulary: "a fess" and "a billet" differ in nothing a grammar can see.
 const BEARINGS = bearings(EnglishOrdinaryType, EnglishChargeType);
 
+// "Azure billetty or": the field's own word for the strewing, standing bare
+// between the two tinctures.
+const NAMED_STREWING = spelledTerm(strewnTerms(EnglishStrewings), asOrdinary);
+
+// "Azure semy of billets or": the figure itself, named in the plural, a field
+// being sown with more of it than anybody counts.
+const SOWN_CHARGE = kright(
+  seq(anyKeyword(SOWN), keyword(SOWN_OF)),
+  spelledTerm(EnglishChargeType, asOrdinary, asSeveral)
+);
+
+// English says nothing of a field being bare: it names the tincture and stops,
+// where French writes "plain". Parker's "plain" is a band drawn with a straight
+// line rather than a field with nothing on it, and borrowing it here would be
+// inventing heraldry rather than reading it.
+const TREATMENT = strewing(alt(NAMED_STREWING, SOWN_CHARGE), term(EnglishTinctures, asTincture));
+
 export const EnglishBlazonGrammar: BlazonGrammar = {
   tincture: term(EnglishTinctures, asTincture),
   division: term(EnglishDivisionType, asDivision),
@@ -37,6 +58,7 @@ export const EnglishBlazonGrammar: BlazonGrammar = {
   // counted: "Vairy or and gules" is the whole of the phrase.
   fur: term(EnglishFurType, asDivision),
   variation: VARIATION,
+  treatment: TREATMENT,
   // The article is dropped once read: it says that something borne follows,
   // nothing more, and whether it was written "a" or "an" is the next word's
   // business rather than the grammar's. Where several are borne the count says

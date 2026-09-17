@@ -70,6 +70,29 @@ export function cutIn(word: FrenchWord, tinctures: string, pieces: string, usual
   return usual ? `${word.value} ${tinctures}` : `${word.value} ${tinctures} de ${pieces} ${PIECES}`;
 }
 
+/**
+ * Renders the figure a field is sown with, under the article that introduces it:
+ * "semé de billettes", "semé d'annelets".
+ *
+ * It is the same "de" a tincture is introduced by and elides on the same terms,
+ * so the word's own declaration answers for both. What is sown is named in the
+ * plural, a field being sown with more of it than anybody counts.
+ */
+export function sownIn(word: FrenchWord): string {
+  return word.needsElision ? `d'${word.plural}` : `de ${word.plural}`;
+}
+
+/**
+ * The word French calls a bare field by: "de gueules plain", which says the
+ * shield carries its tincture and nothing whatever besides.
+ *
+ * It is grammar rather than vocabulary — it names no term and adds nothing to
+ * what the field is — so it is a keyword here and is never written back out.
+ * "Plein" is not read for it: that is the undifferenced arms of the head of a
+ * family, which is another word entirely and says nothing about the field.
+ */
+export const PLAIN = keyword('plain');
+
 /** The conjunction joining the halves of a divided field. */
 export const CONJUNCTION = 'et';
 

@@ -3,18 +3,23 @@ import { FrenchDivisionType } from '../../domain/translations/fr/Divisions';
 import { FrenchFurType } from '../../domain/translations/fr/Furs';
 import { FrenchVariationType, PIECES } from '../../domain/translations/fr/Variations';
 import { FrenchChargeType } from '../../domain/translations/fr/Charges';
+import { FrenchStrewings, SOWN } from '../../domain/translations/fr/Strewings';
+import { strewnTerms } from '../../domain/translations/Strewings';
 import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
 import { FrenchWord } from '../../domain/translations/fr/FrenchWord';
+import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
 import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryArticle';
 import { WrongTinctureArticle } from '../../domain/errors/parsing/WrongTinctureArticle';
 import { FrenchNumbers } from '../../domain/translations/fr/Numbers';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
+import { asSeveral } from '../../domain/translations/Translation';
 import { TokenKind } from '../lexer/Lexer';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
 import { guard, keyword, optional, spelledTerm, term } from '../parser/Combinators';
 import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
 import { NOT_IN_NUMBER, alone, bearings, several } from '../parser/Borne';
 import { number } from '../parser/Numbers';
+import { BARE, strewing } from '../parser/Treatment';
 import { varied } from '../parser/Variations';
 import {
   AND,
@@ -22,9 +27,11 @@ import {
   A_L,
   A_LA,
   BEFORE_SEVERAL,
+  PLAIN,
   bearing,
   everyBearing,
   expectedArticle,
+  sownIn,
   withArticle,
 } from './FrenchGrammar';
 
@@ -104,6 +111,32 @@ const IN_PIECES = alt(tok(TokenKind.Article), keyword('en'));
 
 const HOW_MANY_PIECES = kleft(kright(IN_PIECES, number(FrenchNumbers)), keyword(PIECES));
 
+// "D'azur billeté d'or": the field's own word for the strewing, which stands
+// bare between the two tinctures and agrees with nothing.
+const NAMED_STREWING = spelledTerm(strewnTerms(FrenchStrewings), asOrdinary);
+
+// "D'azur semé de billettes d'or": the figure itself, named in the plural under
+// the same "de" a tincture is introduced by, which elides before it as readily.
+const SOWN_CHARGE = kright(
+  keyword(SOWN),
+  apply(
+    guard(
+      seq(ARTICLE, spelledTerm(FrenchChargeType, asOrdinary, asSeveral)),
+      ([article, { word }]) => article.kind === expectedArticle(word),
+      ([, { word }], position) =>
+        new BlazonParseError(`Wrong elision: expected "${sownIn(word)}"`, position)
+    ),
+    ([, match]) => match
+  )
+);
+
+// A field of one tincture may be called bare, or be said to have been sown, and
+// is never both: what "plain" promises is that nothing was sown on it either.
+const TREATMENT = alt(
+  apply(PLAIN, () => BARE),
+  strewing(alt(NAMED_STREWING, SOWN_CHARGE), TINCTURE)
+);
+
 export const FrenchBlazonGrammar: BlazonGrammar = {
   tincture: TINCTURE,
   division: term(FrenchDivisionType, asDivision),
@@ -114,6 +147,7 @@ export const FrenchBlazonGrammar: BlazonGrammar = {
   // first word of the blazon, and nothing agrees with it either.
   variation: varied(FrenchVariationType, asDivision),
   pieces: HOW_MANY_PIECES,
+  treatment: TREATMENT,
   borne: BORNE,
   and: AND,
 };

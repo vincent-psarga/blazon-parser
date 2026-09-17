@@ -1,6 +1,6 @@
 import { disc } from '../../shapes/disc';
-import { BorneFigure } from '../Figures';
-import { spots } from './disposition';
+import { ChargeFigure } from '../Figures';
+import { charge } from './Charge';
 
 /**
  * A plain disc, filled: a besant, a plate, a tourteau, and every other name the
@@ -10,7 +10,4 @@ import { spots } from './disposition';
  * already narrower than the square it stands in — where a lozenge is drawn a
  * little narrow so as not to look swollen beside one.
  */
-export const roundel: BorneFigure = {
-  shapes: (frame, count) =>
-    spots(frame, count).map(({ x, y, size }) => disc(x, y, Math.round(size / 2))),
-};
+export const roundel: ChargeFigure = charge(({ x, y, size }) => disc(x, y, Math.round(size / 2)));

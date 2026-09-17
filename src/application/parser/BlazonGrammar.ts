@@ -14,6 +14,7 @@ import {
   tok,
 } from 'typescript-parsec';
 import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
+import { ChargedPlainField } from '../../domain/errors/parsing/ChargedPlainField';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { Blazon, ChargeOrOrdinary } from '../../domain/models/Blazon';
 import {
@@ -32,6 +33,7 @@ import { TokenKind } from '../lexer/Lexer';
 import { BorneTerm, carried } from './Borne';
 import { guard, optional, optionalUnlessBegun } from './Combinators';
 import { within } from './Failures';
+import { Treatment, isBare } from './Treatment';
 import { VariedField } from './Variations';
 
 /**
@@ -62,6 +64,12 @@ export interface BlazonGrammar {
    */
   readonly pieces?: Parser<TokenKind, number>;
   /**
+   * What the language says of a field of one tincture beyond naming it: that it
+   * is bare, or what it is sown with. A language that says neither leaves this
+   * off, as English leaves off a plain field's own word for being plain.
+   */
+  readonly treatment?: Parser<TokenKind, Treatment>;
+  /**
    * The name of a band or a charge, with whatever says the field bears it, and
    * how many. Both are named by the same phrase, so both are read by one rule.
    */
@@ -73,8 +81,33 @@ export interface BlazonGrammar {
 /** The mark a blazon may set between the charges it lays on the field. */
 const SEPARATOR = tok(TokenKind.Separator);
 
+/**
+ * A field as it was read, and whether the blazon called it bare.
+ *
+ * Being called bare is no part of the field — "plain" is written and never
+ * written back — but it governs what may follow, so it travels alongside as far
+ * as the rule that reads what follows and is dropped there.
+ */
+type ReadField = { readonly field: Field; readonly bare: boolean };
+
 export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
-  const plainField = apply(grammar.tincture, (tincture): Field => ({ tincture }));
+  // A plain field is its tincture, and whatever the language lets a blazon say
+  // about it: that it is bare, or what it has been sown with.
+  //
+  // Optional until it has begun. A field that says nothing more than its
+  // tincture is the commonest blazon there is, so nothing may be owed here — but
+  // "semé" having been read, what follows it is owed, and the complaint belongs
+  // to the blazon rather than to the grammar quietly trying something else.
+  const treatment: Parser<TokenKind, Treatment | undefined> =
+    grammar.treatment === undefined ? nil() : optionalUnlessBegun(grammar.treatment);
+
+  const plainField = apply(seq(grammar.tincture, treatment), ([tincture, treatment]): ReadField =>
+    treatment === undefined
+      ? { field: { tincture }, bare: false }
+      : isBare(treatment)
+        ? { field: { tincture }, bare: true }
+        : { field: { tincture, semy: treatment.semy }, bare: false }
+  );
 
   // Wrapped as a phrase so that a tincture which never arrives is reported as
   // missing from the division that owed it, rather than from the blazon at large.
@@ -158,9 +191,15 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // they fail: a tie between them is settled in favour of whichever was listed
   // first, and only the varied one has anything to say beyond the name — that the
   // pieces were never counted, or counted in a number no such field is cut into.
+  //
+  // None of the three is ever bare: only a field of one tincture is called
+  // plain, a divided one being no such thing whatever it bears.
   const field = eitherReading(
     plainField,
-    alt(variedField, furredField, dividedField),
+    apply(alt(variedField, furredField, dividedField), (field): ReadField => ({
+      field,
+      bare: false,
+    })),
     restOfDivision
   );
 
@@ -206,8 +245,22 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // The key is left off rather than set to an empty list when nothing is borne,
   // so a plain field reads back as the blazon it was before anything could be
   // laid on one.
-  const arms = apply(seq(field, borne), ([field, laid]): Blazon =>
-    laid.length === 0 ? { field } : { field, chargesOrOrdinaries: laid }
+  //
+  // A field the blazon called plain is held to it here, where what followed is
+  // known: "plain" promises a bare field, and the promise is kept or the blazon
+  // is refused. The bearings are read first and judged after, so the complaint
+  // lands on what was laid rather than on the word that forbade it.
+  const arms = combine(field, ({ field, bare }) =>
+    apply(
+      bare
+        ? guard(
+            borne,
+            (laid) => laid.length === 0,
+            (laid, position) => new ChargedPlainField(laid.length, position)
+          )
+        : borne,
+      (laid): Blazon => (laid.length === 0 ? { field } : { field, chargesOrOrdinaries: laid })
+    )
   );
 
   // A blazon is written as a sentence and closed with a full stop, but the stop
@@ -237,16 +290,16 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
  * reading.
  */
 function eitherReading(
-  plain: Parser<TokenKind, Field>,
-  divided: Parser<TokenKind, Field>,
+  plain: Parser<TokenKind, ReadField>,
+  divided: Parser<TokenKind, ReadField>,
   restOfDivision: Parser<TokenKind, unknown>
-): Parser<TokenKind, Field> {
+): Parser<TokenKind, ReadField> {
   return {
     parse(token) {
       const asPlain = plain.parse(token);
       const asDivided = divided.parse(token);
 
-      const candidates: ParseResult<TokenKind, Field>[] = [
+      const candidates: ParseResult<TokenKind, ReadField>[] = [
         ...(asPlain.successful ? asPlain.candidates : []),
         ...(asDivided.successful ? asDivided.candidates : []),
       ];

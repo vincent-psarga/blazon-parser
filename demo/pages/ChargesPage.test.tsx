@@ -98,13 +98,25 @@ describe('ChargesPage', () => {
 });
 
 describe('a charge borne in number', () => {
-  test.each(CHARGES)('draws %s twice and thrice beside the one', async (type) => {
+  test.each(CHARGES)('draws %s twice and thrice beside the one, and sown', async (type) => {
     mount(<ChargesPage />);
     await userEvent.setup().click(ghost(type));
     expect(borne().map((figure) => figure.querySelector('b')?.textContent)).toEqual([
       'Twice',
       'Thrice',
+      'Sown',
     ]);
+  });
+
+  test.each(CHARGES)('sows %s over the field rather than laying it on the field', async (type) => {
+    mount(<ChargesPage />);
+    await userEvent.setup().click(ghost(type));
+    const sown = borne()[2];
+    const blazon = new FrenchBlazonParser().parse(
+      sown.querySelector('[lang="fr"]')?.textContent ?? ''
+    );
+    expect(blazon.field).toMatchObject({ semy: { type } });
+    expect(blazon.chargesOrOrdinaries).toBeUndefined();
   });
 
   test.each(CHARGES)('writes both counts of %s as blazons the parser reads back', async (type) => {

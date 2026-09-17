@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
-import { isDivision, isFurred, isVariation } from '../../src/domain/models/Field';
+import { isDivision, isFurred, isPlain, isVariation } from '../../src/domain/models/Field';
 import { METALS, Tincture, isFur } from '../../src/domain/models/Tinctures';
 import { mount } from '../testing/Mounting';
 import { LANGUAGES, LanguageCode } from '../utils/Languages';
@@ -46,6 +46,8 @@ const HEADINGS = [
   'English counts the pieces, French counts only when it must',
   'A name that means a tincture is written without one',
   'A tincture that has a name of its own is written by it',
+  'A strewing is named where heraldry names it',
+  'A word that says nothing is read and never written',
   'The smaller settlements',
 ];
 
@@ -152,6 +154,34 @@ describe('what each rule shows', () => {
     expect(shown('Azure a roundel ermine').written).toContain('Azure a roundel ermine.');
   });
 
+  test('names a strewing where the language has a word for it', () => {
+    mount(<ConventionsPage />);
+    expect(shown("D'azur semé de billettes d'or").written).toEqual([
+      "D'azur billeté d'or.",
+      'Azure billetty or.',
+    ]);
+    expect(shown('Azure semy of roundels or').written).toContain('Azure bezanty.');
+  });
+
+  test('sows it in as many words where no word of the language will take the tincture', () => {
+    mount(<ConventionsPage />);
+    expect(shown('Azure semy of roundels argent').written).toContain('Azure semy of plates.');
+    expect(shown("D'azur semé d'annelets d'or").written).toContain("D'azur semé d'annelets d'or.");
+  });
+
+  test('never writes "plain" back, the blazon saying it by stopping', () => {
+    mount(<ConventionsPage />);
+    expect(shown('De gueules plain').written).toEqual(['De gueules.', 'Gules.']);
+    expect(shown("D'hermine plain").written).toContain("D'hermine.");
+  });
+
+  test('refuses a field called plain and then charged', () => {
+    mount(<ConventionsPage />);
+    const refused = shown("D'or plain au chef de gueules");
+    expect(refused.refused).toBe('A plain field bears nothing: one was laid on it');
+    expect(refused.written).toEqual([]);
+  });
+
   test('parts one charge from the next, and writes the blazon as a sentence', () => {
     mount(<ConventionsPage />);
     expect(shown('or a chief gules a bordure azure').written).toContain(
@@ -198,8 +228,14 @@ describe('the rule of tincture, which every example must keep', () => {
         continue;
       }
       const ground = rank(field.tincture);
-      for (const borne of blazon.chargesOrOrdinaries ?? []) {
-        const laid = rank(borne.tincture);
+      // What is sown on the field answers to the rule as surely as what is
+      // borne on it: a semy lies straight on the tincture with nothing between.
+      const over = [
+        ...(isPlain(field) && field.semy !== undefined ? [field.semy] : []),
+        ...(blazon.chargesOrOrdinaries ?? []),
+      ];
+      for (const one of over) {
+        const laid = rank(one.tincture);
         expect(
           ground === 'fur' || laid === 'fur' || ground !== laid,
           `«${typed}» lays ${laid} on ${ground}`

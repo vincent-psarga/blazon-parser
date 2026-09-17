@@ -44,10 +44,11 @@ src/
       WrongOrdinaryArticle.ts an ordinary its article does not agree with
       MissingTincture.ts      no tincture at all, where one was owed
       MissingOrdinary.ts      nothing named at all, where a band or a charge was owed
+      ChargedPlainField.ts    a field called plain, and then charged
       MissingPieces.ts        a varied field nobody counted the pieces of
     models/                   what a blazon is, in English
       Blazon.ts               a blazon: its field, and the bands and charges laid on it, in order
-      Field.ts                a plain, divided, varied or furred field; DivisionType, VariationType, FurType
+      Field.ts                a plain, divided, varied or furred field, and what a plain one is sown with
       Ordinary.ts             a band laid on the field; OrdinaryType
       Charge.ts               a figure the field bears; ChargeType
       Tinctures.ts            Metals, Colours, Furs, and the Tincture union
@@ -58,6 +59,7 @@ src/
     translations/
       Translation.ts          Translation<T>, and reading a term back from a spelling
       Numbers.ts              how a language counts pieces, and what a field bears several of
+      Strewings.ts            what a language calls a field sown with a charge, where it has a word
       fr/  en/                the name of every term, per language
 
   application/
@@ -68,6 +70,7 @@ src/
       Numbers.ts              a number, spelled out or in figures
       Borne.ts                what a field bears, band or charge: how many, and which may be
       Variations.ts           the name of a varied field, and its pieces
+      Treatment.ts            what a blazon says of a field of one tincture: bare, or sown
       BlazonGrammar.ts        what a language contributes; the shared rule
       Parser.ts               running a rule over some text
       FrenchBlazonParser.ts   implements IBlazonParser

@@ -1,6 +1,7 @@
 import { EnglishDivisionType } from '../../domain/translations/en/Divisions';
 import { EnglishFurType } from '../../domain/translations/en/Furs';
 import { EnglishChargeType } from '../../domain/translations/en/Charges';
+import { EnglishStrewings, OF as SOWN_OF, SOWN } from '../../domain/translations/en/Strewings';
 import { EnglishNumbers } from '../../domain/translations/en/Numbers';
 import { EnglishOrdinaryType } from '../../domain/translations/en/Ordinaries';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
@@ -15,6 +16,7 @@ export const EnglishBlazonWording: BlazonWording = {
   furs: EnglishFurType,
   ordinaries: EnglishOrdinaryType,
   charges: EnglishChargeType,
+  strewings: EnglishStrewings,
   numbers: EnglishNumbers,
   // English names a tincture bare: "Azure.", "Per pale azure and or."
   introduce: (word) => word.value,
@@ -25,5 +27,8 @@ export const EnglishBlazonWording: BlazonWording = {
   // involved". So the usual number is written like any other and nothing is left
   // to be understood.
   vary: (word, tinctures, pieces) => `${word.value} ${OF} ${pieces} ${tinctures}`,
+  // "semy of billets": the English spelling of the participle, though both it
+  // and the French one are read.
+  strew: (word) => `${SOWN[0]} ${SOWN_OF} ${word.plural}`,
   conjunction: CONJUNCTION,
 };

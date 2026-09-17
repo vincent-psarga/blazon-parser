@@ -72,6 +72,24 @@ export function keyword(expected: string): Parser<TokenKind, Token<TokenKind>> {
 }
 
 /**
+ * Matches any one of several spellings of the same keyword: "semy" and the
+ * French "semé" it was taken from say the one thing, and a blazon may write
+ * either.
+ *
+ * Which of them was written is not kept, there being nothing to keep: a keyword
+ * names no term, so all it can say is that it was there.
+ */
+export function anyKeyword(expected: readonly string[]): Parser<TokenKind, Token<TokenKind>> {
+  const spellings = new Set(expected);
+  return guard(
+    tok(TokenKind.Word),
+    (token) => spellings.has(token.text.toLowerCase()),
+    (token, position) =>
+      new BlazonParseError(`Expected "${expected[0]}", found "${token.text}"`, position)
+  );
+}
+
+/**
  * Matches the words spelling one of a vocabulary's terms, keeping the word
  * alongside the term for grammars whose articles must agree with it.
  *

@@ -43,6 +43,18 @@ const PARKER = (
   </a>
 );
 
+const PARKER_SEMY = (
+  <a href="https://www.heraldsnet.org/saitou/parker/Jpglosss.htm">
+    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Semé
+  </a>
+);
+
+const BLASON = (
+  <a href="http://lalanguedublason.blogspot.com/2012/08/plain-et-plein-en-langue-du-blason.html">
+    <cite>La langue du blason</cite>, “plain” et “plein”
+  </a>
+);
+
 const RULES: readonly Rule[] = [
   {
     id: 'one-spelling',
@@ -204,6 +216,79 @@ const RULES: readonly Rule[] = [
       en('Azure a roundel argent'),
       en('Azure a roundel ermine'),
     ],
+  },
+  {
+    id: 'naming-a-strewing',
+    heading: 'A strewing is named where heraldry names it',
+    law: (
+      <>
+        <p className="rule__law">
+          A field sown with a figure can always be said the long way round — “semé de billettes”,
+          “semy of billets” — and heraldry would rather not. Where the language keeps a word for the
+          strewing itself, that word is what is written: billeté, billetty. The long way round is
+          left to the figures no word names.
+        </p>
+        <p className="rule__law">
+          Such a word carries its tincture exactly as a charge’s name does, and is refused on the
+          same terms. A besanté is gold by being a besanté, so nothing is written after it; a
+          bezanty is never argent, so a field sown with silver discs is not written bezanty at all
+          but semy of plates. Where no word the language has will take the tincture, the long way
+          round is written rather than a word that would be wrong about it.
+        </p>
+        <p className="rule__law">
+          Which strewings have a word is declared language by language and never worked out. French
+          names the billeté, the besanté and the tourtelé; English the billetty and the bezanty.
+          Losangé and lozengy are fields cut into lozenges rather than sown with them, and are not
+          borrowed for this however convenient they look.
+        </p>
+      </>
+    ),
+    source: (
+      <>
+        “In the case of semé of crosslets, billets, bezants, the special term crusily, billetty, and
+        bezanty, already noted in their proper places, are preferable” — {PARKER_SEMY}.
+      </>
+    ),
+    cases: [
+      fr("D'azur semé de billettes d'or"),
+      en('Azure semy of roundels or'),
+      en('Azure semy of roundels argent'),
+      fr("D'azur semé d'annelets d'or"),
+    ],
+  },
+  {
+    id: 'a-word-read-and-never-written',
+    heading: 'A word that says nothing is read and never written',
+    law: (
+      <>
+        <p className="rule__law">
+          French calls a bare field plain — “de gueules plain” — and the word states a fact the
+          blazon has already stated by stopping: a field is plain by having nothing on it. So there
+          is nothing in the model to hold it, and nothing to write back. What comes back is the
+          tincture and the full stop, which says the same thing in fewer words.
+        </p>
+        <p className="rule__law">
+          It is read all the same, and held to. Plain is a promise about the rest of the blazon, so
+          a field called plain and then charged is refused rather than quietly drawn: the two words
+          contradict each other and neither is wrong on its own.
+        </p>
+        <p className="rule__law">
+          English is given no such word. Parker’s “plain” is a band drawn with a straight line
+          rather than a field with nothing on it, and French “plein” is another word again — the
+          undifferenced arms of the head of a family, which says nothing about the field at all.
+          Neither is borrowed for this.
+        </p>
+      </>
+    ),
+    source: (
+      <>
+        “Plain (&lt; lat. <i>planus</i> ‘plan’) signifie que l’écu est d’une couleur unie, sans
+        aucune figure”, where “plein (&lt; lat. <i>plenus</i>) indique que l’écu correspond aux
+        armoiries d’un ‘chef d’armes’ … et que ces armes ne comprennent aucune brisure, aucune
+        marque de cadet” — {BLASON}.
+      </>
+    ),
+    cases: [fr('De gueules plain'), fr("D'hermine plain"), fr("D'or plain au chef de gueules")],
   },
   {
     id: 'the-smaller-settlements',

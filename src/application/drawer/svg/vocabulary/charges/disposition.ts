@@ -73,3 +73,42 @@ export function spots(frame: Frame, count: number): readonly Spot[] {
     }));
   });
 }
+
+/**
+ * How big a sown figure is drawn: "drawn small and without any reference to the
+ * number", which is what tells a semy from a count of charges at a glance.
+ */
+const SOWN = 26;
+
+/** How far apart the sown figures stand, centre to centre, along each row. */
+const APART = 48;
+
+/** How far one row stands below the last. */
+const BETWEEN_ROWS = 34;
+
+/**
+ * Where the figures of a semy stand.
+ *
+ * Reckoned from the frame's own corner rather than the drawing's, as a pelt is:
+ * a heater is inset from the box it is drawn in, and a lattice started at the
+ * box has its first row swallowed by the chief. Every other row is shifted half
+ * a step so the rows fall between one another rather than under.
+ *
+ * It is laid a row above and a column either side of what the frame covers, and
+ * the shield's own edge cuts whatever runs past it — which is how heraldry draws
+ * a semy, the figures "seeming to continue beyond the boundaries".
+ */
+export function strewing(frame: Frame): readonly Spot[] {
+  const rows = Math.ceil((frame.base - frame.top) / BETWEEN_ROWS) + 1;
+  const across = Math.ceil((frame.sinister - frame.dexter) / APART) + 1;
+
+  return Array.from({ length: rows }, (_, row) => {
+    const y = Math.round(frame.top + row * BETWEEN_ROWS);
+    const from = frame.dexter + (row % 2 === 0 ? 0 : APART / 2) - APART / 2;
+    return Array.from({ length: across + 1 }, (_, along) => ({
+      x: Math.round(from + along * APART),
+      y,
+      size: SOWN,
+    }));
+  }).flat();
+}

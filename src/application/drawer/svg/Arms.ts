@@ -1,6 +1,6 @@
 import { Blazon, ChargeOrOrdinary, isOrdinary } from '../../../domain/models/Blazon';
 import { numberBorne } from '../../../domain/models/Charge';
-import { Field, isDivision, isFurred, isVariation } from '../../../domain/models/Field';
+import { Field, Semy, isDivision, isFurred, isVariation } from '../../../domain/models/Field';
 import { borne } from '../../../domain/models/Ordinary';
 import { Painter } from './Ground';
 import { laid } from './painting/laid';
@@ -34,7 +34,8 @@ export function arms(blazon: Blazon): Painter {
 }
 
 /**
- * The field, cut whichever of the four ways it is cut.
+ * The field, cut whichever of the four ways it is cut, and sown over where it
+ * was sown.
  *
  * A varied field is painted the first tincture entire and every other piece laid
  * over it in the second, which puts the first piece where the armorials put it:
@@ -61,7 +62,25 @@ function field(field: Field): Painter {
       INKS[field.secondTincture]
     );
   }
-  return plain(INKS[field.tincture]);
+  return field.semy === undefined
+    ? plain(INKS[field.tincture])
+    : over(plain(INKS[field.tincture]), sown(field.semy));
+}
+
+/**
+ * A field sown with a charge: the same figure the charge is drawn as, small and
+ * past counting, laid in a lattice over the whole field.
+ *
+ * It is laid over the tincture and under everything the field bears, which is
+ * where it belongs: a semy is the field's own state, so a bordure blazoned after
+ * it covers it exactly as it covers the tincture beneath.
+ *
+ * Nothing is clipped here. The lattice is laid past every edge and the shield's
+ * own outline cuts it, which is what gives a semy the half figures along the
+ * edges that say it runs on beyond them.
+ */
+function sown(semy: Semy): Painter {
+  return laid((frame) => CHARGES[semy.type].strewn(frame), INKS[semy.tincture]);
 }
 
 /**

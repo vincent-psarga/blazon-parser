@@ -48,19 +48,35 @@ const armsOf = (type: ChargeType, count?: number): Blazon => ({
   ],
 });
 
-/** The same charge borne twice and thrice. Every charge may be borne in number. */
-function inNumber(type: ChargeType): ReferenceVariants {
+/**
+ * The same charge borne twice and thrice, and sown over the whole field.
+ *
+ * Every charge may be borne in number, and every charge may be sown. The two are
+ * not the same thing: a count is borne on the field and a sowing is the field's
+ * own state, drawn small, running off every edge and past counting — which is
+ * why the last of the three carries no number at all.
+ */
+function otherwise(type: ChargeType): ReferenceVariants {
+  const sown: Blazon = { field: { tincture: FIELD, semy: { type, tincture: BORNE } } };
   return {
-    heading: 'Borne in number',
-    entries: COUNTS.map(([label, count]) => {
-      const blazon = armsOf(type, count);
-      return {
-        label,
-        blazon,
-        inFrench: inFrench.write(blazon),
-        inEnglish: inEnglish.write(blazon),
-      };
-    }),
+    heading: 'Borne in number, and sown',
+    entries: [
+      ...COUNTS.map(([label, count]) => {
+        const blazon = armsOf(type, count);
+        return {
+          label,
+          blazon,
+          inFrench: inFrench.write(blazon),
+          inEnglish: inEnglish.write(blazon),
+        };
+      }),
+      {
+        label: 'Sown',
+        blazon: sown,
+        inFrench: inFrench.write(sown),
+        inEnglish: inEnglish.write(sown),
+      },
+    ],
   };
 }
 
@@ -74,7 +90,7 @@ function entry(type: ChargeType): ReferenceEntry {
     blazon,
     inFrench: inFrench.write(blazon),
     inEnglish: inEnglish.write(blazon),
-    variants: inNumber(type),
+    variants: otherwise(type),
   };
 }
 
@@ -94,7 +110,7 @@ export function ChargesPage({ colourings }: ChargesPageProps) {
   return (
     <Reference
       title="Charges"
-      extent="Four charges"
+      extent="Four charges · borne in number, or sown"
       lead={
         <>
           <p className="plane__lead">
@@ -111,6 +127,14 @@ export function ChargesPage({ colourings }: ChargesPageProps) {
             A charge and a band are laid on the field by the same phrase, and in the order the
             blazon names them: a bend blazoned after a billet covers it, and blazoned before it is
             covered by it.
+          </p>
+          <p className="plane__lead">
+            A charge may also be sown rather than borne: strewn small over the whole field, running
+            off every edge, and past counting — <span lang="fr">semé de billettes</span>,{' '}
+            <span lang="en">semy of billets</span>. That is the field's own state rather than
+            something it bears, so a band blazoned after it covers the sowing exactly as it covers
+            the tincture beneath. Heraldry would rather name such a field than describe it, and
+            names some of them: <span lang="fr">billeté</span>, <span lang="en">billetty</span>.
           </p>
           <p className="plane__lead">
             One of them carries its tincture in its name. A roundel gules is a torteau and a roundel

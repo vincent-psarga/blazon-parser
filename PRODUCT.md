@@ -67,6 +67,17 @@ Supported vocabulary as it stands:
   its tincture: English calls the gold one a besant and the red one a torteau, French tells the
   metal disc from the coloured one, and a name that means a tincture is written without it and
   refuses any other.
+- **Sown fields** — any charge may be sown over a field of one tincture instead of borne on it:
+  "semé de billettes d'or", "semy of billets or". It is the field's own state rather than something
+  the field bears, so nothing is counted and a band blazoned after it covers the sowing. Where the
+  language names the strewing it is written by that name — billeté, billetty, besanté, bezanty —
+  and the name carries its tincture exactly as a charge's does. One figure only: a field sown with
+  two alternately is a second list and is not read. A plain field only: which half of a divided one
+  was sown is said in words this does not read.
+- **Plain** — French may call a bare field plain, and the parser holds it to it: a field called
+  plain that then bears something is refused. The word adds nothing to the model and is never
+  written back. English is given no equivalent — Parker's "plain" is a band with a straight line —
+  and "plein" is another word about another thing.
 - **Languages (2)** — French and English, both reading and writing. French agrees its article with
   the word it introduces, elision included — "à la billette", "au losange", "à l'annelet"; English
   chooses "a" or "an".
@@ -77,9 +88,9 @@ Supported vocabulary as it stands:
 
 Constraints and facts future work must preserve:
 
-- A blazon is a field, plain or divided between two tinctures, with whatever bands are laid on it
-  and whatever charges it bears. Nothing may be charged upon a charge, no line but the straight one
-  is drawn, and no disposition is read.
+- A blazon is a field, plain or divided between two tinctures or sown with a charge, with whatever
+  bands are laid on it and whatever charges it bears. Nothing may be charged upon a charge, no line
+  but the straight one is drawn, and no disposition is read.
 - The rule of tincture (metal may not lie on metal, nor colour on colour) is why the tinctures carry
   three ranks. The furs answer to neither rank.
 - Heraldry fixes no shade. Colours are supplied to the drawer, never assumed by it. A fur's figure is

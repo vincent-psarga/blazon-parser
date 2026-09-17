@@ -31,10 +31,11 @@ export {
   cutInPieces,
   isDivision,
   isFurred,
+  isPlain,
   isVariation,
   usualPieces,
 } from './domain/models/Field';
-export type { Division, Field, Furred, Variation } from './domain/models/Field';
+export type { Division, Field, Furred, Plain, Semy, Variation } from './domain/models/Field';
 export {
   OrdinaryType,
   SEVERAL,
@@ -55,6 +56,7 @@ export { RepeatedOrdinary } from './domain/errors/parsing/RepeatedOrdinary';
 export { MissingPieces } from './domain/errors/parsing/MissingPieces';
 export { MissingTincture } from './domain/errors/parsing/MissingTincture';
 export { MissingOrdinary } from './domain/errors/parsing/MissingOrdinary';
+export { ChargedPlainField } from './domain/errors/parsing/ChargedPlainField';
 export { WrongTinctureArticle } from './domain/errors/parsing/WrongTinctureArticle';
 export { WrongOrdinaryArticle } from './domain/errors/parsing/WrongOrdinaryArticle';
 export type { Ordinary } from './domain/models/Ordinary';
@@ -85,6 +87,8 @@ export {
 export type { Spelled, TermWord, Translation } from './domain/translations/Translation';
 export { counted, numberWord } from './domain/translations/Numbers';
 export type { NumberWords } from './domain/translations/Numbers';
+export { strewnIn, strewnTerms } from './domain/translations/Strewings';
+export type { Strewings } from './domain/translations/Strewings';
 export { Word } from './domain/translations/Word';
 export { FrenchWord } from './domain/translations/fr/FrenchWord';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';
@@ -93,6 +97,7 @@ export { EnglishVariationType } from './domain/translations/en/Variations';
 export { EnglishNumbers } from './domain/translations/en/Numbers';
 export { EnglishOrdinaryType } from './domain/translations/en/Ordinaries';
 export { EnglishChargeType } from './domain/translations/en/Charges';
+export { EnglishStrewings } from './domain/translations/en/Strewings';
 export {
   EnglishColours,
   EnglishMetals,
@@ -104,6 +109,7 @@ export { FrenchVariationType } from './domain/translations/fr/Variations';
 export { FrenchNumbers } from './domain/translations/fr/Numbers';
 export { FrenchOrdinaryType } from './domain/translations/fr/Ordinaries';
 export { FrenchChargeType } from './domain/translations/fr/Charges';
+export { FrenchStrewings } from './domain/translations/fr/Strewings';
 export {
   FrenchColours,
   FrenchFurs,
@@ -112,7 +118,13 @@ export {
 } from './domain/translations/fr/Tinctures';
 
 export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
-export { bearing, cutIn, everyBearing, withArticle } from './application/french/FrenchGrammar';
+export {
+  bearing,
+  cutIn,
+  everyBearing,
+  sownIn,
+  withArticle,
+} from './application/french/FrenchGrammar';
 export { bearing as englishBearing, indefiniteArticle } from './application/english/EnglishGrammar';
 
 export { HatchingColours } from './infra/colours/HatchingColours';

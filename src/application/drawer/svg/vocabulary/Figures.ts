@@ -1,6 +1,7 @@
 import { Frame } from '../Ground';
 import { Shape } from '../shapes/Shape';
 import { Tile } from '../shapes/tile';
+import { Spot } from './charges/disposition';
 
 /*
  * What each kind of term contributes to a drawing.
@@ -51,4 +52,18 @@ export type FurredFigure = {
  */
 export type BorneFigure = {
   readonly shapes: (frame: Frame, count: number) => readonly Shape[];
+};
+
+/**
+ * A charge, which is the one kind of borne figure a field may also be sown with.
+ *
+ * It answers for what it looks like at a single spot, and the dispositions
+ * answer for where the spots are — a counted few ranged in ranks, or a lattice
+ * of small ones covering the field. A band has no such member: a semy of fesses
+ * is a barry, and heraldry has a word for that already.
+ */
+export type ChargeFigure = BorneFigure & {
+  readonly at: (spot: Spot) => Shape;
+  /** The figures of a semy: small, past counting, and running off every edge. */
+  readonly strewn: (frame: Frame) => readonly Shape[];
 };
