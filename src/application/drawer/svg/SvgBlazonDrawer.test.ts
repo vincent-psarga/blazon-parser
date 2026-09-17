@@ -745,6 +745,7 @@ describe('a field bearing charges', () => {
     [ChargeType.annulet, 'circle'],
     [ChargeType.billet, 'rect'],
     [ChargeType.lozenge, 'polygon'],
+    [ChargeType.roundel, 'circle'],
   ])('draws %s as one shape of its own tincture', (type, tag) => {
     const svg = armsOf(type);
     expect(shapes(svg)).toEqual([tag]);
@@ -801,9 +802,12 @@ describe('a field bearing charges', () => {
         })
       ),
       ...Array.from(
-        drawn.matchAll(/<circle cx="(-?\d+)" cy="(-?\d+)" r="([\d.]+)"[^>]*stroke-width="(\d+)"/g)
-      ).flatMap(([, cx, cy, radius, band]) => {
-        const out = Number(radius) + Number(band) / 2;
+        drawn.matchAll(/<circle cx="(-?\d+)" cy="(-?\d+)" r="([\d.]+)"([^>]*)\/>/g)
+      ).flatMap(([, cx, cy, radius, rest]) => {
+        // A ring is drawn as a line and spreads half its band either side of the
+        // radius; a disc is filled and stops at it.
+        const band = Number(rest.match(/stroke-width="(\d+)"/)?.[1] ?? 0);
+        const out = Number(radius) + band / 2;
         return [
           [Number(cx) - out, Number(cy) - out] as const,
           [Number(cx) + out, Number(cy) + out] as const,
@@ -866,9 +870,25 @@ describe('a field bearing charges', () => {
     expect(svg).toContain(`<polygon points="100,66 133,110 100,154 67,110" fill="url(#${id})"/>`);
   });
 
+  test('draws a roundel as a plain disc, filled rather than drawn as a line', () => {
+    const drawn = inside(armsOf(ChargeType.roundel));
+    expect(drawn).toContain(`fill="${WikipediaColours[Colours.gules]}"`);
+    expect(drawn).not.toContain('stroke-width');
+  });
+
+  test('draws the same disc whatever name the blazon gave it', () => {
+    const besant = drawer.draw(parser.parse("D'argent au besant"));
+    const tourteau = drawer.draw(parser.parse("D'argent au tourteau de gueules"));
+    const discs = (svg: string) => inside(svg).replace(/fill="#[0-9a-f]{6}"/g, 'fill');
+    expect(discs(besant)).toBe(discs(tourteau));
+  });
+
   test('draws what the parser read, in either tongue', () => {
     expect(drawer.draw(parser.parse("D'argent à trois billettes de gueules"))).toBe(
       armsOf(ChargeType.billet, 3)
+    );
+    expect(drawer.draw(parser.parse("D'argent au tourteau de gueules"))).toBe(
+      armsOf(ChargeType.roundel)
     );
   });
 });

@@ -2,13 +2,22 @@ import { describe, expect, test } from 'vitest';
 import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
+import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
-import { Colours, Furs, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import {
+  COLOURS,
+  Colours,
+  Furs,
+  METALS,
+  Metals,
+  TINCTURES,
+  Tincture,
+} from '../../domain/models/Tinctures';
 import { nameOf, wordOf } from '../../domain/translations/Translation';
 import { EnglishChargeType } from '../../domain/translations/en/Charges';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
@@ -552,5 +561,82 @@ describe('charges, in English', () => {
 
   test('refuses the singular name after a count', () => {
     expect(() => parser.parse('Argent three billet or')).toThrow(UnknownOrdinary);
+  });
+});
+
+describe('the roundel, which English names after its tincture', () => {
+  const ROUNDELS: readonly (readonly [string, Tincture])[] = [
+    ['a besant', Metals.or],
+    ['a bezant', Metals.or],
+    ['a plate', Metals.argent],
+    ['a torteau', Colours.gules],
+    ['a hurt', Colours.azure],
+    ['a pellet', Colours.sable],
+    ['a pomme', Colours.vert],
+  ];
+
+  test.each(ROUNDELS)(
+    'reads "%s" as a roundel of the tincture its name means',
+    (borne, tincture) => {
+      expect(parser.parse(`Sable ${borne}`)).toEqual({
+        field: { tincture: Colours.sable },
+        chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture }],
+      });
+    }
+  );
+
+  test('takes the tincture written out in full, though the name has said it already', () => {
+    expect(parser.parse('Gules a besant or')).toEqual(parser.parse('Gules a besant'));
+    expect(parser.parse('Or a torteau gules')).toEqual(parser.parse('Or a torteau'));
+  });
+
+  test('refuses a name in a tincture it does not mean', () => {
+    expect(() => parser.parse('Gules a besant argent')).toThrow(InvalidTincture);
+    expect(() => parser.parse('Gules a besant argent')).toThrow(/besant is never argent/);
+    expect(() => parser.parse('Or a plate gules')).toThrow(InvalidTincture);
+  });
+
+  test.each(ROUNDELS)('holds "%s" to the one tincture it names', (borne, tincture) => {
+    for (const other of [...METALS, ...COLOURS].filter((shade) => shade !== tincture)) {
+      expect(() => parser.parse(`Sable ${borne} ${nameOf(EnglishTinctures, other)}`)).toThrow(
+        InvalidTincture
+      );
+    }
+  });
+
+  test('reads the plain roundel in any tincture, and owes one, having named none', () => {
+    expect(parser.parse('Azure a roundel ermine').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Furs.ermine },
+    ]);
+    expect(() => parser.parse('Azure a roundel')).toThrow(MissingTincture);
+  });
+
+  test('bears them in number, the plural of torteau being torteaux', () => {
+    expect(parser.parse('Azure three besants').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Metals.or, count: 3 },
+    ]);
+    expect(parser.parse('Or three torteaux').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Colours.gules, count: 3 },
+    ]);
+  });
+
+  test('lays a besant beside a band, the tincture it never wrote ending nothing', () => {
+    expect(parser.parse('Azure a besant, a fess gules').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Metals.or },
+      { type: OrdinaryType.fess, tincture: Colours.gules },
+    ]);
+  });
+
+  test('still reports a word that named no tincture at all after a besant', () => {
+    expect(() => parser.parse('Azure a besant bogus')).toThrow(UnknownTincture);
+  });
+
+  test('says the same thing as the French, which is the whole point', () => {
+    const french = new FrenchBlazonParser();
+    expect(parser.parse('Gules a besant')).toEqual(french.parse('De gueules au besant'));
+    expect(parser.parse('Or three torteaux')).toEqual(
+      french.parse("D'or à trois tourteaux de gueules")
+    );
+    expect(parser.parse('Azure a plate')).toEqual(french.parse("D'azur au besant d'argent"));
   });
 });

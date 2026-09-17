@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'vitest';
+import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
+import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryArticle';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
-import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { COLOURS, Colours, Furs, METALS, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { wordOf } from '../../domain/translations/Translation';
 import { FrenchChargeType } from '../../domain/translations/fr/Charges';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
@@ -173,6 +175,97 @@ describe('a field bearing several of one charge', () => {
 
   test('refuses the singular name after a count', () => {
     expect(() => parser.parse("D'azur à trois losange d'or")).toThrow(UnknownOrdinary);
+  });
+});
+
+describe('the roundel, which French has two names for', () => {
+  test('reads the besant as the metal disc, gold unless the blazon says otherwise', () => {
+    expect(parser.parse('De gueules au besant')).toEqual({
+      field: { tincture: Colours.gules },
+      chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture: Metals.or }],
+    });
+  });
+
+  test('reads it the same where the blazon writes the gold out in full', () => {
+    expect(parser.parse("De gueules au besant d'or")).toEqual(parser.parse('De gueules au besant'));
+  });
+
+  test('refuses a besant in a colour, a besant being a gold coin', () => {
+    expect(() => parser.parse("De gueules au besant d'azur")).toThrow(InvalidTincture);
+    expect(() => parser.parse("De gueules au besant d'azur")).toThrow(/besant is never d'azur/);
+  });
+
+  test.each(COLOURS)('refuses the besant every colour there is: %s', (colour) => {
+    const written = withArticle(wordOf(FrenchTinctures, colour));
+    expect(() => parser.parse(`D'argent au besant ${written}`)).toThrow(InvalidTincture);
+  });
+
+  test('takes the other metal, which is a besant and not a plate in French', () => {
+    expect(parser.parse("De gueules au besant d'argent").chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Metals.argent },
+    ]);
+  });
+
+  test('reads the tourteau as the coloured disc, which must always say which colour', () => {
+    expect(parser.parse("D'or au tourteau de gueules").chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Colours.gules },
+    ]);
+    expect(() => parser.parse("D'or au tourteau")).toThrow(MissingTincture);
+  });
+
+  test.each(METALS)('refuses the tourteau every metal there is: %s', (metal) => {
+    const written = withArticle(wordOf(FrenchTinctures, metal));
+    expect(() => parser.parse(`De gueules au tourteau ${written}`)).toThrow(InvalidTincture);
+  });
+
+  test('reads the one term under either name, the disc being one charge', () => {
+    const besant = parser.parse("D'azur au besant d'or").chargesOrOrdinaries?.[0];
+    const tourteau = parser.parse("D'or au tourteau de gueules").chargesOrOrdinaries?.[0];
+    expect(besant?.type).toBe(ChargeType.roundel);
+    expect(tourteau?.type).toBe(ChargeType.roundel);
+  });
+
+  test.each(Object.values(Furs))('cuts either name from a fur: %s', (fur) => {
+    const written = withArticle(wordOf(FrenchTinctures, fur));
+    expect(parser.parse(`D'azur au besant ${written}`).chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: fur },
+    ]);
+    expect(parser.parse(`D'azur au tourteau ${written}`).chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: fur },
+    ]);
+  });
+
+  test('bears them in number, the plural of tourteau being tourteaux', () => {
+    expect(parser.parse("D'azur à trois besants").chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Metals.or, count: 3 },
+    ]);
+    expect(parser.parse("D'or à trois tourteaux de gueules").chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Colours.gules, count: 3 },
+    ]);
+  });
+
+  test('refuses several besants in a colour as readily as one', () => {
+    expect(() => parser.parse("D'argent à trois besants de gueules")).toThrow(InvalidTincture);
+  });
+
+  test('lays a besant beside a band, the tincture it never wrote ending nothing', () => {
+    expect(parser.parse("D'or au besant, à la fasce de gueules").chargesOrOrdinaries).toEqual([
+      { type: ChargeType.roundel, tincture: Metals.or },
+      { type: OrdinaryType.fess, tincture: Colours.gules },
+    ]);
+    expect(parser.parse("D'or au besant à la fasce de gueules")).toEqual(
+      parser.parse("D'or au besant, à la fasce de gueules")
+    );
+  });
+
+  test('still reports a word that named no tincture at all after a besant', () => {
+    expect(() => parser.parse("D'or au besant de trucmuche")).toThrow(UnknownTincture);
+    expect(() => parser.parse("D'or au besant de trucmuche")).toThrow(/trucmuche/);
+  });
+
+  test('holds the besant to the article its gender calls for', () => {
+    expect(bearing(wordOf(FrenchChargeType, ChargeType.roundel))).toBe('au besant');
+    expect(() => parser.parse("D'azur à la besant")).toThrow(WrongOrdinaryArticle);
   });
 });
 

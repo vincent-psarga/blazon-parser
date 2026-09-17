@@ -38,7 +38,7 @@ const borne = () => Array.from(showing().querySelectorAll('.showing__variant')) 
 describe('ChargesPage', () => {
   test('states how many charges there are', () => {
     mount(<ChargesPage />);
-    expect(screen.getByText(/Three charges/)).toBeInTheDocument();
+    expect(screen.getByText(/Four charges/)).toBeInTheDocument();
   });
 
   test.each(CHARGES)('keeps %s present in the stack', (type) => {

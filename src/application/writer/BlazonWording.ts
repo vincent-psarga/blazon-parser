@@ -16,7 +16,7 @@ import {
 import { OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords, counted } from '../../domain/translations/Numbers';
-import { Translation, nameOf, wordOf } from '../../domain/translations/Translation';
+import { Translation, nameOf, wordIn, wordOf } from '../../domain/translations/Translation';
 import { Word } from '../../domain/translations/Word';
 
 /**
@@ -93,19 +93,30 @@ export function writeBlazon<W extends Word>(wording: BlazonWording<W>, blazon: B
  * A band or a charge, written the one way both are: what introduces it, its
  * name, and the tincture it carries. The count is written only where there is
  * more than one, a single one being named on its own in either tongue.
+ *
+ * The tincture is written only where the name has not already said it. A word
+ * chosen for the tincture it means says it by being written — "a besant" is a
+ * gold roundel entire — and an armorial that wrote the tincture after it would
+ * be saying the same thing twice. So "d'azur au besant d'or" comes back as
+ * "D'azur au besant", which is what the blazon was trying to be.
  */
 function writeBorne<W extends Word>(wording: BlazonWording<W>, one: ChargeOrOrdinary): string {
   const { word, count } = named(wording, one);
-  return [
-    wording.bear(word, count < SEVERAL ? undefined : counted(wording.numbers, count)),
-    writeTincture(wording, one.tincture),
-  ].join(' ');
+  const bearing = wording.bear(word, count < SEVERAL ? undefined : counted(wording.numbers, count));
+  return word.defaultTincture === one.tincture
+    ? bearing
+    : [bearing, writeTincture(wording, one.tincture)].join(' ');
 }
 
 /**
  * The word naming what is borne, and how many are borne, both asked of the
  * vocabulary it belongs to — which is the only thing a band and a charge differ
  * in here.
+ *
+ * Which word is asked for the tincture as well as for the term, a vocabulary
+ * being free to keep a name apiece for the tinctures a charge is drawn in: the
+ * gold roundel is a besant, the red one a torteau, and the one the armorials
+ * gave no name to is the roundel it always was.
  *
  * How many is asked of the model rather than read off the blazon, so that an
  * ordinary borne but once — whatever count it was handed — is written as the one
@@ -116,8 +127,8 @@ function named<W extends Word>(
   one: ChargeOrOrdinary
 ): { readonly word: W; readonly count: number } {
   return isOrdinary(one)
-    ? { word: wordOf(wording.ordinaries, one.type), count: borne(one) }
-    : { word: wordOf(wording.charges, one.type), count: numberBorne(one) };
+    ? { word: wordIn(wording.ordinaries, one.type, one.tincture), count: borne(one) }
+    : { word: wordIn(wording.charges, one.type, one.tincture), count: numberBorne(one) };
 }
 
 function writeField<W extends Word>(wording: BlazonWording<W>, field: Field): string {

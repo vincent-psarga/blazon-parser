@@ -108,7 +108,7 @@ export function within<TResult>(parser: Parser<TokenKind, TResult>): Parser<Toke
       if (output.error === undefined || !owing(output.error)) {
         return output;
       }
-      const context = textFrom(token);
+      const context = textBetween(token);
       if (context === '') {
         return output;
       }
@@ -121,14 +121,15 @@ export function within<TResult>(parser: Parser<TokenKind, TResult>): Parser<Toke
 }
 
 /**
- * The words from here to the end of the blazon, as they were written.
+ * The words from here to there, as they were written — to the end of the blazon
+ * where nothing says otherwise.
  *
  * The lexer drops the spaces, so they are put back between every pair of tokens
  * but those an elision binds: "d'" and "azur" were one word and stay one.
  */
-function textFrom(token: Token<TokenKind> | undefined): string {
+export function textBetween(token: Token<TokenKind> | undefined, until?: Token<TokenKind>): string {
   let text = '';
-  for (let current = token; current !== undefined; current = current.next) {
+  for (let current = token; current !== undefined && current !== until; current = current.next) {
     if (text !== '' && !/['’]$/.test(text)) {
       text += ' ';
     }

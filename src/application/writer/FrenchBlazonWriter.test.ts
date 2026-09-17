@@ -3,7 +3,7 @@ import { Blazon } from '../../domain/models/Blazon';
 import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
-import { Colours, Metals, TINCTURES, Tincture } from '../../domain/models/Tinctures';
+import { Colours, Furs, Metals, TINCTURES, Tincture } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { FrenchBlazonWriter } from './FrenchBlazonWriter';
 
@@ -216,6 +216,39 @@ describe('several of one ordinary', () => {
         chargesOrOrdinaries: [{ type: OrdinaryType.chief, tincture: Metals.or, count: 3 }],
       })
     ).toBe("D'azur au chef d'or.");
+  });
+
+  test('writes the roundel under the name its tincture answers to', () => {
+    const roundel = (tincture: Tincture) =>
+      writer.write({
+        field: { tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture }],
+      });
+    expect(roundel(Metals.or)).toBe("D'azur au besant.");
+    expect(roundel(Metals.argent)).toBe("D'azur au besant d'argent.");
+    expect(roundel(Colours.gules)).toBe("D'azur au tourteau de gueules.");
+    expect(roundel(Furs.ermine)).toBe("D'azur au besant d'hermine.");
+  });
+
+  test('leaves the tincture unwritten where the name has already said it', () => {
+    expect(
+      writer.write({
+        field: { tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture: Metals.or, count: 3 }],
+      })
+    ).toBe("D'azur à trois besants.");
+  });
+
+  test('writes a roundel the reader wrote the long way round back the short way', () => {
+    expect(writer.write(parser.parse("D'azur au besant d'or"))).toBe("D'azur au besant.");
+  });
+
+  test.each(TINCTURES)('writes a roundel %s as a blazon the parser reads back', (tincture) => {
+    const blazon: Blazon = {
+      field: { tincture: Colours.sable },
+      chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture }],
+    };
+    expect(parser.parse(writer.write(blazon))).toEqual(blazon);
   });
 
   test('survives the round trip, count and all', () => {

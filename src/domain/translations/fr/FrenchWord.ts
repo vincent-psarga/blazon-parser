@@ -1,3 +1,4 @@
+import { Tincture } from '../../models/Tinctures';
 import { Word } from '../Word';
 
 /**
@@ -33,6 +34,8 @@ export class FrenchWord extends Word {
     value: string,
     options?: Partial<{
       plural: string;
+      allowedTinctures: readonly Tincture[];
+      defaultTincture: Tincture;
       isFeminine: boolean;
       acceptsBothGender: boolean;
       needsElision: boolean;

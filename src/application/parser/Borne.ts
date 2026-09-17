@@ -1,14 +1,24 @@
-import { Parser, ParserOutput, Token, apply, seq } from 'typescript-parsec';
+import {
+  ParseError,
+  ParseResult,
+  Parser,
+  ParserOutput,
+  Token,
+  apply,
+  seq,
+} from 'typescript-parsec';
 import { BlazonParseError, TextPosition } from '../../domain/errors/parsing/BlazonParseError';
+import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType, SEVERAL, bornInNumber, isOrdinaryType } from '../../domain/models/Ordinary';
+import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords } from '../../domain/translations/Numbers';
 import { TermWord, Translation, asSeveral } from '../../domain/translations/Translation';
 import { Word } from '../../domain/translations/Word';
 import { TokenKind } from '../lexer/Lexer';
 import { guard, spelledTerm } from './Combinators';
-import { Vocabulary } from './Failures';
+import { Vocabulary, complaining, positionOf, textBetween } from './Failures';
 import { number } from './Numbers';
 
 /**
@@ -22,6 +32,12 @@ import { number } from './Numbers';
  */
 export interface Borne<T extends string> {
   readonly type: T;
+  /**
+   * The word that named it, which the phrase is not done with once the term is
+   * known: a word may be a tincture as well as a name — a besant is gold — and
+   * only the word can say what tincture is understood after it, or refused.
+   */
+  readonly word: Word;
   /** How many are borne, where more than one is. */
   readonly count?: number;
 }
@@ -44,8 +60,10 @@ export interface Refusal<T extends string, W extends Word> {
 }
 
 /** One of something, which is what a name with no number before it says. */
-export function alone<T extends string>(named: Parser<TokenKind, T>): Parser<TokenKind, Borne<T>> {
-  return apply(named, (type): Borne<T> => ({ type }));
+export function alone<T extends string, W extends Word>(
+  named: Parser<TokenKind, TermWord<T, W>>
+): Parser<TokenKind, Borne<T>> {
+  return apply(named, ({ term, word }): Borne<T> => ({ type: term, word }));
 }
 
 /**
@@ -89,7 +107,7 @@ export function several<T extends string, W extends Word, N extends Word>(
             ([count, match]) => refusal.accepts(match, count),
             ([count, match], position) => refusal.complain(match, count, position)
           ),
-      ([count, { term }]): Borne<T> => ({ type: term, count })
+      ([count, { term, word }]): Borne<T> => ({ type: term, word, count })
     )
   );
 }
@@ -156,3 +174,61 @@ export const NOT_IN_NUMBER: Refusal<BorneType, Word> = {
   complain: ({ word }, count, position) =>
     new RepeatedOrdinary(word.plural.toLowerCase(), count, position),
 };
+
+/**
+ * The tincture something borne carries: named after it, as almost everything
+ * borne must be, or else understood from the name itself.
+ *
+ * Only a word that is a tincture as well as a name may leave it unsaid — "au
+ * besant", which is gold because a besant is a gold coin — and such a word
+ * refuses the tinctures it does not mean, so that "au besant d'azur" is caught
+ * rather than quietly drawn in blue. The refusal fails the phrase: both words
+ * are known and the blazon is contradicting itself, which is worth reporting
+ * even where some other reading might yet be found.
+ *
+ * Where the tincture is simply not there and the word supplies one, the reading
+ * goes on, and whatever the tincture failed with is carried along beside it: a
+ * word that named no tincture at all is likelier to be a misspelled one than a
+ * phrase that never began, and the complaint that says so has to outlive the
+ * branch that swallowed it. Not so a blazon that merely ended — nothing is owed
+ * where the name has already answered.
+ */
+export function carried(
+  tincture: Parser<TokenKind, Tincture>,
+  word: Word
+): Parser<TokenKind, Tincture> {
+  return {
+    parse(token: Token<TokenKind> | undefined): ParserOutput<TokenKind, Tincture> {
+      const output = tincture.parse(token);
+
+      if (output.successful) {
+        const kept = output.candidates.filter(({ result }) => word.accepts(result));
+        return kept.length === 0
+          ? { successful: false, error: refused(word, token, output.candidates) }
+          : { successful: true, candidates: kept, error: output.error };
+      }
+
+      if (word.defaultTincture === undefined) {
+        return output;
+      }
+      return {
+        successful: true,
+        candidates: [{ firstToken: token, nextToken: token, result: word.defaultTincture }],
+        error: output.error.pos === undefined ? undefined : output.error,
+      };
+    },
+  };
+}
+
+/** The complaint of a tincture named in full and refused by the name before it. */
+function refused(
+  word: Word,
+  token: Token<TokenKind> | undefined,
+  candidates: readonly ParseResult<TokenKind, Tincture>[]
+): ParseError {
+  const written = textBetween(token, candidates[0].nextToken);
+  return complaining(
+    token?.pos,
+    new InvalidTincture(word.value, written.toLowerCase(), positionOf(token?.pos))
+  );
+}

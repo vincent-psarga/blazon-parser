@@ -5,6 +5,7 @@ import {
   alt,
   apply,
   betterError,
+  combine,
   kleft,
   nil,
   resultOrError,
@@ -28,7 +29,7 @@ import {
 } from '../../domain/models/Field';
 import { Tincture } from '../../domain/models/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
-import { BorneTerm } from './Borne';
+import { BorneTerm, carried } from './Borne';
 import { guard, optional, optionalUnlessBegun } from './Combinators';
 import { within } from './Failures';
 import { VariedField } from './Variations';
@@ -170,13 +171,20 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // line, and where on the field a charge stands are all still outside the
   // vocabulary.
   //
+  // Which tinctures may follow is the name's own affair — a besant is a gold
+  // coin and there is no blue one — so the tincture is read after the name has
+  // been read rather than beside it, and the word that was written decides what
+  // it will take and what it means when nothing follows at all.
+  //
   // The count is left off rather than set to one when a single one is borne, so
   // that a fess reads back as the fess it was before a field could bear two.
   const bearing = within(
-    apply(seq(grammar.borne, grammar.tincture), ([borne, tincture]): ChargeOrOrdinary =>
-      borne.count === undefined
-        ? { type: borne.type, tincture }
-        : { type: borne.type, tincture, count: borne.count }
+    combine(grammar.borne, (borne) =>
+      apply(carried(grammar.tincture, borne.word), (tincture): ChargeOrOrdinary =>
+        borne.count === undefined
+          ? { type: borne.type, tincture }
+          : { type: borne.type, tincture, count: borne.count }
+      )
     )
   );
 

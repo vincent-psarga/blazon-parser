@@ -29,6 +29,8 @@ const GLOSS: Record<ChargeType, string> = {
     'An upright rectangle, twice as tall as it is wide. The name is the little billet — a note, or a log — and French says billette.',
   [ChargeType.lozenge]:
     'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again.',
+  [ChargeType.roundel]:
+    'A plain disc. English names it after a round thing of the tincture it is drawn in — a besant is the gold coin, a plate the silver one, a torteau the red cake — and French tells the metal disc from the coloured one and stops there. The name says the tincture, so the blazon need not.',
 };
 
 // Two and three, which is enough to show what a count does to the drawing: the
@@ -92,7 +94,7 @@ export function ChargesPage({ colourings }: ChargesPageProps) {
   return (
     <Reference
       title="Charges"
-      extent="Three charges"
+      extent="Four charges"
       lead={
         <>
           <p className="plane__lead">
@@ -109,6 +111,11 @@ export function ChargesPage({ colourings }: ChargesPageProps) {
             A charge and a band are laid on the field by the same phrase, and in the order the
             blazon names them: a bend blazoned after a billet covers it, and blazoned before it is
             covered by it.
+          </p>
+          <p className="plane__lead">
+            One of them carries its tincture in its name. A roundel gules is a torteau and a roundel
+            or a besant, so the blazon names the tincture only where the word has not already said
+            it — and refuses it where the word says otherwise.
           </p>
           <p className="plane__lead">Choose any term to read it at full size.</p>
         </>

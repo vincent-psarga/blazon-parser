@@ -1,3 +1,4 @@
+import { Tincture } from '../models/Tinctures';
 import { Word } from './Word';
 
 /**
@@ -36,6 +37,31 @@ export function wordOf<T extends string, W extends Word>(
   term: T
 ): W {
   return wordsOf(translation, term)[0];
+}
+
+/**
+ * The word a term is written with when it is borne in a given tincture.
+ *
+ * A term whose words carry no tincture has but one answer, and this is the
+ * canonical word again. The roundel is why there is a question: the word that
+ * already means the tincture is the one to write, so that a gold roundel comes
+ * back as "a besant" and not as "a roundel or", and a blazon reads as an
+ * armorial writes it. Failing that, the first word the tincture is allowed under
+ * — "a roundel ermine", English having no name for that one — and failing that
+ * the canonical word, which will be wrong about the tincture but is at least the
+ * charge that was asked for.
+ */
+export function wordIn<T extends string, W extends Word>(
+  translation: Translation<T, W>,
+  term: T,
+  tincture: Tincture
+): W {
+  const words = wordsOf(translation, term);
+  return (
+    words.find((word) => word.defaultTincture === tincture) ??
+    words.find((word) => word.accepts(tincture)) ??
+    words[0]
+  );
 }
 
 /** Every spelling a term accepts, the canonical one first. */

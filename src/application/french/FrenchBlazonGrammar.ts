@@ -66,13 +66,10 @@ const BEARINGS = bearings(FrenchOrdinaryType, FrenchChargeType);
 const borneAs = (article: Parser<TokenKind, unknown>, written: (word: FrenchWord) => string) =>
   kright(
     article,
-    apply(
-      guard(
-        spelledTerm(BEARINGS, asOrdinary),
-        ({ word }) => everyBearing(word).includes(written(word)),
-        ({ word }, position) => new WrongOrdinaryArticle(word.value, bearing(word), position)
-      ),
-      ({ term }) => term
+    guard(
+      spelledTerm(BEARINGS, asOrdinary),
+      ({ word }) => everyBearing(word).includes(written(word)),
+      ({ word }, position) => new WrongOrdinaryArticle(word.value, bearing(word), position)
     )
   );
 

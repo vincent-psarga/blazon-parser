@@ -8,19 +8,25 @@ import { Tincture } from './Tinctures';
  * after the thing it is a picture of, and owes the field nothing: it is set on
  * the field wherever the blazon says, as many times as the blazon says.
  *
- * Three so far, and all three are plain shapes. A lion is a charge by the same
+ * Four so far, and all four are plain shapes. A lion is a charge by the same
  * reckoning and is read by the same phrase, which is why these are kept apart
  * from the ordinaries rather than listed among them: what will grow here is the
  * beasts and the objects, and what an ordinary can be told is quite another
  * list.
  *
+ * The roundel is one term and not a dozen, though heraldry gives it a dozen
+ * names: a bezant, a plate and a torteau are the same disc in three tinctures,
+ * and which name is written is the vocabulary's business rather than the
+ * model's. What is drawn is a disc either way.
+ *
  * Whether heraldry calls a lozenge a charge or a sub-ordinary is a quarrel this
- * does not enter. French calls all three meubles and is done with it.
+ * does not enter. French calls them all meubles and is done with it.
  */
 export enum ChargeType {
   annulet = 'Charge.annulet',
   billet = 'Charge.billet',
   lozenge = 'Charge.lozenge',
+  roundel = 'Charge.roundel',
 }
 
 /**

@@ -48,6 +48,7 @@ export type { Charge } from './domain/models/Charge';
 export { BlazonParseError } from './domain/errors/parsing/BlazonParseError';
 export type { TextPosition } from './domain/errors/parsing/BlazonParseError';
 export { UnknownTincture } from './domain/errors/parsing/UnknownTincture';
+export { InvalidTincture } from './domain/errors/parsing/InvalidTincture';
 export { UnknownDivision } from './domain/errors/parsing/UnknownDivision';
 export { UnknownOrdinary } from './domain/errors/parsing/UnknownOrdinary';
 export { RepeatedOrdinary } from './domain/errors/parsing/RepeatedOrdinary';
@@ -58,9 +59,12 @@ export { WrongTinctureArticle } from './domain/errors/parsing/WrongTinctureArtic
 export { WrongOrdinaryArticle } from './domain/errors/parsing/WrongOrdinaryArticle';
 export type { Ordinary } from './domain/models/Ordinary';
 export {
+  COLOURS,
   Colours,
   Furs,
+  METALS,
   Metals,
+  PELTS,
   SHADES,
   TINCTURES,
   isFur,
@@ -74,6 +78,7 @@ export {
   bySpelling,
   nameOf,
   spellingsOf,
+  wordIn,
   wordOf,
   wordsOf,
 } from './domain/translations/Translation';

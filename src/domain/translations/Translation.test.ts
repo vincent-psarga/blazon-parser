@@ -1,9 +1,21 @@
 import { describe, expect, test } from 'vitest';
+import { ChargeType } from '../models/Charge';
 import { DivisionType } from '../models/Field';
-import { TINCTURES } from '../models/Tinctures';
+import { COLOURS, Colours, Furs, METALS, Metals, PELTS, TINCTURES } from '../models/Tinctures';
 import { OrdinaryType } from '../models/Ordinary';
-import { Translation, asSeveral, bySpelling, nameOf, spellingsOf, wordOf } from './Translation';
+import {
+  Translation,
+  asSeveral,
+  bySpelling,
+  nameOf,
+  spellingsOf,
+  wordIn,
+  wordOf,
+  wordsOf,
+} from './Translation';
 import { Word } from './Word';
+import { EnglishChargeType } from './en/Charges';
+import { FrenchChargeType } from './fr/Charges';
 import { FrenchDivisionType } from './fr/Divisions';
 import { FrenchOrdinaryType } from './fr/Ordinaries';
 import { FrenchTinctures } from './fr/Tinctures';
@@ -49,6 +61,70 @@ describe('wordOf', () => {
     expect(wordOf(FrenchPartition, Partition.mantledReversed)).toBe(
       (FrenchPartition[Partition.mantledReversed] as Word[])[0]
     );
+  });
+});
+
+describe('wordIn', () => {
+  test('writes a term with its canonical word where no word names a tincture', () => {
+    expect(wordIn(FrenchPartition, Partition.mantledReversed, Metals.or).value).toBe(
+      'mantelé-versé'
+    );
+  });
+
+  test('prefers the word that already means the tincture asked for', () => {
+    expect(wordIn(EnglishChargeType, ChargeType.roundel, Metals.or).value).toBe('besant');
+    expect(wordIn(EnglishChargeType, ChargeType.roundel, Metals.argent).value).toBe('plate');
+    expect(wordIn(EnglishChargeType, ChargeType.roundel, Colours.gules).value).toBe('torteau');
+  });
+
+  test('falls back on the first word the tincture is allowed under', () => {
+    expect(wordIn(EnglishChargeType, ChargeType.roundel, Furs.ermine).value).toBe('roundel');
+    expect(wordIn(FrenchChargeType, ChargeType.roundel, Metals.argent).value).toBe('besant');
+    expect(wordIn(FrenchChargeType, ChargeType.roundel, Colours.azure).value).toBe('tourteau');
+  });
+
+  test('has a word for every tincture a roundel may be borne in, in either tongue', () => {
+    for (const tincture of TINCTURES) {
+      expect(wordIn(EnglishChargeType, ChargeType.roundel, tincture).accepts(tincture)).toBe(true);
+      expect(wordIn(FrenchChargeType, ChargeType.roundel, tincture).accepts(tincture)).toBe(true);
+    }
+  });
+});
+
+describe('the roundel, which every tincture has a word of its own for', () => {
+  test('gives French a word for the metals and another for the colours', () => {
+    expect(spellingsOf(FrenchChargeType, ChargeType.roundel)).toEqual(['besant', 'tourteau']);
+    const [besant, tourteau] = wordsOf(FrenchChargeType, ChargeType.roundel);
+    expect(besant.allowedTinctures).toEqual([...METALS, ...PELTS]);
+    expect(tourteau.allowedTinctures).toEqual([...COLOURS, ...PELTS]);
+  });
+
+  test('gives English a word apiece, and the plain roundel for what is left', () => {
+    expect(spellingsOf(EnglishChargeType, ChargeType.roundel)).toEqual([
+      'roundel',
+      'besant',
+      'bezant',
+      'plate',
+      'torteau',
+      'hurt',
+      'pellet',
+      'pomme',
+    ]);
+  });
+
+  test('leaves no shade of English without a name of its own', () => {
+    const named = wordsOf(EnglishChargeType, ChargeType.roundel).map(
+      ({ defaultTincture }) => defaultTincture
+    );
+    for (const shade of [...METALS, ...COLOURS]) {
+      expect(named).toContain(shade);
+    }
+  });
+
+  test('names them all in the plural without collision', () => {
+    const plurals = wordsOf(EnglishChargeType, ChargeType.roundel).map(({ plural }) => plural);
+    expect(plurals).toContain('torteaux');
+    expect(new Set(plurals).size).toBe(plurals.length);
   });
 });
 

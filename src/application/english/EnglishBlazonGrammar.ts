@@ -7,7 +7,7 @@ import { EnglishOrdinaryType } from '../../domain/translations/en/Ordinaries';
 import { EnglishNumbers } from '../../domain/translations/en/Numbers';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
-import { keyword, optional, term } from '../parser/Combinators';
+import { keyword, optional, spelledTerm, term } from '../parser/Combinators';
 import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
 import { NOT_IN_NUMBER, alone, bearings, several } from '../parser/Borne';
 import { number } from '../parser/Numbers';
@@ -43,7 +43,7 @@ export const EnglishBlazonGrammar: BlazonGrammar = {
   // it instead, and English puts nothing before the count: "Or three chevrons
   // gules".
   borne: alt(
-    alone(kright(ARTICLE, term(BEARINGS, asOrdinary))),
+    alone(kright(ARTICLE, spelledTerm(BEARINGS, asOrdinary))),
     several(BEARINGS, EnglishNumbers, asOrdinary, NOT_IN_NUMBER)
   ),
   and: AND,

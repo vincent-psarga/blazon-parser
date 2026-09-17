@@ -3,7 +3,7 @@ import { Blazon } from '../../domain/models/Blazon';
 import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
-import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
+import { Colours, Furs, Metals, TINCTURES, Tincture } from '../../domain/models/Tinctures';
 import { EnglishBlazonParser } from '../parser/EnglishBlazonParser';
 import { EnglishBlazonWriter } from './EnglishBlazonWriter';
 
@@ -365,6 +365,50 @@ describe('a field bearing charges, in English', () => {
     const blazon: Blazon = {
       field: { tincture: Metals.or },
       chargesOrOrdinaries: [{ type: ChargeType.annulet, tincture: Colours.gules, count: 6 }],
+    };
+    expect(parser.parse(writer.write(blazon))).toEqual(blazon);
+  });
+
+  test('writes the roundel under the name English gives its tincture', () => {
+    const roundel = (tincture: Tincture) =>
+      writer.write({
+        field: { tincture: Colours.sable },
+        chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture }],
+      });
+    expect(roundel(Metals.or)).toBe('Sable a besant.');
+    expect(roundel(Metals.argent)).toBe('Sable a plate.');
+    expect(roundel(Colours.gules)).toBe('Sable a torteau.');
+    expect(roundel(Colours.azure)).toBe('Sable a hurt.');
+    expect(roundel(Colours.vert)).toBe('Sable a pomme.');
+  });
+
+  test('falls back on the plain roundel where English named no such disc', () => {
+    expect(
+      writer.write({
+        field: { tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture: Furs.ermine }],
+      })
+    ).toBe('Azure a roundel ermine.');
+  });
+
+  test('writes a roundel the reader wrote the long way round back the short way', () => {
+    expect(writer.write(parser.parse('Azure a roundel or'))).toBe('Azure a besant.');
+    expect(writer.write(parser.parse('Azure a bezant'))).toBe('Azure a besant.');
+  });
+
+  test('counts them in the plural, and still leaves the tincture to the name', () => {
+    expect(
+      writer.write({
+        field: { tincture: Metals.or },
+        chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture: Colours.gules, count: 3 }],
+      })
+    ).toBe('Or three torteaux.');
+  });
+
+  test.each(TINCTURES)('writes a roundel %s as a blazon the parser reads back', (tincture) => {
+    const blazon: Blazon = {
+      field: { tincture: Colours.sable },
+      chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture }],
     };
     expect(parser.parse(writer.write(blazon))).toEqual(blazon);
   });

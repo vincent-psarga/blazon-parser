@@ -59,9 +59,12 @@ Supported vocabulary as it stands:
 - **Ordinaries (10)** — chief, pale, fess, bar gemel, bend, bend sinister, chevron, cross, saltire,
   bordure. Laid on the field in the order the blazon names them, which is the order they are drawn.
   That order is the model's to keep: sorting what a field bears into separate lists would lose it.
-- **Charges (3)** — annulet, billet, lozenge. Plain shapes, borne once or in number. They share the
-  ordinaries' list and their order, so what is blazoned last is drawn over the rest. Where they
-  stand on the field — the disposition — is not read.
+- **Charges (4)** — annulet, billet, lozenge, roundel. Plain shapes, borne once or in number. They
+  share the ordinaries' list and their order, so what is blazoned last is drawn over the rest. Where
+  they stand on the field — the disposition — is not read. The roundel is the one whose name carries
+  its tincture: English calls the gold one a besant and the red one a torteau, French tells the
+  metal disc from the coloured one, and a name that means a tincture is written without it and
+  refuses any other.
 - **Languages (2)** — French and English, both reading and writing. French agrees its article with
   the word it introduces, elision included — "à la billette", "au losange", "à l'annelet"; English
   chooses "a" or "an".

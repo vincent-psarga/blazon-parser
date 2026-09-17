@@ -32,19 +32,26 @@ export type Tincture = Metals | Colours | Furs;
  */
 export type Shade = Metals | Colours;
 
-export const SHADES: readonly Shade[] = [...Object.values(Metals), ...Object.values(Colours)];
+/**
+ * Each rank as a list of its own.
+ *
+ * A word may be borne in one rank and refuse another — a besant is a roundel in
+ * metal, a tourteau one in colour — so the vocabulary names the rank it takes
+ * rather than listing its members over again.
+ */
+export const METALS: readonly Metals[] = Object.values(Metals);
+export const COLOURS: readonly Colours[] = Object.values(Colours);
+export const PELTS: readonly Furs[] = Object.values(Furs);
 
-const FURS: ReadonlySet<string> = new Set(Object.values(Furs));
+export const SHADES: readonly Shade[] = [...METALS, ...COLOURS];
+
+const FURRED: ReadonlySet<string> = new Set(PELTS);
 
 export function isFur(tincture: Tincture): tincture is Furs {
-  return FURS.has(tincture);
+  return FURRED.has(tincture);
 }
 
-export const TINCTURES: readonly Tincture[] = [
-  ...Object.values(Metals),
-  ...Object.values(Colours),
-  ...Object.values(Furs),
-];
+export const TINCTURES: readonly Tincture[] = [...SHADES, ...PELTS];
 
 export function isTincture(value: string): value is Tincture {
   return (TINCTURES as readonly string[]).includes(value);

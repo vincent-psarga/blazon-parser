@@ -304,9 +304,10 @@ vocabulary does not hold, so it writes the plural of the ordinary itself.
 
 A field bears charges as well as bands. An ordinary takes its place and its size
 from the line it is named after; a charge is named after the thing it is a
-picture of and owes the field nothing, so it is simply set on it. Three so far —
-annulet, billet, lozenge; `annelet`, `billette`, `losange` — all of them plain
-shapes, and all of them read by exactly the phrase an ordinary is read by:
+picture of and owes the field nothing, so it is simply set on it. Four so far —
+annulet, billet, lozenge, roundel; `annelet`, `billette`, `losange`, `besant` —
+all of them plain shapes, and all of them read by exactly the phrase an ordinary
+is read by:
 
 ```ts
 frenchParser.parse("D'argent à trois billettes d'or"); // ChargeType.billet, count: 3
@@ -369,7 +370,38 @@ frenchWriter.write(blazon); // D'azur à la losange d'or.
 ```
 
 Whether heraldry calls a lozenge a charge or a sub-ordinary is a quarrel this does
-not enter. French calls all three meubles and is done with it.
+not enter. French calls them all meubles and is done with it.
+
+The roundel brings the other thing a word can carry: its tincture. Heraldry names
+the disc after a round thing of the colour it is drawn in — a bezant is the gold
+coin, a plate the silver one, a torteau the red cake — so the name is the tincture
+as well as the shape. English has a word for every shade and keeps the plain
+`roundel` for what is left; French tells the metal disc from the coloured one,
+`besant` and `tourteau`, and stops there. All of them are the one `ChargeType`,
+the drawing being a disc whichever name was written.
+
+So a `Word` may declare the tinctures it takes and the one it is understood to be,
+and both are the word's rather than the term's — "besant" and "tourteau" are one
+charge and disagree about exactly this. A word that names no tincture takes them
+all and is understood to be none, which is every other word in the vocabulary.
+What follows is that the tincture is read after the name rather than beside it,
+and that it may be left out where the name has already said it:
+
+```ts
+frenchParser.parse('De gueules au besant'); // ChargeType.roundel, Metals.or
+frenchParser.parse("De gueules au besant d'azur");
+// InvalidTincture: Wrong tincture: besant is never d'azur
+englishWriter.write(blazon); // Gules a besant.
+```
+
+Writing runs the same rule backwards: the word that already means the tincture is
+the one written, and then the tincture is not written after it. A blazon that says
+it twice comes back saying it once — "d'azur au besant d'or" is written "D'azur au
+besant" — and a roundel English has no name for is the roundel it always was, "a
+roundel ermine". Nothing is lost by it: the model holds the tincture either way.
+The `MissingTincture` a charge is otherwise owed is owed no longer where the name
+answers for it, and a word that names no tincture at all after one is still
+reported as the `UnknownTincture` it is.
 
 Drawing is a third service over the same models, and needs no language at all: a
 `ColorModel` says what each tincture is painted with, so the shades stay out of
@@ -380,7 +412,7 @@ The drawer is three folders, each knowing less than the one above it. `shapes/`
 is geometry and `painting/` is how geometry is inked, and neither may name a term
 of heraldry — the same rectangle is a fess, a billet, and half a field divided
 per pale. `vocabulary/` is the terms, one file per enum value, and writes no SVG
-of its own: what a tag looks like is settled in four primitive shapes and nowhere
+of its own: what a tag looks like is settled in five primitive shapes and nowhere
 else. Its `coverings/` holds the three kinds `Field.ts` holds — divided, varied,
 furred — under one roof because all three answer the same question, which is how
 a region is covered rather than what is laid on it. A region, not a field: a

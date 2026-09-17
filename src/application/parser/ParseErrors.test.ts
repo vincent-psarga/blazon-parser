@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
+import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { MissingOrdinary } from '../../domain/errors/parsing/MissingOrdinary';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
@@ -97,6 +98,56 @@ describe('a tincture that never arrives', () => {
 
   test('says so plainly when there was no blazon at all', () => {
     expect((refused(() => french.parse('')) as MissingTincture).context).toBe('an empty blazon');
+  });
+});
+
+describe('a tincture the name before it will not take', () => {
+  test.each([
+    ['a besant, which is a gold coin and no other', "D'argent au besant d'azur"],
+    ['a tourteau, which is the coloured disc', "D'or au tourteau d'argent"],
+    ['several of them, which are refused as one is', "D'argent à trois besants de gueules"],
+  ])('%s', (_why, blazon) => {
+    expect(() => french.parse(blazon)).toThrow(InvalidTincture);
+  });
+
+  test.each([
+    ['a besant', 'Argent a besant azure'],
+    ['a plate, which is the silver one', 'Azure a plate or'],
+    ['a torteau, which is the red one', 'Or three torteaux azure'],
+  ])('%s, in English', (_why, blazon) => {
+    expect(() => english.parse(blazon)).toThrow(InvalidTincture);
+  });
+
+  test('is neither an unknown tincture nor an unknown charge, both being known', () => {
+    const thrown = refused(() => french.parse("D'argent au besant d'azur"));
+    expect(thrown).toBeInstanceOf(BlazonParseError);
+    expect(thrown).not.toBeInstanceOf(UnknownTincture);
+    expect(thrown).not.toBeInstanceOf(UnknownOrdinary);
+  });
+
+  test('carries both words as the blazon wrote them', () => {
+    const refusal = refused(() => french.parse("D'argent au besant d'azur")) as InvalidTincture;
+    expect(refusal.borne).toBe('besant');
+    expect(refusal.tincture).toBe("d'azur");
+    expect(refusal.message).toBe("Wrong tincture: besant is never d'azur");
+  });
+
+  test('writes the tincture as English writes it, which is bare', () => {
+    const refusal = refused(() => english.parse('Argent a besant azure')) as InvalidTincture;
+    expect(refusal.tincture).toBe('azure');
+  });
+
+  test('gives up at the tincture, the name before it having been read', () => {
+    expect(refused(() => french.parse("D'argent au besant d'azur")).position).toEqual({
+      index: 19,
+      row: 1,
+      column: 20,
+    });
+  });
+
+  test('still reports a word that names no tincture at all as the unknown it is', () => {
+    expect(() => french.parse("D'argent au besant de fuchsia")).toThrow(UnknownTincture);
+    expect(() => english.parse('Argent a besant fuchsia')).toThrow(UnknownTincture);
   });
 });
 
@@ -253,6 +304,7 @@ describe('every refusal', () => {
     "D'azur à la fasce",
     "Parti d'azur",
     "D'azur fasce d'or",
+    "D'argent au besant d'azur",
     '.',
     "D'azur..",
   ];
@@ -275,6 +327,7 @@ describe('every refusal', () => {
     );
     expect(refused(() => french.parse("D'azur à la")).name).toBe('MissingOrdinary');
     expect(refused(() => french.parse('de or')).name).toBe('WrongTinctureArticle');
+    expect(refused(() => french.parse("D'argent au besant d'azur")).name).toBe('InvalidTincture');
   });
 
   test('says where it gave up, counting rows and columns from one', () => {
