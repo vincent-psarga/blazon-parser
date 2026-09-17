@@ -3,8 +3,9 @@ import { UnknownWords, readArmorial } from '../../src/application/armorial/Armor
 import { Armorial } from '../../src/domain/models/Armorial';
 import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
 import { BlazonShield } from '../components/BlazonShield';
+import { BlazonLink } from '../components/Reference';
 import { COLOURINGS, OUTLINE } from '../utils/Colourings';
-import { LANGUAGES, codeOf } from '../utils/Languages';
+import { LANGUAGES, codeOf, otherThan } from '../utils/Languages';
 import { tally } from '../utils/Tally';
 
 /** Small enough to read a row by, large enough to tell two shields apart. */
@@ -23,9 +24,15 @@ export interface ArmorialPageProps {
  * judges the reading rather than taking the score's word for it. A blazon the
  * parser could not read keeps its row and leaves the last cell empty: what the
  * vocabulary is missing is the most useful thing an armorial has to say.
+ *
+ * Every blazon here is a way to itself, read or not. One that was read carries
+ * its translation under it, which is the library's whole trick shown on somebody
+ * else's words; one that was not is the more worth opening, the translator being
+ * where the refusal is spelled out in full.
  */
 export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: ArmorialPageProps) {
   const language = codeOf(armorial.language);
+  const other = otherThan(language);
   const { entries, read, total, score, unknown } = useMemo(
     () => readArmorial(armorial, LANGUAGES[language].parser),
     [armorial, language]
@@ -71,7 +78,10 @@ export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: Arm
         tabIndex={0}
       >
         <table className="roll" role="table">
-          <caption>Every entry as the source records it, and as the parser reads it.</caption>
+          <caption>
+            Every entry as the source records it, and as the parser reads it. Each blazon leads to
+            the translator, read or refused; where it was read, its translation stands under it.
+          </caption>
           <thead role="rowgroup">
             <tr role="row">
               <th scope="col" role="columnheader">
@@ -100,8 +110,18 @@ export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: Arm
                 <td role="cell">
                   {entry.source !== undefined && <a href={entry.source.url}>{entry.source.name}</a>}
                 </td>
-                <td className="roll__blazon" role="cell" lang={language}>
-                  {entry.blazon}
+                {/* The source's own words first, exactly as the source wrote
+                    them, and the translation under them where there is one. */}
+                <td className="roll__blazon" role="cell">
+                  {/* The pair stacks inside the cell rather than being the cell:
+                      a cell told to lay itself out is a cell arguing with the
+                      table it belongs to. */}
+                  <span className="roll__wording">
+                    <BlazonLink blazon={entry.blazon} language={language} />
+                    {blazon !== undefined && (
+                      <BlazonLink blazon={LANGUAGES[other].writer.write(blazon)} language={other} />
+                    )}
+                  </span>
                 </td>
                 {/* Where the heading is out of sight the drawing says whose it
                     is; an empty cell says nothing, which is the point of it. */}

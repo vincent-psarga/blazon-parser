@@ -952,12 +952,27 @@ body {
   white-space: nowrap;
 }
 
-/* The blazon is the payload, so it is set in the hand a caller would copy. */
+/* The blazon is the payload, so it is set in the hand a caller would copy. The
+   source's own words lead and the translation follows under them, which is the
+   order the page argues in: this is what was written, and this is what the
+   library made of it. */
 .roll__blazon {
   font-family: var(--mono);
   font-size: 0.875rem;
   color: var(--bone);
   min-width: 18ch;
+}
+
+.roll__wording {
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+}
+
+/* The translation is the parser's word and not the armorial's, and is held back
+   accordingly: the row is evidence about the source first. */
+.roll__wording .reading + .reading {
+  color: var(--bone-quiet);
 }
 
 .roll td:last-child,

@@ -20,5 +20,3 @@
 # Armorials
 
 - Allow search/filter
-- Add links to display the blazon full-size
-- Translate the blazon when parsing works
