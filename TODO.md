@@ -16,7 +16,6 @@
 
 - Organise the vocabulary: charges will outgrow one flat documentation page, and
   the wording needs settling (charge, sub-ordinary, meuble)
-- Add documentation for the decisions taken
 
 # Armorials
 

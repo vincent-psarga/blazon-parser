@@ -93,6 +93,40 @@ const PAGES = [
   },
 ];
 
+/**
+ * The conventions are not vocabulary and are not listed among it: what they
+ * govern is how a blazon comes back out, whatever words it is made of. So they
+ * stand under a heading of their own, and show the one thing the index can show
+ * of them — a term written two ways, drawn once, because the arms never differ.
+ */
+const CONVENTIONS = {
+  path: '/doc/conventions',
+  name: 'Conventions',
+  note: 'Reading is generous and writing is not: where heraldry allows a thing to be said two ways, both are read and one is written. Which one, on whose authority, and worked through the parser as the page is drawn.',
+  arms: [
+    {
+      key: ChargeType.roundel,
+      label: 'A roundel or, which comes back a besant',
+      blazon: {
+        field: { tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture: Metals.or }],
+      },
+    },
+    {
+      key: VariationType.barry,
+      label: 'Barry, counted in one tongue and not the other',
+      blazon: {
+        field: {
+          type: VariationType.barry,
+          firstTincture: Metals.or,
+          secondTincture: Colours.azure,
+          pieces: usualPieces(VariationType.barry) ?? PIECES,
+        },
+      },
+    },
+  ],
+};
+
 export function DocIndexPage() {
   return (
     <main className="plane">
@@ -130,6 +164,27 @@ export function DocIndexPage() {
             </span>
           </Link>
         ))}
+      </nav>
+
+      <h2 className="index__heading">How a blazon comes back</h2>
+      <nav className="index" aria-label="Conventions">
+        <Link to={CONVENTIONS.path}>
+          <span className="index__name">{CONVENTIONS.name}</span>
+          <p className="index__note">{CONVENTIONS.note}</p>
+          <span className="index__set">
+            {CONVENTIONS.arms.map(({ key, label, blazon }) => (
+              <span key={key} className="index__arm" title={label}>
+                <BlazonShield
+                  blazon={blazon}
+                  alt=""
+                  colours={COLOURINGS[0]?.colours}
+                  outline={OUTLINE}
+                  width={56}
+                />
+              </span>
+            ))}
+          </span>
+        </Link>
       </nav>
     </main>
   );

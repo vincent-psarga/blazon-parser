@@ -37,7 +37,14 @@ describe('the rail', () => {
   test('offers the index alongside every page when opened', async () => {
     render(<App />);
     await openDoc();
-    for (const name of ['Everything', 'Tinctures', 'Divisions', 'Ordinaries', 'Charges']) {
+    for (const name of [
+      'Everything',
+      'Tinctures',
+      'Divisions',
+      'Ordinaries',
+      'Charges',
+      'Conventions',
+    ]) {
       expect(inMenu(name)).toBeInTheDocument();
     }
   });
@@ -48,6 +55,7 @@ describe('the rail', () => {
     ['Divisions', 'Divisions', '/doc/divisions'],
     ['Ordinaries', 'Ordinaries', '/doc/ordinaries'],
     ['Charges', 'Charges', '/doc/charges'],
+    ['Conventions', 'Conventions', '/doc/conventions'],
   ])('goes to %s', async (link, title, path) => {
     render(<App />);
     await openDoc();
@@ -94,6 +102,15 @@ describe('the index', () => {
     const index = screen.getByRole('navigation', { name: 'Documentation' });
     await userEvent.setup().click(within(index).getByRole('link', { name: new RegExp(link) }));
     expect(heading()).toBe(title);
+  });
+
+  test('leads from the index to the conventions, which are not vocabulary', async () => {
+    window.history.pushState(null, '', '/doc');
+    render(<App />);
+    const index = screen.getByRole('navigation', { name: 'Conventions' });
+    await userEvent.setup().click(within(index).getByRole('link', { name: /Conventions/ }));
+    expect(heading()).toBe('Conventions');
+    expect(window.location.pathname).toBe('/doc/conventions');
   });
 });
 

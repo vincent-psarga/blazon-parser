@@ -684,6 +684,23 @@ body {
   color: var(--bone-quiet);
 }
 
+/* What the index turns to after the vocabulary. It is a step down from the page's
+   own title and a step above the name it introduces, and says so by its size
+   alone: there is no rule under it and no box around it. */
+.index__heading {
+  margin: clamp(2.75rem, 6vw, 4rem) 0 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+}
+
+.index__heading + .index {
+  margin-top: 1rem;
+}
+
 /* The index of a closed set shows the set. */
 .index__set {
   display: flex;
@@ -701,6 +718,183 @@ body {
 .index a:hover .index__arm img,
 .index a:focus-visible .index__arm img {
   filter: brightness(1) saturate(1);
+}
+
+/* ─ the rules: what is decided where heraldry decides nothing ────────────── */
+
+/*
+ * A rule is a claim, its authority, and the evidence for it. The evidence is a
+ * blazon as somebody typed it set against the blazon that comes back, with the
+ * arms standing in the margin to say that neither reading changed them. Nothing
+ * is enclosed: the cases are parted by a single hairline, as the roll's entries
+ * are where the grid gives way.
+ */
+.rules {
+  margin: clamp(2rem, 5vw, 3rem) 0 0;
+  display: grid;
+  gap: clamp(2.5rem, 6vw, 3.5rem);
+}
+
+.rule h2 {
+  margin: 0;
+  max-width: var(--measure);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  line-height: 1.04;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.rule__law {
+  margin: 0.8rem 0 0;
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.rule__law + .rule__law {
+  margin-top: 0.4rem;
+  color: var(--bone-quiet);
+}
+
+/* Whose authority it rests on. Held quietest of the three: it is the ground
+   under the rule rather than the rule. */
+.rule__source {
+  margin: 0.9rem 0 0;
+  max-width: var(--measure);
+  font-size: 0.875rem;
+  color: var(--bone-quiet);
+  text-wrap: pretty;
+}
+
+.rule__source cite {
+  font-style: normal;
+}
+
+.rule__cases {
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1.15rem;
+}
+
+.case {
+  display: flex;
+  align-items: start;
+  gap: 1.15rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid rgb(var(--gauze) / 0.45);
+}
+
+/* The arms are evidence rather than the subject, so they are held back until
+   the case they belong to is being read. */
+.case img {
+  display: block;
+  flex: none;
+  filter: brightness(0.7) saturate(0.85);
+  transition: filter 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.case:hover img,
+.case:focus-within img {
+  filter: none;
+}
+
+/* A refused blazon draws nothing, and the space its arms would have held is
+   kept rather than closed: the case still reads as a case. */
+.case__unread {
+  flex: none;
+  width: 56px;
+}
+
+.case__turn {
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.case__row {
+  display: grid;
+  grid-template-columns: minmax(0, 5rem) minmax(0, 1fr);
+  gap: 0 0.9rem;
+}
+
+.case__row dt {
+  font-family: var(--display);
+  font-size: 0.875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+}
+
+.case__row dd {
+  margin: 0;
+  min-width: 0;
+}
+
+/* What was typed is set in the machine's face and nowhere near the blazons
+   below it, so that what the writer settled can be read off word by word. */
+.case__typed {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  color: var(--bone-quiet);
+}
+
+.case__written {
+  display: grid;
+  gap: 0.3rem;
+  justify-items: start;
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  letter-spacing: 0.02em;
+}
+
+.case__written [lang='fr'] {
+  color: var(--bone-quiet);
+}
+
+.case__written [lang='en'] {
+  font-weight: 700;
+  color: var(--bone);
+}
+
+.case .reading:hover,
+.case .reading:focus-visible {
+  color: var(--strike);
+  text-decoration-color: var(--strike);
+}
+
+/* A refusal is one of the answers this page is about, and is set as the
+   translator sets its own. */
+.case__refused {
+  font-family: var(--mono);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: #f0a3a3;
+}
+
+.rule__source a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--gauze) / 0.9);
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+  transition: color 140ms linear;
+}
+
+.rule__source a:hover {
+  color: var(--strike);
+  text-decoration-color: var(--strike);
+}
+
+@media (max-width: 34rem) {
+  .case__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.15rem;
+  }
 }
 
 /* ─ the roll ─────────────────────────────────────────────────────────────── */

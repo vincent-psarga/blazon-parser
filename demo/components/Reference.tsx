@@ -244,14 +244,13 @@ export function Reference({ title, extent, lead, ranks, colourings = COLOURINGS 
   );
 }
 
-/** A blazon, and the way to the page that reads it. */
-function BlazonLink({
-  blazon,
-  language,
-}: {
+export interface BlazonLinkProps {
   readonly blazon: string;
   readonly language: LanguageCode;
-}) {
+}
+
+/** A blazon, and the way to the page that reads it. */
+export function BlazonLink({ blazon, language }: BlazonLinkProps) {
   return (
     <Link className="reading" lang={language} to={readingPath(blazon, language)}>
       {blazon}

@@ -44,7 +44,9 @@ language's grammar, so a second language means a second parser.
 - The demo is run locally with `npm run dev`. It is **not yet published**, and is intended to be put in
   front of other people eventually, with no deadline. Build as though it will be seen.
 - Documentation pages (`/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`, `/doc/charges`) are
-  today the only statement of what the parser accepts.
+  today the only statement of what the parser accepts, and `/doc/conventions` the only statement of
+  what the writer decides where heraldry decides nothing. Its worked pairs are run through the
+  parser and the writer as the page is drawn, so the documentation cannot drift from the code.
 
 ## Capabilities and Constraints
 

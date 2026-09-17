@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import { Blazon } from '../../src/domain/models/Blazon';
 import { BlazonShield } from '../components/BlazonShield';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
+import { Read, readBlazon } from '../utils/Reading';
 
 export interface BlazonPageProps {
   /** The language the blazon is written in to begin with. */
@@ -13,17 +13,9 @@ export interface BlazonPageProps {
   readonly colourings?: readonly Colouring[];
 }
 
-type Reading = { readonly blazon: Blazon } | { readonly error: string };
-
-function read(text: string, language: LanguageCode): Reading | undefined {
-  if (text.trim() === '') {
-    return undefined;
-  }
-  try {
-    return { blazon: LANGUAGES[language].parser.parse(text) };
-  } catch (cause) {
-    return { error: cause instanceof Error ? cause.message : String(cause) };
-  }
+/** Nothing typed is nothing read: an empty page is not a blazon that failed. */
+function read(text: string, language: LanguageCode): Read | undefined {
+  return text.trim() === '' ? undefined : readBlazon(text, language);
 }
 
 export function BlazonPage({
@@ -86,8 +78,8 @@ export function BlazonPage({
           <h2 className="compose__label" id="blazon-translation-heading">
             {LANGUAGES[other].label}
           </h2>
-          {reading !== undefined && 'error' in reading ? (
-            <p role="alert">{reading.error}</p>
+          {reading !== undefined && 'refused' in reading ? (
+            <p role="alert">{reading.refused}</p>
           ) : (
             <p lang={other}>{translation}</p>
           )}

@@ -19,10 +19,11 @@ export const EnglishBlazonWording: BlazonWording = {
   // English names a tincture bare: "Azure.", "Per pale azure and or."
   introduce: (word) => word.value,
   bear: bearing,
-  // English counts the pieces of a varied field wherever it can: "the number of
-  // bands is always stated before their tinctures", says the Canadian roll's own
-  // guide, so the usual number is written like any other and nothing is left to
-  // be understood.
+  // English counts the pieces of a varied field wherever it can: Greaves' Guide
+  // to Blazonry, published by the Royal Heraldry Society of Canada, uses "terms
+  // like 'barry', 'paly' and 'bendy', always stating the number and the tinctures
+  // involved". So the usual number is written like any other and nothing is left
+  // to be understood.
   vary: (word, tinctures, pieces) => `${word.value} ${OF} ${pieces} ${tinctures}`,
   conjunction: CONJUNCTION,
 };

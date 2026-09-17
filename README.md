@@ -115,6 +115,7 @@ demo/
     DivisionsPage.tsx         every partition, varied field and furred field, named and drawn
     OrdinariesPage.tsx        every ordinary, named and drawn
     ChargesPage.tsx           every charge, named and drawn
+    ConventionsPage.tsx       what the writer decides where heraldry decides nothing
     DocIndexPage.tsx          what a blazon may be, and what it may not
     ArmorialsPage.tsx         the armorials on offer, and how much each parses
     ArmorialPage.tsx          one armorial, read entry by entry
@@ -131,7 +132,16 @@ demo/
     Mounting.tsx              a page under test, with a router to link into
   armorials/                  the armorials the demo carries
   fonts/                      Archivo Narrow, self-hosted
+.claude/skills/
+  writing-decision/           how a decision about writing gets documented
 ```
+
+Reading is generous and writing is not: wherever heraldry allows a thing to be
+said two ways, both are read and one is written. Which one is a decision, and
+`/doc/conventions` is the only statement of those decisions — its worked pairs
+run through the parser and the writer as the page is drawn, so it cannot drift
+from the code. Taking or changing such a decision is what the `writing-decision`
+skill is for.
 
 Heraldic terms are enums named in English, and each value carries its own enum
 name (`DivisionType.fess = 'DivisionType.fess'`) so a value is never mistaken for
@@ -558,8 +568,8 @@ ask for: adding a word uncovers the next.
 The pages are components and nothing more — routing belongs to whatever mounts
 them, so `App.tsx` mounts a router over them and they link rather than call back.
 It serves `/`, `/doc`, `/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`,
-`/doc/charges`, `/armorials` and `/armorial/<slug>`, under whatever base the demo
-is served from:
+`/doc/charges`, `/doc/conventions`, `/armorials` and `/armorial/<slug>`, under
+whatever base the demo is served from:
 GitHub Pages serves it from a subdirectory, which is the router's `basename` and
 nothing else's business.
 
