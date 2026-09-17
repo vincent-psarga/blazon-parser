@@ -16,11 +16,18 @@ const HALBERSTADT = {
   image: 'https://example.invalid/halberstadt.png',
 };
 
-const FRANCE = {
-  name: 'France',
-  blazon: "D'azur semé de fleurs-de-lis d'or",
-  image: 'https://example.invalid/france.png',
-  source: { name: 'Wikipedia: Armoiries de la France', url: 'https://example.invalid/france' },
+/**
+ * The entry the parser cannot read, which every row about a refusal is about.
+ *
+ * It wants a lion, which is the kind of charge the vocabulary has none of and
+ * will not have for a while. A blazon the parser was merely behind on would stop
+ * testing anything the day it caught up.
+ */
+const FLANDERS = {
+  name: 'Flanders',
+  blazon: "D'or au lion de sable",
+  image: 'https://example.invalid/flanders.png',
+  source: { name: 'Wikipedia: Armoiries de la Flandre', url: 'https://example.invalid/flanders' },
 };
 
 const ARMORIAL: Armorial = {
@@ -29,7 +36,7 @@ const ARMORIAL: Armorial = {
   language: 'french',
   licence: 'MIT',
   source: { name: 'Wherever it came from', url: 'https://example.invalid/armorial' },
-  entries: [HALBERSTADT, FRANCE],
+  entries: [HALBERSTADT, FLANDERS],
 };
 
 const rows = () => screen.getAllByRole('row').slice(1);
@@ -75,7 +82,7 @@ describe('ArmorialPage', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
     expect(rows()).toHaveLength(2);
     expect(row('Halberstadt')).toBeInTheDocument();
-    expect(row('France')).toBeInTheDocument();
+    expect(row('Flanders')).toBeInTheDocument();
   });
 
   test('shows the blazon as the source wrote it, marked in the armorial’s tongue', () => {
@@ -112,8 +119,8 @@ describe('ArmorialPage', () => {
 
   test('leads from a blazon the parser refused too: the refusal is spelled out there', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
-    const refused = within(cells('France').blazon).getByRole('link', { name: FRANCE.blazon });
-    expect(refused).toHaveAttribute('href', readingPath(FRANCE.blazon, 'fr'));
+    const refused = within(cells('Flanders').blazon).getByRole('link', { name: FLANDERS.blazon });
+    expect(refused).toHaveAttribute('href', readingPath(FLANDERS.blazon, 'fr'));
   });
 
   test('shows the translation under a blazon it could read, and links that too', () => {
@@ -127,7 +134,7 @@ describe('ArmorialPage', () => {
 
   test('shows no translation of a blazon it could not read', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
-    expect(within(cells('France').blazon).getAllByRole('link')).toHaveLength(1);
+    expect(within(cells('Flanders').blazon).getAllByRole('link')).toHaveLength(1);
   });
 
   test('translates an English armorial into French', () => {
@@ -149,8 +156,8 @@ describe('ArmorialPage', () => {
   test('links an entry’s source where it has one', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
     expect(
-      within(row('France')).getByRole('link', { name: 'Wikipedia: Armoiries de la France' })
-    ).toHaveAttribute('href', 'https://example.invalid/france');
+      within(row('Flanders')).getByRole('link', { name: 'Wikipedia: Armoiries de la Flandre' })
+    ).toHaveAttribute('href', 'https://example.invalid/flanders');
   });
 
   test('leaves the source cell empty for an entry without one', () => {
@@ -175,7 +182,7 @@ describe('ArmorialPage', () => {
 
   test('leaves the last cell empty where the blazon was beyond the parser', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
-    const { drawn } = cells('France');
+    const { drawn } = cells('Flanders');
     expect(drawn).toBeEmptyDOMElement();
   });
 
@@ -190,7 +197,7 @@ describe('ArmorialPage', () => {
 
   test('says nothing where nothing is drawn', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
-    expect(cells('France').drawn).not.toHaveAttribute('data-drawn');
+    expect(cells('Flanders').drawn).not.toHaveAttribute('data-drawn');
   });
 
   describe('the overview of what it could not read', () => {

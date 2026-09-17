@@ -21,7 +21,9 @@ export const lexer = buildLexer<TokenKind>([
   // "l'" is longer than the word "l" the letter pattern would otherwise read, so
   // the longest match takes it; "la" and "le" are words and are untouched.
   [true, /^[Ll]['’]/g, TokenKind.ElidedArticle],
-  [true, /^[A-Za-zÀ-ÖØ-öø-ÿ]+/g, TokenKind.Word],
+  // A word, and a word hyphenated to another: "fleur-de-lis" is one name and is
+  // read as one, where a bare hyphen with no letters behind it is no word at all.
+  [true, /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:-[A-Za-zÀ-ÖØ-öø-ÿ]+)*/g, TokenKind.Word],
   // How many of a charge are borne, written in figures. A blazon more often
   // writes the number out in words, which are words like any other and are not
   // read as numbers yet.

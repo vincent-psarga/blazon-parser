@@ -61,12 +61,19 @@ Supported vocabulary as it stands:
 - **Ordinaries (10)** — chief, pale, fess, bar gemel, bend, bend sinister, chevron, cross, saltire,
   bordure. Laid on the field in the order the blazon names them, which is the order they are drawn.
   That order is the model's to keep: sorting what a field bears into separate lists would lose it.
-- **Charges (4)** — annulet, billet, lozenge, roundel. Plain shapes, borne once or in number. They
+- **Charges (9)** — annulet, billet, lozenge, roundel, goutte, mullet, fleur-de-lis, cross couped,
+  crescent. Some are plain shapes and some are pictures of something; all are borne once or in
+  number, and any of them may be sown over a plain field instead. They
   share the ordinaries' list and their order, so what is blazoned last is drawn over the rest. Where
   they stand on the field — the disposition — is not read. The roundel is the one whose name carries
   its tincture: English calls the gold one a besant and the red one a torteau, French tells the
   metal disc from the coloured one, and a name that means a tincture is written without it and
-  refuses any other.
+  refuses any other. The mullet is the French étoile — a star of five straight rays, which both
+  tongues understand where the blazon counts none — and not the estoile, which has six and draws
+  them wavy. The fleur-de-lis is spelled four ways by the armorials, hyphenated or not and ending
+  in either letter, and all four are read. The cross couped is the French croisette — the ordinary's
+  own figure made small — and is not the crosslet, whose arms are themselves crossed; it shares its
+  first word with the ordinary, and which was meant is settled by what follows.
 - **Sown fields** — any charge may be sown over a field of one tincture instead of borne on it:
   "semé de billettes d'or", "semy of billets or". It is the field's own state rather than something
   the field bears, so nothing is counted and a band blazoned after it covers the sowing. Where the

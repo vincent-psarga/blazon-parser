@@ -1,6 +1,8 @@
 import { Blazon } from '../../src/domain/models/Blazon';
 import { ChargeType } from '../../src/domain/models/Charge';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
+import { counted } from '../../src/domain/translations/Numbers';
+import { EnglishNumbers } from '../../src/domain/translations/en/Numbers';
 import { nameOf } from '../../src/domain/translations/Translation';
 import { EnglishChargeType } from '../../src/domain/translations/en/Charges';
 import { FrenchChargeType } from '../../src/domain/translations/fr/Charges';
@@ -31,6 +33,16 @@ const GLOSS: Record<ChargeType, string> = {
     'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again.',
   [ChargeType.roundel]:
     'A plain disc. English names it after a round thing of the tincture it is drawn in — a besant is the gold coin, a plate the silver one, a torteau the red cake — and French tells the metal disc from the coloured one and stops there. The name says the tincture, so the blazon need not.',
+  [ChargeType.goutte]:
+    'A drop, point upwards: a pear-shape drawn out to a point, with the sides curving in before they swell. Heraldry names the liquid where it can — gutté d’eau for the silver drops, de sang for the red — which is a vocabulary of waters and bloods this does not read, so a field sown with them is sown in as many words.',
+  [ChargeType.mullet]:
+    'A star of five straight rays, which French calls an étoile. Both tongues understand five when the blazon counts none. It is not the estoile, which has six rays and draws them wavy: where the rays are straight the figure is a mullet, whatever its name sounds like.',
+  [ChargeType.fleurDeLis]:
+    'The lily, not as it grows but as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. English keeps the French name and the French plural — fleurs-de-lis, the flowers being several rather than the lily.',
+  [ChargeType.crossCouped]:
+    'A cross of four equal arms, small enough to be borne and stopping short of every edge — which is what couped means, and what French means by making a noun of it: the croix is laid across the shield, the croisette is set on it. It is not the crosslet, whose arms are themselves crossed.',
+  [ChargeType.crescent]:
+    'A half-moon with the horns uppermost, which is where a crescent’s horns stand unless a blazon says otherwise — and no blazon can say otherwise here, the increscent and the decrescent being turnings this does not read.',
 };
 
 // Two and three, which is enough to show what a count does to the drawing: the
@@ -94,11 +106,16 @@ function entry(type: ChargeType): ReferenceEntry {
   };
 }
 
+// Counted off the vocabulary rather than written down, so that a charge added to
+// it cannot leave the page claiming there are fewer.
+const CHARGES = Object.values(ChargeType);
+const EXTENT = `${counted(EnglishNumbers, CHARGES.length)} charges · borne in number, or sown`;
+
 const RANKS: readonly ReferenceRank[] = [
   {
     heading: 'Charges',
     law: 'Each is borne gules on the same argent field, so the only thing that changes from one to the next is the figure itself. Any of them may be borne in number.',
-    entries: Object.values(ChargeType).map(entry),
+    entries: CHARGES.map(entry),
   },
 ];
 
@@ -110,7 +127,7 @@ export function ChargesPage({ colourings }: ChargesPageProps) {
   return (
     <Reference
       title="Charges"
-      extent="Four charges · borne in number, or sown"
+      extent={EXTENT.charAt(0).toUpperCase() + EXTENT.slice(1)}
       lead={
         <>
           <p className="plane__lead">

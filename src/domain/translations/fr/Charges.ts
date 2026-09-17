@@ -37,4 +37,25 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
       allowedTinctures: [...COLOURS, ...PELTS],
     }),
   ],
+  [ChargeType.goutte]: new FrenchWord('goutte', { isFeminine: true }),
+  // "Sa figuration ordinaire comporte cinq pointes que l'on appelle rais", which
+  // is the number English understands of a mullet too, so the one figure serves
+  // both tongues and neither counts the rays.
+  [ChargeType.mullet]: new FrenchWord('étoile', { isFeminine: true }),
+  // The lily, spelled four ways by armorials that agree about everything else:
+  // with the hyphens or without, and ending in either letter. All four are read
+  // and the first is written, which is how the armorials here spell it.
+  //
+  // "De" inside the name is the same word the grammar reads as an article
+  // everywhere else; what tells them apart is that this one has a name around it.
+  [ChargeType.fleurDeLis]: [
+    new FrenchWord('fleur de lys', { plural: 'fleurs de lys', isFeminine: true }),
+    new FrenchWord('fleur-de-lys', { plural: 'fleurs-de-lys', isFeminine: true }),
+    new FrenchWord('fleur de lis', { plural: 'fleurs de lis', isFeminine: true }),
+    new FrenchWord('fleur-de-lis', { plural: 'fleurs-de-lis', isFeminine: true }),
+  ],
+  // The little cross, where the croix is the band laid across the shield. One
+  // word where English needs two, French having made a noun of the small one.
+  [ChargeType.crossCouped]: new FrenchWord('croisette', { isFeminine: true }),
+  [ChargeType.crescent]: new FrenchWord('croissant'),
 };

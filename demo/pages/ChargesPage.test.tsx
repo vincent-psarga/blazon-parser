@@ -4,6 +4,8 @@ import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test } from 'vitest';
 import { ChargeType } from '../../src/domain/models/Charge';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
+import { counted } from '../../src/domain/translations/Numbers';
+import { EnglishNumbers } from '../../src/domain/translations/en/Numbers';
 import { nameOf } from '../../src/domain/translations/Translation';
 import { EnglishChargeType } from '../../src/domain/translations/en/Charges';
 import { FrenchChargeType } from '../../src/domain/translations/fr/Charges';
@@ -36,9 +38,11 @@ const painting = (colouring: string) =>
 const borne = () => Array.from(showing().querySelectorAll('.showing__variant')) as HTMLElement[];
 
 describe('ChargesPage', () => {
-  test('states how many charges there are', () => {
+  test('states how many charges there are, counting them rather than claiming', () => {
     mount(<ChargesPage />);
-    expect(screen.getByText(/Four charges/)).toBeInTheDocument();
+    expect(
+      screen.getByText(new RegExp(`^${counted(EnglishNumbers, CHARGES.length)} charges`, 'i'))
+    ).toBeInTheDocument();
   });
 
   test.each(CHARGES)('keeps %s present in the stack', (type) => {

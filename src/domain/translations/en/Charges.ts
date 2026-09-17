@@ -33,4 +33,33 @@ export const EnglishChargeType: Translation<ChargeType> = {
     new Word('pellet', { defaultTincture: Colours.sable }),
     new Word('pomme', { defaultTincture: Colours.vert }),
   ],
+  // A drop, and a word English took from French whole. Parker spells the charge
+  // goutte and the field it is sown over gutté or gutty.
+  [ChargeType.goutte]: new Word('goutte'),
+  // The five-pointed star of the spur rowel. "It usually has five points, and
+  // this number is always to be understood when no other is mentioned."
+  [ChargeType.mullet]: new Word('mullet'),
+  // The lily. English keeps the French name and hyphenates it, and the plural
+  // is French too — the flowers are several, not the lily.
+  //
+  // The hyphens are not settled and neither is the last letter, so the armorials
+  // are read however they spell it and written back Parker's way.
+  [ChargeType.fleurDeLis]: [
+    new Word('fleur-de-lis', { plural: 'fleurs-de-lis' }),
+    new Word('fleur-de-lys', { plural: 'fleurs-de-lys' }),
+    new Word('fleur de lis', { plural: 'fleurs de lis' }),
+    new Word('fleur de lys', { plural: 'fleurs de lys' }),
+  ],
+  // The ordinary's own figure made small, so English names it by the ordinary
+  // and says where it stops. Humetty is the older word for couped and is read
+  // too; the noun is what pluralises either way.
+  //
+  // "Crosslet" is not read for it. Wiktionary has that as "a small cross with
+  // crossed arms", which is another figure, and a vocabulary that answered to
+  // the word would be promising to draw one.
+  [ChargeType.crossCouped]: [
+    new Word('cross couped', { plural: 'crosses couped' }),
+    new Word('cross humetty', { plural: 'crosses humetty' }),
+  ],
+  [ChargeType.crescent]: new Word('crescent'),
 };

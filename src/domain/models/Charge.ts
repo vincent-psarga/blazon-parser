@@ -8,11 +8,13 @@ import { Tincture } from './Tinctures';
  * after the thing it is a picture of, and owes the field nothing: it is set on
  * the field wherever the blazon says, as many times as the blazon says.
  *
- * Four so far, and all four are plain shapes. A lion is a charge by the same
- * reckoning and is read by the same phrase, which is why these are kept apart
- * from the ordinaries rather than listed among them: what will grow here is the
- * beasts and the objects, and what an ordinary can be told is quite another
- * list.
+ * Nine so far. Some are plain geometry and some are pictures of something: a
+ * drop, a star, the lily heraldry drew as a smith would forge it, and the moon
+ * with its horns up. A lion is
+ * a charge by the same reckoning and is read by the same phrase, which is why
+ * these are kept apart from the ordinaries rather than listed among them: what
+ * will grow here is the beasts and the objects, and what an ordinary can be told
+ * is quite another list.
  *
  * The roundel is one term and not a dozen, though heraldry gives it a dozen
  * names: a bezant, a plate and a torteau are the same disc in three tinctures,
@@ -27,6 +29,29 @@ export enum ChargeType {
   billet = 'Charge.billet',
   lozenge = 'Charge.lozenge',
   roundel = 'Charge.roundel',
+  goutte = 'Charge.goutte',
+  /**
+   * The straight-rayed star of five points, which French calls an étoile.
+   *
+   * It is not the estoile. That one is "as a rule represented of six points and
+   * wavy", and where the rays are straight Parker says the figure "would then
+   * more properly be described as a mullet of so many points" — so the figure
+   * the armorials here draw is the mullet, whatever its cognate looks like.
+   */
+  mullet = 'Charge.mullet',
+  fleurDeLis = 'Charge.fleurDeLis',
+  /**
+   * A cross small enough to be borne as a charge rather than laid across the
+   * shield, and couped: "toutes les branches ont la même longueur" and "elle est
+   * toujours alésée".
+   *
+   * It is the ordinary's own figure made small, so English names it so — a cross
+   * couped — and it is not the crosslet, which Wiktionary has as "a small cross
+   * with crossed arms" and which this vocabulary does not hold.
+   */
+  crossCouped = 'Charge.crossCouped',
+  /** "A half-moon with the horns uppermost", which is the only way it is drawn here. */
+  crescent = 'Charge.crescent',
 }
 
 /**

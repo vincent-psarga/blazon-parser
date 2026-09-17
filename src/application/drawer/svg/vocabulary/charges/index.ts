@@ -2,7 +2,12 @@ import { ChargeType } from '../../../../../domain/models/Charge';
 import { ChargeFigure } from '../Figures';
 import { annulet } from './annulet';
 import { billet } from './billet';
+import { crescent } from './crescent';
+import { crossCouped } from './crossCouped';
+import { fleurDeLis } from './fleurDeLis';
+import { goutte } from './goutte';
 import { lozenge } from './lozenge';
+import { mullet } from './mullet';
 import { roundel } from './roundel';
 
 /**
@@ -17,4 +22,9 @@ export const CHARGES: Record<ChargeType, ChargeFigure> = {
   [ChargeType.billet]: billet,
   [ChargeType.lozenge]: lozenge,
   [ChargeType.roundel]: roundel,
+  [ChargeType.goutte]: goutte,
+  [ChargeType.mullet]: mullet,
+  [ChargeType.fleurDeLis]: fleurDeLis,
+  [ChargeType.crossCouped]: crossCouped,
+  [ChargeType.crescent]: crescent,
 };

@@ -7,6 +7,32 @@ export const filled =
     `<path d="${path}" fill="${fill}"/>`;
 
 /**
+ * A path drawn about its own origin in a box one unit across, put where it
+ * belongs and drawn that many units tall.
+ *
+ * A figure whose shape is its own — a drop, a lily — is written once at a size
+ * that can be read and argued with, and placed by scaling its numbers rather
+ * than by wrapping it in a transform. A transform would scale what fills the
+ * shape along with the shape, and a figure filled with hatching would have its
+ * ruling blown up until the whole figure was one stripe of it.
+ *
+ * Only M, L, C and Z are written in such a path, and every number in them is a
+ * coordinate — x first, y second, over and over, each command taking an even
+ * number of them — so placing the figure is counting them.
+ */
+export const placed = (path: string, x: number, y: number, size: number): Shape => {
+  let along = 0;
+  return filled(
+    path.replace(/-?\d*\.?\d+/g, (number) => {
+      const placed = Number(number) * size + (along % 2 === 0 ? x : y);
+      along += 1;
+      // Tenths: finer than any shield is drawn, and short enough to read.
+      return `${Math.round(placed * 10) / 10}`;
+    })
+  );
+};
+
+/**
  * A path drawn as a thick line rather than filled.
  *
  * A stroke straddles the line it follows, so half of one drawn along the edge of

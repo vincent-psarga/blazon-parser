@@ -89,6 +89,7 @@ src/
       Document.ts             the SVG envelope, the clip path, the definitions
       Ground.ts               Frame, Ground, Ink, Painter — where a figure is drawn
       shapes/                 geometry, knowing no heraldry: rectangle, polygon,
+                              star, drop, lily, cross, crescent,
                               ring, path, shield, bands, triangles, diamond,
                               spot, bell, tile
       painting/               how geometry is inked: plain, split, laid, over, arrange

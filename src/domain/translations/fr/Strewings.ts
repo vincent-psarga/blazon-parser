@@ -31,6 +31,21 @@ export const FrenchStrewings: Strewings<FrenchWord> = {
     }),
     new FrenchWord('tourtelé', { allowedTinctures: [...COLOURS, ...PELTS] }),
   ],
+  // Goutté exists and does not take a tincture: French names the liquid, as
+  // English does — goutté d'eau for the argent drops, de sang for the gules —
+  // which is a vocabulary of waters and bloods this does not read. A sown goutte
+  // is therefore sown in as many words.
+  [ChargeType.goutte]: undefined,
+  [ChargeType.mullet]: undefined,
+  // "Fleurdelisé" is not this. It says a figure ends in fleurs-de-lis — the
+  // escarboucle fleurdelisée, whose arms finish in them — and borrowing it for a
+  // field sown with them would say something else entirely. French sows this one
+  // in as many words, as its armorials do.
+  // French names no strewing of croisettes that the dictionaries settle, so this
+  // one is sown in as many words like the rest.
+  [ChargeType.crossCouped]: undefined,
+  [ChargeType.crescent]: undefined,
+  [ChargeType.fleurDeLis]: undefined,
 };
 
 /** How French says a field is sown with a figure it has no word of its own for. */

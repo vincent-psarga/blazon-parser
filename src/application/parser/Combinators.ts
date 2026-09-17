@@ -97,6 +97,12 @@ export function anyKeyword(expected: readonly string[]): Parser<TokenKind, Token
  * names a term is offered as a candidate rather than the longest one alone: it
  * is the surrounding grammar, not the vocabulary, that knows which reading fits.
  *
+ * One of those words may be "de", which the lexer reads as the article it
+ * usually is: "fleur de lys" is three tokens and one name. So the article is
+ * stepped through where a name is already under way, and never at the start of
+ * one — no term of either vocabulary begins with it, and a blazon that opens on
+ * an article is naming a tincture rather than a charge.
+ *
  * Which spelling is matched is the caller's to say: a blazon bearing several of
  * an ordinary names them in the plural, and only the rule reading the number
  * knows that it does.
@@ -115,7 +121,7 @@ export function spelledTerm<T extends string, W extends Word>(
       let current = token;
       let spelling = '';
 
-      for (let words = 0; words < longest && current?.kind === TokenKind.Word; words += 1) {
+      for (let words = 0; words < longest && spells(current, words); words += 1) {
         const word = current.text.toLowerCase();
         spelling = words === 0 ? word : `${spelling} ${word}`;
         const next = current.next;
@@ -142,6 +148,11 @@ export function spelledTerm<T extends string, W extends Word>(
       };
     },
   };
+}
+
+/** Whether this token can be the next word of a name already this many words long. */
+function spells(token: Token<TokenKind> | undefined, words: number): token is Token<TokenKind> {
+  return token?.kind === TokenKind.Word || (words > 0 && token?.kind === TokenKind.Article);
 }
 
 /** Matches a term, keeping only which term it is. */
