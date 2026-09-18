@@ -54,7 +54,7 @@ describe('ArmorialsPage', () => {
 
   test('says what each one holds, in which tongue, and under which licence', () => {
     mount(<ArmorialsPage armorials={[ONE, ANOTHER]} />);
-    expect(entry('A sample armorial')).toHaveTextContent('2 entries · Français · MIT');
+    expect(entry('A sample armorial')).toHaveTextContent('2 entries · French · MIT');
     expect(entry('A roll of English arms')).toHaveTextContent('1 entry · English · CC BY-SA 4.0');
   });
 });

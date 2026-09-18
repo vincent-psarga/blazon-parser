@@ -1,5 +1,6 @@
 import { alt, seq, tok } from 'typescript-parsec';
 import { FrenchWord } from '../../domain/translations/fr/FrenchWord';
+import { FrenchPlain } from '../../domain/translations/fr/Plain';
 import { PIECES } from '../../domain/translations/fr/Variations';
 import { TokenKind } from '../lexer/Lexer';
 import { keyword } from '../parser/Combinators';
@@ -86,12 +87,12 @@ export function sownIn(word: FrenchWord): string {
  * The word French calls a bare field by: "de gueules plain", which says the
  * shield carries its tincture and nothing whatever besides.
  *
- * It is grammar rather than vocabulary — it names no term and adds nothing to
- * what the field is — so it is a keyword here and is never written back out.
- * "Plein" is not read for it: that is the undifferenced arms of the head of a
- * family, which is another word entirely and says nothing about the field.
+ * It names no term and adds nothing to what the field is, so it is read as a
+ * keyword and is never written back out. What it means is the vocabulary's to
+ * say, and is said there, beside every other word a reader of the armorials
+ * meets.
  */
-export const PLAIN = keyword('plain');
+export const PLAIN = keyword(FrenchPlain.value);
 
 /** The conjunction joining the halves of a divided field. */
 export const CONJUNCTION = 'et';

@@ -15,8 +15,10 @@
 
 # Documentation
 
-- Organise the vocabulary: charges will outgrow one flat documentation page, and
-  the wording needs settling (charge, sub-ordinary, meuble)
+- Settle the wording of the ranks (charge, sub-ordinary, meuble), which the
+  vocabulary page now has to name out loud
+- Translate the vocabulary pages: the words are French and English, what they
+  mean is written in English on both
 
 # Armorials
 

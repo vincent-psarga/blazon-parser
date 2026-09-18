@@ -42,7 +42,7 @@ export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: Arm
     <main className="plane">
       <h1>{armorial.name}</h1>
       <p className="plane__extent">
-        {tally(total, 'entry', 'entries')} · {LANGUAGES[language].label}{' '}
+        {tally(total, 'entry', 'entries')} · {LANGUAGES[language].named}{' '}
         {armorial.licence ? `· ${armorial.licence}` : ''}
       </p>
 

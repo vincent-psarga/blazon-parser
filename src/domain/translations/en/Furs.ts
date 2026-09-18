@@ -10,5 +10,18 @@ import { Word } from '../Word';
 // This is the field's name and not the tincture's: "vair" alone is the fur in
 // its own argent and azure, and is named in Tinctures.ts beside the others.
 export const EnglishFurType: Translation<FurType> = {
-  [FurType.vairy]: [new Word('vairy'), new Word('vairé'), new Word('vaire')],
+  [FurType.vairy]: [
+    new Word(
+      'vairy',
+      'The bells of vair, cut from two tinctures the blazon names rather than from the argent and azure vair is always drawn in. Nothing is counted: a pelt is cut to no number of pieces. A vairy argent and azure would simply be vair, and is blazoned so.'
+    ),
+    new Word(
+      'vairé',
+      'The bells of vair, cut from two tinctures the blazon names rather than from the argent and azure vair is always drawn in. This is the borrowed participle, written with its accent.'
+    ),
+    new Word(
+      'vaire',
+      'The bells of vair, cut from two tinctures the blazon names rather than from the argent and azure vair is always drawn in. This is the borrowed participle with its accent dropped, as the armorials often write it.'
+    ),
+  ],
 };

@@ -6,7 +6,7 @@ import { LANGUAGES, LanguageCode } from '../utils/Languages';
 import { readBlazon } from '../utils/Reading';
 
 /** A blazon as somebody might type it, and the tongue they typed it in. */
-interface Typed {
+export interface Typed {
   readonly text: string;
   readonly language: LanguageCode;
 }
@@ -18,7 +18,7 @@ interface Typed {
  * written by the library as the page is drawn, so a rule stated here that the
  * code no longer keeps shows itself the moment anybody looks.
  */
-interface Rule {
+export interface Rule {
   /** The place in the page the rule answers to, so one rule can be sent alone. */
   readonly id: string;
   readonly heading: string;
@@ -55,7 +55,12 @@ const BLASON = (
   </a>
 );
 
-const RULES: readonly Rule[] = [
+/**
+ * Exported so that the index can show a rule by the arms it turns on rather than
+ * by its name alone. What it lends is the cases, which are blazons and nothing
+ * more; the prose stays here, where it is read.
+ */
+export const RULES: readonly Rule[] = [
   {
     id: 'one-spelling',
     heading: 'One spelling for each term',

@@ -24,6 +24,6 @@ export const FrenchBlazonWording: BlazonWording<FrenchWord> = {
   vary: cutIn,
   // "semé de billettes", "semé d'annelets": the same "de" a tincture is
   // introduced by, elided on the word's own terms.
-  strew: (word) => `${SOWN} ${sownIn(word)}`,
+  strew: (word) => `${SOWN.value} ${sownIn(word)}`,
   conjunction: CONJUNCTION,
 };

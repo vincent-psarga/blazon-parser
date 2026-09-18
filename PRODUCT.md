@@ -43,9 +43,12 @@ language's grammar, so a second language means a second parser.
   `demo/`, which is not published, so installing the library on a backend pulls no React in.
 - The demo is run locally with `npm run dev`. It is **not yet published**, and is intended to be put in
   front of other people eventually, with no deadline. Build as though it will be seen.
-- Documentation pages (`/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`, `/doc/charges`) are
-  today the only statement of what the parser accepts, and `/doc/conventions` the only statement of
-  what the writer decides where heraldry decides nothing. Its worked pairs are run through the
+- The vocabulary pages (`/doc/vocabulary/fr`, `/doc/vocabulary/en`) are today the only statement of
+  what the parser accepts: one page per tongue, every word it reads filed alphabetically, with what
+  the word means, the arms that show it, a blazon carrying that very spelling, and what the other
+  tongue says it by. What a word means is carried by the word itself in `domain/translations`, so a
+  word added to the library arrives on the page of itself. `/doc/conventions` is the only statement
+  of what the writer decides where heraldry decides nothing. Both pages' blazons are run through the
   parser and the writer as the page is drawn, so the documentation cannot drift from the code.
 
 ## Capabilities and Constraints

@@ -19,9 +19,16 @@ import { Word } from '../Word';
  */
 export const EnglishStrewings: Strewings = {
   [ChargeType.annulet]: undefined,
-  [ChargeType.billet]: new Word('billetty'),
+  [ChargeType.billet]: new Word(
+    'billetty',
+    'A field sown with billets: the figure repeated small over the whole of it, running off every edge and past counting. Heraldry would rather name such a field than describe it, and Parker calls the special term preferable — semy of billets says no more.'
+  ),
   [ChargeType.lozenge]: undefined,
-  [ChargeType.roundel]: new Word('bezanty', { defaultTincture: Metals.or }),
+  [ChargeType.roundel]: new Word(
+    'bezanty',
+    'A field sown with bezants, and gold by being bezanty: nothing is written after the word. A field sown with silver discs is no bezanty at all but semy of plates, English having named no adjective for that one.',
+    { defaultTincture: Metals.or }
+  ),
   // A field sown with drops has a word — gutté, gutty — and the word does not
   // take a tincture. Parker names the liquid instead: "when argent, gutté d'eau
   // ... when gules, gutté de sang", which is a second vocabulary of waters and
@@ -37,10 +44,19 @@ export const EnglishStrewings: Strewings = {
   [ChargeType.crossCouped]: undefined,
   [ChargeType.crescent]: undefined,
   [ChargeType.fleurDeLis]: [
-    new Word('semy-de-lis'),
-    new Word('semy-de-lys'),
-    new Word('semé-de-lis'),
-    new Word('semy de lis'),
+    new Word(
+      'semy-de-lis',
+      'A field sown with fleurs-de-lis: the arms of France before they were reduced to three. It is the one strewing English names after the figure itself rather than after an adjective made of it.'
+    ),
+    new Word(
+      'semy-de-lys',
+      'A field sown with fleurs-de-lys: the arms of France before they were reduced to three. This is the spelling ending in the letter half the armorials prefer.'
+    ),
+    new Word(
+      'semé-de-lis',
+      'A field sown with fleurs-de-lis: the arms of France before they were reduced to three. This is the spelling written with the French participle the word was taken from.'
+    ),
+    new Word('semy de lis', ''),
   ],
 };
 
@@ -48,9 +64,25 @@ export const EnglishStrewings: Strewings = {
  * How English says a field is sown with a figure it has no word of its own for.
  *
  * Parker writes the French participle and notes it is "sometimes written semy";
- * the English spelling is the one written back out, and both are read.
+ * the English spelling is the one written back out, and both are read. They are
+ * words of the vocabulary like any other — they say what has happened to the
+ * field — so they are kept here with what they mean, and the grammar reads them
+ * off this rather than out of strings of its own.
  */
-export const SOWN: readonly string[] = ['semy', 'semé', 'semee'];
+export const SOWN: readonly Word[] = [
+  new Word(
+    'semy',
+    'The field sown with a figure English has no single word for: semy of annulets, semy of mullets. What is sown is drawn small, runs off every edge and is past counting — the field’s own state rather than something it bears, so a band blazoned after it covers the sowing exactly as it covers the tincture beneath. Where English does have a word — billetty, bezanty, semy-de-lis — that word is written instead.'
+  ),
+  new Word(
+    'semé',
+    'The field sown with a figure English has no single word for, drawn small, running off every edge and past counting. This is the French participle the word was taken from.'
+  ),
+  new Word(
+    'semee',
+    'The field sown with a figure English has no single word for, drawn small, running off every edge and past counting. This is the borrowed participle with its accent spelled out, as the armorials often write it.'
+  ),
+];
 
 /** What stands between the sowing and the figure sown: "semy of billets". */
 export const OF = 'of';

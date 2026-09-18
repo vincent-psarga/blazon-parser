@@ -11,20 +11,17 @@ import {
 import { ArmorialPage } from './pages/ArmorialPage';
 import { ArmorialsPage } from './pages/ArmorialsPage';
 import { BlazonPage } from './pages/BlazonPage';
-import { ChargesPage } from './pages/ChargesPage';
 import { ConventionsPage } from './pages/ConventionsPage';
-import { DivisionsPage } from './pages/DivisionsPage';
 import { DocIndexPage } from './pages/DocIndexPage';
-import { OrdinariesPage } from './pages/OrdinariesPage';
-import { TincturesPage } from './pages/TincturesPage';
+import { VocabularyPage } from './pages/VocabularyPage';
 import { ARMORIALS } from './armorials';
+import { LANGUAGES, LanguageCode } from './utils/Languages';
 import { readingIn } from './utils/Reading';
+import { vocabularyPath } from './utils/Vocabulary';
 
 const DOCS = [
-  { path: '/doc/tinctures', label: 'Tinctures' },
-  { path: '/doc/divisions', label: 'Divisions' },
-  { path: '/doc/ordinaries', label: 'Ordinaries' },
-  { path: '/doc/charges', label: 'Charges' },
+  { path: vocabularyPath('fr'), label: 'French vocabulary' },
+  { path: vocabularyPath('en'), label: 'English vocabulary' },
   { path: '/doc/conventions', label: 'Conventions' },
 ];
 
@@ -44,10 +41,7 @@ export function App() {
       <Routes>
         <Route path="/" element={<ReadBlazon />} />
         <Route path="/doc" element={<DocIndexPage />} />
-        <Route path="/doc/tinctures" element={<TincturesPage />} />
-        <Route path="/doc/divisions" element={<DivisionsPage />} />
-        <Route path="/doc/ordinaries" element={<OrdinariesPage />} />
-        <Route path="/doc/charges" element={<ChargesPage />} />
+        <Route path="/doc/vocabulary/:language" element={<ReadVocabulary />} />
         <Route path="/doc/conventions" element={<ConventionsPage />} />
         <Route path="/armorials" element={<ArmorialsPage armorials={ARMORIALS} />} />
         <Route path="/armorial/:slug" element={<ReadArmorial />} />
@@ -59,14 +53,18 @@ export function App() {
 
 /**
  * A new page is read from its beginning — unless its address names a place
- * within it, which is a request to be put at that place instead, and is
- * answered by whatever holds it. An anchor is not a new page either way, which
- * is why the term struck on a reference leaves the scroll where it was.
+ * within it, which is a request to be put at that place instead.
+ *
+ * An anchor reached from another page is a request nobody else answers: a
+ * browser scrolls to a fragment it was handed in the address bar, and does not
+ * when a router swapped the page underneath it. So it is answered here, and only
+ * on arrival: a word struck on the vocabulary changes the hash without changing
+ * the page, and must leave the scroll where it stands.
  */
 function ToTheTop() {
   const { pathname, hash } = useLocation();
 
-  // The page is the dependency and the anchor is not: a term struck on a
+  // The page is the dependency and the anchor is not: a word struck on a
   // reference changes the hash, and must leave the scroll where it stands.
   useEffect(() => {
     if (hash === '') {
@@ -74,7 +72,11 @@ function ToTheTop() {
       // scrolls smoothly, which is for moving within one page and not between
       // two.
       window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
     }
+    // The place may not be there at all — an address can name anything — and a
+    // page that does not hold it is simply read from where it opened.
+    document.getElementById(decodeURIComponent(hash.slice(1)))?.scrollIntoView({ block: 'start' });
   }, [pathname]);
   return null;
 }
@@ -88,6 +90,19 @@ function ReadBlazon() {
   const [params] = useSearchParams();
   const { blazon, language } = readingIn(params);
   return <BlazonPage key={params.toString()} initialText={blazon} initialLanguage={language} />;
+}
+
+/**
+ * A tongue's vocabulary answers to the tongue's own code, there being a page
+ * apiece: a reader comes with a word in hand, and the word is in one tongue.
+ */
+function ReadVocabulary() {
+  const { language } = useParams();
+  return language !== undefined && language in LANGUAGES ? (
+    <VocabularyPage language={language as LanguageCode} />
+  ) : (
+    <NotFound />
+  );
 }
 
 /** One armorial answers to its own slug, the one part of an address that is data. */

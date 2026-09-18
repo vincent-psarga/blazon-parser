@@ -118,7 +118,7 @@ const NAMED_STREWING = spelledTerm(strewnTerms(FrenchStrewings), asOrdinary);
 // "D'azur semé de billettes d'or": the figure itself, named in the plural under
 // the same "de" a tincture is introduced by, which elides before it as readily.
 const SOWN_CHARGE = kright(
-  keyword(SOWN),
+  keyword(SOWN.value),
   apply(
     guard(
       seq(ARTICLE, spelledTerm(FrenchChargeType, asOrdinary, asSeveral)),

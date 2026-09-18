@@ -22,14 +22,25 @@ import { FrenchWord } from './FrenchWord';
  */
 export const FrenchStrewings: Strewings<FrenchWord> = {
   [ChargeType.annulet]: undefined,
-  [ChargeType.billet]: new FrenchWord('billeté'),
+  [ChargeType.billet]: new FrenchWord(
+    'billeté',
+    'A field sown with billettes: the figure repeated small over the whole of it, running off every edge and past counting. French would rather name such a field than describe it, and this is the name — semé de billettes says no more.'
+  ),
   [ChargeType.lozenge]: undefined,
   [ChargeType.roundel]: [
-    new FrenchWord('besanté', {
-      allowedTinctures: [...METALS, ...PELTS],
-      defaultTincture: Metals.or,
-    }),
-    new FrenchWord('tourtelé', { allowedTinctures: [...COLOURS, ...PELTS] }),
+    new FrenchWord(
+      'besanté',
+      'A field sown with besants. The word carries the metal exactly as the charge does: a besanté that says no more is gold, and a field sown with silver discs says so — besanté d’argent.',
+      {
+        allowedTinctures: [...METALS, ...PELTS],
+        defaultTincture: Metals.or,
+      }
+    ),
+    new FrenchWord(
+      'tourtelé',
+      'A field sown with tourteaux, and owed its colour every time, as the tourteau itself is.',
+      { allowedTinctures: [...COLOURS, ...PELTS] }
+    ),
   ],
   // Goutté exists and does not take a tincture: French names the liquid, as
   // English does — goutté d'eau for the argent drops, de sang for the gules —
@@ -48,5 +59,14 @@ export const FrenchStrewings: Strewings<FrenchWord> = {
   [ChargeType.fleurDeLis]: undefined,
 };
 
-/** How French says a field is sown with a figure it has no word of its own for. */
-export const SOWN = 'semé';
+/**
+ * How French says a field is sown with a figure it has no word of its own for.
+ *
+ * It is a word of the vocabulary like any other — it says what has happened to
+ * the field — so it is kept here with what it means, and the grammar reads it
+ * off this rather than out of a string of its own.
+ */
+export const SOWN = new FrenchWord(
+  'semé',
+  'The field sown with a figure French has no single word for: semé d’annelets, semé de fleurs de lys. What is sown is drawn small, runs off every edge and is past counting — the field’s own state rather than something it bears, so a band blazoned after it covers the sowing exactly as it covers the tincture beneath. Where French does have a word — billeté, besanté, tourtelé — that word is written instead.'
+);

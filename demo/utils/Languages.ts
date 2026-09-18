@@ -9,7 +9,10 @@ import { IBlazonWriter } from '../../src/domain/services/IBlazonWriter';
 export type LanguageCode = 'fr' | 'en';
 
 export interface Language {
+  /** What the tongue calls itself, which is what a reader of it looks for. */
   readonly label: string;
+  /** What this documentation calls it, the documentation being written in English. */
+  readonly named: string;
   readonly example: string;
   readonly parser: IBlazonParser;
   readonly writer: IBlazonWriter;
@@ -18,12 +21,14 @@ export interface Language {
 export const LANGUAGES: Record<LanguageCode, Language> = {
   fr: {
     label: 'Français',
+    named: 'French',
     example: "Parti d'azur et d'or",
     parser: new FrenchBlazonParser(),
     writer: new FrenchBlazonWriter(),
   },
   en: {
     label: 'English',
+    named: 'English',
     example: 'Per pale azure and or',
     parser: new EnglishBlazonParser(),
     writer: new EnglishBlazonWriter(),

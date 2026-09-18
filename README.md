@@ -115,19 +115,17 @@ demo/
   styles.css                  the look, which the library does not impose
   pages/
     BlazonPage.tsx            type a blazon, read its translation, see the arms
-    TincturesPage.tsx         every tincture, named, painted and hatched
-    DivisionsPage.tsx         every partition, varied field and furred field, named and drawn
-    OrdinariesPage.tsx        every ordinary, named and drawn
-    ChargesPage.tsx           every charge, named and drawn
+    VocabularyPage.tsx        one tongue's whole vocabulary, alphabetically, a word at a time
     ConventionsPage.tsx       what the writer decides where heraldry decides nothing
     DocIndexPage.tsx          what a blazon may be, and what it may not
     ArmorialsPage.tsx         the armorials on offer, and how much each parses
     ArmorialPage.tsx          one armorial, read entry by entry
   components/
-    Reference.tsx             the anatomy every vocabulary page is built on
+    Reference.tsx             the anatomy a vocabulary page is built on
     BlazonShield.tsx          one blazon, drawn
   utils/
-    Anchors.ts                the anchor a term of the vocabulary answers to
+    Anchors.ts                the anchor a word of the vocabulary answers to
+    Vocabulary.ts             every word one tongue knows, built off the wording itself
     Colourings.ts             the paintings a page offers: colour, hatching
     Languages.ts              the languages offered, and what each translates into
     Reading.ts                the address a blazon is read at, written and read back
@@ -549,12 +547,23 @@ into `lib`.
 
 `BlazonPage` takes a blazon, shows it translated, and draws the arms — in colour
 and in hatching, since both are ways of saying the same tinctures.
-`TincturesPage`, `DivisionsPage`, `OrdinariesPage` and `ChargesPage` document the
-vocabulary on one shared anatomy: the whole closed set hangs present at once, and the term being read is
-struck forward at full measure in both languages and both paintings — the English
-name and the French standing level, English first. What the documentation never
-shows is the enum value behind a term: a reader of it is learning heraldry, and
-`Colours.gules` is the caller's business, which is what this README is for.
+`VocabularyPage` documents the vocabulary, a page to each tongue: every word the
+parser reads in that tongue, filed under its own letter with the accents folded
+away, and the word being read struck forward at full measure in both paintings.
+It is built rather than written down — `utils/Vocabulary.ts` walks the same
+`BlazonWording` the writer uses, so a word added to the library arrives on the
+page of itself. What a word means is carried by the `Word` in
+`domain/translations`, beside its gender, its plural and the tinctures it takes,
+because a term's spellings need not mean the same thing: a besant is gold and a
+tourteau is not.
+
+Each word's example blazon carries that very spelling, written by handing the
+writer a vocabulary narrowed to the one word, and is parsed as the page is drawn;
+where the library reads a spelling and writes another, the entry says what it
+comes back as. Spellings that differ in nothing but a hyphen are the one word.
+What the documentation never shows is the enum value behind a term: a reader of
+it is learning heraldry, and `Colours.gules` is the caller's business, which is
+what this README is for.
 `ArmorialsPage` and `ArmorialPage` read a real armorial and own up to how much of
 it parses — and to what stopped the rest. `readArmorial` keeps each refusal
 beside the entry it refused and gathers the words the parser does not hold into
@@ -571,17 +580,17 @@ ask for: adding a word uncovers the next.
 
 The pages are components and nothing more — routing belongs to whatever mounts
 them, so `App.tsx` mounts a router over them and they link rather than call back.
-It serves `/`, `/doc`, `/doc/tinctures`, `/doc/divisions`, `/doc/ordinaries`,
-`/doc/charges`, `/doc/conventions`, `/armorials` and `/armorial/<slug>`, under
-whatever base the demo is served from:
+It serves `/`, `/doc`, `/doc/vocabulary/<fr|en>`, `/doc/conventions`,
+`/armorials` and `/armorial/<slug>`, under whatever base the demo is served from:
 GitHub Pages serves it from a subdirectory, which is the router's `basename` and
 nothing else's business.
 
-Two kinds of address carry more than the page. A term of the vocabulary answers
-to an anchor of its own — `/doc/ordinaries#saltire`, `/doc/tinctures#or` — so
-striking one leaves it in the address, the browser walks back through the terms
-that were read, and a reader can send someone the saltire rather than the
-ordinaries. And a blazon is offered by being a way to itself: every blazon shown
+Two kinds of address carry more than the page. A word of the vocabulary answers
+to an anchor of its own — `/doc/vocabulary/en#saltire`, `/doc/vocabulary/fr#or` —
+so striking one leaves it in the address, the browser walks back through the
+words that were read, and a reader can send someone the saltire rather than the
+whole vocabulary. Where one spelling names two things the rank is named after it,
+`#croix.charge` against `#croix.ordinary`, and only where it must be. And a blazon is offered by being a way to itself: every blazon shown
 on a reference links to `/?b=<blazon>&lang=fr` or `&lang=en`, which is the
 translator opened on that blazon, in the tongue it is written in. Both spellings
 are written once, in `utils/Anchors.ts` and `utils/Reading.ts`, because whoever

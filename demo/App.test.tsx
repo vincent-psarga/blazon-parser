@@ -31,30 +31,21 @@ describe('the rail', () => {
   test('keeps the documentation behind the menu until it is opened', () => {
     render(<App />);
     expect(doc()).toHaveAttribute('aria-expanded', 'false');
-    expect(inMenu('Tinctures')).toBeNull();
+    expect(inMenu('Conventions')).toBeNull();
   });
 
   test('offers the index alongside every page when opened', async () => {
     render(<App />);
     await openDoc();
-    for (const name of [
-      'Everything',
-      'Tinctures',
-      'Divisions',
-      'Ordinaries',
-      'Charges',
-      'Conventions',
-    ]) {
+    for (const name of ['Everything', 'French vocabulary', 'English vocabulary', 'Conventions']) {
       expect(inMenu(name)).toBeInTheDocument();
     }
   });
 
   test.each([
     ['Everything', 'The vocabulary', '/doc'],
-    ['Tinctures', 'Tinctures', '/doc/tinctures'],
-    ['Divisions', 'Divisions', '/doc/divisions'],
-    ['Ordinaries', 'Ordinaries', '/doc/ordinaries'],
-    ['Charges', 'Charges', '/doc/charges'],
+    ['French vocabulary', 'The French vocabulary', '/doc/vocabulary/fr'],
+    ['English vocabulary', 'The English vocabulary', '/doc/vocabulary/en'],
     ['Conventions', 'Conventions', '/doc/conventions'],
   ])('goes to %s', async (link, title, path) => {
     render(<App />);
@@ -67,7 +58,7 @@ describe('the rail', () => {
   test('marks Doc as where the reader is, on any documentation page', async () => {
     render(<App />);
     await openDoc();
-    await userEvent.setup().click(inMenu('Divisions')!);
+    await userEvent.setup().click(inMenu('English vocabulary')!);
     expect(doc()).toHaveAttribute('aria-current', 'page');
   });
 
@@ -80,7 +71,7 @@ describe('the rail', () => {
       render(<App />);
       await openDoc();
       await dismiss();
-      expect(inMenu('Tinctures')).toBeNull();
+      expect(inMenu('Conventions')).toBeNull();
     });
   });
 });
@@ -93,10 +84,9 @@ describe('the index', () => {
   });
 
   test.each([
-    ['Tinctures', 'Tinctures'],
-    ['Divisions', 'Divisions'],
-    ['Ordinaries', 'Ordinaries'],
-  ])('leads to the %s reference', async (link, title) => {
+    ['French vocabulary', 'The French vocabulary'],
+    ['English vocabulary', 'The English vocabulary'],
+  ])('leads to the %s', async (link, title) => {
     window.history.pushState(null, '', '/doc');
     render(<App />);
     const index = screen.getByRole('navigation', { name: 'Documentation' });
@@ -114,30 +104,30 @@ describe('the index', () => {
   });
 });
 
-describe('the anchor a term of the vocabulary answers to', () => {
-  test('leaves the struck term in the address', async () => {
-    window.history.pushState(null, '', '/doc/ordinaries');
+describe('the anchor a word of the vocabulary answers to', () => {
+  test('leaves the struck word in the address', async () => {
+    window.history.pushState(null, '', '/doc/vocabulary/en');
     render(<App />);
     await userEvent.setup().click(term('saltire'));
-    expect(window.location.pathname).toBe('/doc/ordinaries');
+    expect(window.location.pathname).toBe('/doc/vocabulary/en');
     expect(window.location.hash).toBe('#saltire');
   });
 
-  test('spells a term of two words the way an address spells things', async () => {
-    window.history.pushState(null, '', '/doc/ordinaries');
+  test('spells a word of two words the way an address spells things', async () => {
+    window.history.pushState(null, '', '/doc/vocabulary/en');
     render(<App />);
     await userEvent.setup().click(term('bend sinister'));
     expect(window.location.hash).toBe('#bend-sinister');
   });
 
-  test('reads the term named in the address on arrival', () => {
-    window.history.pushState(null, '', '/doc/ordinaries#saltire');
+  test('reads the word named in the address on arrival', () => {
+    window.history.pushState(null, '', '/doc/vocabulary/en#saltire');
     render(<App />);
     expect(term('saltire')).toHaveAttribute('aria-current', 'true');
   });
 
-  test('walks back through the terms that were read', async () => {
-    window.history.pushState(null, '', '/doc/tinctures');
+  test('walks back through the words that were read', async () => {
+    window.history.pushState(null, '', '/doc/vocabulary/en');
     render(<App />);
     const user = userEvent.setup();
     await user.click(term('gules'));
@@ -149,10 +139,10 @@ describe('the anchor a term of the vocabulary answers to', () => {
 
 describe('handing a term to the translator', () => {
   test('carries the struck blazon over in French, and leaves it in the address', async () => {
-    window.history.pushState(null, '', '/doc/tinctures');
+    window.history.pushState(null, '', '/doc/vocabulary/fr');
     render(<App />);
     const user = userEvent.setup();
-    await user.click(term('vert'));
+    await user.click(term('sinople'));
     await user.click(screen.getByRole('link', { name: 'De sinople.' }));
 
     expect(heading()).toBe('Blazon');
@@ -160,8 +150,8 @@ describe('handing a term to the translator', () => {
     expect(window.location.search).toContain('De%20sinople.');
   });
 
-  test('carries it over in English when the English blazon is the one followed', async () => {
-    window.history.pushState(null, '', '/doc/tinctures');
+  test('carries it over in English when the English page is the one read', async () => {
+    window.history.pushState(null, '', '/doc/vocabulary/en');
     render(<App />);
     const user = userEvent.setup();
     await user.click(term('vert'));
@@ -172,10 +162,10 @@ describe('handing a term to the translator', () => {
   });
 
   test('carries an ordinary over as a blazon the reader can then read back', async () => {
-    window.history.pushState(null, '', '/doc/ordinaries');
+    window.history.pushState(null, '', '/doc/vocabulary/fr');
     render(<App />);
     const user = userEvent.setup();
-    await user.click(term('saltire'));
+    await user.click(term('sautoir'));
     await user.click(screen.getByRole('link', { name: "D'argent au sautoir de gueules." }));
 
     expect(heading()).toBe('Blazon');
@@ -183,7 +173,7 @@ describe('handing a term to the translator', () => {
   });
 
   test('carries one of the counted arms over rather than the single one', async () => {
-    window.history.pushState(null, '', '/doc/ordinaries#chevron');
+    window.history.pushState(null, '', '/doc/vocabulary/fr#chevron');
     render(<App />);
     await userEvent
       .setup()
@@ -265,17 +255,17 @@ describe('served from a subdirectory, as on GitHub Pages', () => {
   });
 
   test('reads a page below the base', () => {
-    window.history.pushState(null, '', '/blazon-parser/doc/tinctures');
+    window.history.pushState(null, '', '/blazon-parser/doc/vocabulary/en');
     render(<App />);
-    expect(heading()).toBe('Tinctures');
+    expect(heading()).toBe('The English vocabulary');
   });
 
   test('keeps the base in the address when navigating', async () => {
     render(<App />);
     await openDoc();
-    await userEvent.setup().click(inMenu('Divisions')!);
-    expect(heading()).toBe('Divisions');
-    expect(window.location.pathname).toBe('/blazon-parser/doc/divisions');
+    await userEvent.setup().click(inMenu('English vocabulary')!);
+    expect(heading()).toBe('The English vocabulary');
+    expect(window.location.pathname).toBe('/blazon-parser/doc/vocabulary/en');
   });
 
   test('reads an armorial below the base', () => {
@@ -295,6 +285,6 @@ describe('served from a subdirectory, as on GitHub Pages', () => {
       '/blazon-parser/armorials'
     );
     await openDoc();
-    expect(inMenu('Tinctures')).toHaveAttribute('href', '/blazon-parser/doc/tinctures');
+    expect(inMenu('French vocabulary')).toHaveAttribute('href', '/blazon-parser/doc/vocabulary/fr');
   });
 });

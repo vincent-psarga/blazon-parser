@@ -243,6 +243,13 @@ body {
   color: var(--bone);
 }
 
+/* The letter is a divider as much as a heading: the rule under it is what parts
+   one letter of the vocabulary from the next. */
+.stack__letter {
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid rgb(var(--gauze) / 0.55);
+}
+
 .stack__law {
   margin: -0.35rem 0 0;
   font-size: 0.9375rem;
@@ -288,6 +295,16 @@ body {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   transition: color 200ms linear;
+}
+
+/* Said only where one spelling names two things, so it must not weigh as much
+   as the word it is telling apart. */
+.ghost__rank {
+  display: block;
+  font-weight: 500;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--bone-quiet);
 }
 
 .ghost__field {
@@ -408,24 +425,22 @@ body {
 }
 
 /*
- * A term has two names and they are one thing, so they stand level and are read
- * across rather than down — English first, the page being written in it. They
- * wrap to two lines rather than shrinking when the column will not hold both.
+ * The word itself, which is what the reader came for: it stands alone and at
+ * size, with its rank under it in the quiet the rank deserves.
  */
-.showing__names {
+.showing__word {
   margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem clamp(1.5rem, 4vw, 3rem);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1.75rem, 3.6vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: -0.005em;
+  color: var(--strike);
+  text-wrap: balance;
 }
 
-.showing__name {
-  display: grid;
-  gap: 0.3rem;
-  min-width: 0;
-}
-
-.showing__names dt {
+.showing__rank {
+  margin: -1rem 0 0;
   font-family: var(--display);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -434,16 +449,18 @@ body {
   color: var(--bone-quiet);
 }
 
-.showing__names dd {
-  margin: 0;
+/* Spellings that differ in nothing but a hyphen are the one word, and are said
+   under it rather than filed apart from it. */
+.showing__spellings {
+  margin: -0.85rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--bone-quiet);
+}
+
+.showing__spellings b {
   font-family: var(--display);
-  font-weight: 700;
-  /* Smaller than when one name sat under the other: two of them share the
-     measure now, and the pair is what must fit. */
-  font-size: clamp(1.75rem, 3.6vw, 2.75rem);
-  line-height: 1;
-  letter-spacing: -0.005em;
-  color: var(--strike);
+  font-weight: 600;
+  color: var(--bone);
 }
 
 .showing__gloss {
@@ -451,6 +468,70 @@ body {
   max-width: var(--measure);
   color: var(--bone);
   text-wrap: pretty;
+}
+
+/*
+ * What a word read and never written comes back as. It is set below the blazon
+ * that was typed, quieter than it: the typed blazon is the offer, and this is
+ * the answer the library gave it as the page was drawn.
+ */
+.showing__written {
+  margin: -0.85rem 0 0;
+  display: grid;
+  gap: 0.35rem;
+  justify-items: start;
+  font-size: 0.9375rem;
+  color: var(--bone-quiet);
+}
+
+.showing__written span {
+  font-family: var(--display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* A refusal is a bug and is shown as one rather than quietly swallowed. */
+.showing__refused {
+  margin: 0;
+  color: var(--strike);
+}
+
+/*
+ * The word elsewhere: the other spellings of it here, and what the other tongue
+ * says it by. Nothing is elided — a reader after the synonyms wants all of them.
+ */
+.showing__sightings {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.9rem;
+  font-family: var(--display);
+  font-size: 1rem;
+}
+
+.showing__sightings .showing__heading {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+}
+
+.showing__sightings a {
+  color: var(--bone);
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--gauze) / 0.9);
+  text-underline-offset: 0.3em;
+  text-decoration-thickness: 1px;
+  transition: color 140ms linear;
+}
+
+.showing__sightings a:hover,
+.showing__sightings a:focus-visible {
+  color: var(--strike);
 }
 
 /* A rule the term itself answers to, standing under the gloss that describes it. */
@@ -569,11 +650,9 @@ body {
   justify-self: start;
 }
 
-.showing__usage [lang='fr'] {
-  color: var(--bone-quiet);
-}
-
-.showing__usage [lang='en'] {
+/* One blazon, in the tongue whose page this is: there is no second to tell it
+   from, so nothing here says which tongue it is. */
+.showing__usage .reading {
   font-weight: 700;
   color: var(--bone);
 }
@@ -654,20 +733,27 @@ body {
   max-width: 60rem;
 }
 
-.index a {
-  text-decoration: none;
-  color: inherit;
+/* The card is no longer one link: the name leads to the page and every shield
+   leads to the place it was drawn from, and a link inside a link is not a thing
+   a browser will hold. */
+.index__page {
   display: grid;
   gap: 0.5rem;
 }
 
-.index a:hover .index__name,
-.index a:focus-visible .index__name {
+.index a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.index__name:hover,
+.index__name:focus-visible {
   color: var(--strike);
   text-shadow: 0 0 18px rgb(251 247 238 / 0.35);
 }
 
 .index__name {
+  display: block;
   font-family: var(--display);
   font-weight: 700;
   font-size: clamp(1.75rem, 5vw, 2.75rem);
@@ -709,14 +795,20 @@ body {
   margin-top: 0.5rem;
 }
 
+.index__arm {
+  display: block;
+}
+
 .index__arm img {
   display: block;
   filter: brightness(0.62) saturate(0.85);
   transition: filter 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.index a:hover .index__arm img,
-.index a:focus-visible .index__arm img {
+/* One shield lights rather than the whole row: each is its own way in now, and
+   what the pointer is on is what it leads to. */
+.index__arm:hover img,
+.index__arm:focus-visible img {
   filter: brightness(1) saturate(1);
 }
 

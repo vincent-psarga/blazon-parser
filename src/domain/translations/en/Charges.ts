@@ -19,36 +19,93 @@ import { Word } from '../Word';
 // English gave no name to — the furs — and for a blazon that would rather say
 // the tincture out loud.
 export const EnglishChargeType: Translation<ChargeType> = {
-  [ChargeType.annulet]: new Word('annulet'),
-  [ChargeType.billet]: new Word('billet'),
-  [ChargeType.lozenge]: new Word('lozenge', { plural: 'lozenges' }),
+  [ChargeType.annulet]: new Word(
+    'annulet',
+    'A plain ring. What it encloses is the field showing through, not its own tincture, which is what makes it an annulet rather than a roundel.'
+  ),
+  [ChargeType.billet]: new Word(
+    'billet',
+    'An upright rectangle, twice as tall as it is wide. The name is the little billet — a note, or a log.'
+  ),
+  [ChargeType.lozenge]: new Word(
+    'lozenge',
+    'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again.',
+    { plural: 'lozenges' }
+  ),
   [ChargeType.roundel]: [
-    new Word('roundel'),
-    new Word('besant', { defaultTincture: Metals.or }),
+    new Word(
+      'roundel',
+      'A plain disc, named without its tincture. English keeps a name apiece for the colours it is drawn in, so this word is what is left for the tinctures it named none for — the furs — and for a blazon that would rather say the tincture out loud. Written in a tincture that has its own name, it comes back under that name.'
+    ),
+    new Word(
+      'besant',
+      'A plain disc borne or, named for the gold coin of Byzantium: gold by being a besant, so the blazon writes no tincture after it.',
+      { defaultTincture: Metals.or }
+    ),
     // The commoner spelling of the same coin, read and not written back.
-    new Word('bezant', { defaultTincture: Metals.or }),
-    new Word('plate', { defaultTincture: Metals.argent }),
-    new Word('torteau', { plural: 'torteaux', defaultTincture: Colours.gules }),
-    new Word('hurt', { defaultTincture: Colours.azure }),
-    new Word('pellet', { defaultTincture: Colours.sable }),
-    new Word('pomme', { defaultTincture: Colours.vert }),
+    new Word(
+      'bezant',
+      'A plain disc borne or, named for the gold coin of Byzantium: gold by being a bezant, so the blazon writes no tincture after it. This is the commoner of the two spellings.',
+      {
+        defaultTincture: Metals.or,
+      }
+    ),
+    new Word(
+      'plate',
+      'A plain disc borne argent, named for the silver plate. The name says the tincture, so the blazon does not.',
+      { defaultTincture: Metals.argent }
+    ),
+    new Word(
+      'torteau',
+      'A plain disc borne gules, named for the red cake. The name says the tincture, so the blazon does not.',
+      { plural: 'torteaux', defaultTincture: Colours.gules }
+    ),
+    new Word(
+      'hurt',
+      'A plain disc borne azure, named for a bruise. The name says the tincture, so the blazon does not.',
+      { defaultTincture: Colours.azure }
+    ),
+    new Word(
+      'pellet',
+      'A plain disc borne sable, named for a cannon shot. The name says the tincture, so the blazon does not.',
+      { defaultTincture: Colours.sable }
+    ),
+    new Word(
+      'pomme',
+      'A plain disc borne vert, named for an apple. The name says the tincture, so the blazon does not.',
+      { defaultTincture: Colours.vert }
+    ),
   ],
   // A drop, and a word English took from French whole. Parker spells the charge
   // goutte and the field it is sown over gutté or gutty.
-  [ChargeType.goutte]: new Word('goutte'),
+  [ChargeType.goutte]: new Word(
+    'goutte',
+    'A drop, point upwards: a pear-shape drawn out to a point, with the sides curving in before they swell. Heraldry names the liquid where it can — gutté d’eau for the silver drops, de sang for the red — which is a vocabulary of waters and bloods this does not read, so a field sown with them is sown in as many words.'
+  ),
   // The five-pointed star of the spur rowel. "It usually has five points, and
   // this number is always to be understood when no other is mentioned."
-  [ChargeType.mullet]: new Word('mullet'),
+  [ChargeType.mullet]: new Word(
+    'mullet',
+    'A star of five straight rays, the rowel of a spur. Five is understood wherever the blazon counts none. It is not the estoile, which has six rays and draws them wavy: where the rays are straight the figure is a mullet, whatever its name sounds like.'
+  ),
   // The lily. English keeps the French name and hyphenates it, and the plural
   // is French too — the flowers are several, not the lily.
   //
   // The hyphens are not settled and neither is the last letter, so the armorials
   // are read however they spell it and written back Parker's way.
   [ChargeType.fleurDeLis]: [
-    new Word('fleur-de-lis', { plural: 'fleurs-de-lis' }),
-    new Word('fleur-de-lys', { plural: 'fleurs-de-lys' }),
-    new Word('fleur de lis', { plural: 'fleurs de lis' }),
-    new Word('fleur de lys', { plural: 'fleurs de lys' }),
+    new Word(
+      'fleur-de-lis',
+      'The lily, not as it grows but as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. The plural counts the flowers rather than the lily — fleurs-de-lis.',
+      { plural: 'fleurs-de-lis' }
+    ),
+    new Word(
+      'fleur-de-lys',
+      'The lily as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. This is the spelling ending in the letter half the armorials prefer.',
+      { plural: 'fleurs-de-lys' }
+    ),
+    new Word('fleur de lis', '', { plural: 'fleurs de lis' }),
+    new Word('fleur de lys', '', { plural: 'fleurs de lys' }),
   ],
   // The ordinary's own figure made small, so English names it by the ordinary
   // and says where it stops. Humetty is the older word for couped and is read
@@ -58,8 +115,19 @@ export const EnglishChargeType: Translation<ChargeType> = {
   // crossed arms", which is another figure, and a vocabulary that answered to
   // the word would be promising to draw one.
   [ChargeType.crossCouped]: [
-    new Word('cross couped', { plural: 'crosses couped' }),
-    new Word('cross humetty', { plural: 'crosses humetty' }),
+    new Word(
+      'cross couped',
+      'A cross of four equal arms, small enough to be borne as a charge and stopping short of every edge — which is what couped means. It is not the crosslet, whose arms are themselves crossed.',
+      { plural: 'crosses couped' }
+    ),
+    new Word(
+      'cross humetty',
+      'A cross of four equal arms, small enough to be borne as a charge and stopping short of every edge. Humetty is the older word for couped.',
+      { plural: 'crosses humetty' }
+    ),
   ],
-  [ChargeType.crescent]: new Word('crescent'),
+  [ChargeType.crescent]: new Word(
+    'crescent',
+    'A half-moon with the horns uppermost, which is where a crescent’s horns stand unless a blazon says otherwise — and no blazon can say otherwise here, the increscent and the decrescent being turnings this does not read.'
+  ),
 };

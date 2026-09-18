@@ -32,6 +32,7 @@ export class FrenchWord extends Word {
 
   constructor(
     value: string,
+    description: string = '',
     options?: Partial<{
       plural: string;
       allowedTinctures: readonly Tincture[];
@@ -41,7 +42,7 @@ export class FrenchWord extends Word {
       needsElision: boolean;
     }>
   ) {
-    super(value, options);
+    super(value, description, options);
     this.isFeminine = options?.isFeminine ?? false;
     this.acceptsBothGender = options?.acceptsBothGender ?? false;
     this.needsElision = options?.needsElision ?? /^[aeiouyàâäéèêëîïôöùûü]/.test(value);

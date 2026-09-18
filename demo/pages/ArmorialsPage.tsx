@@ -37,7 +37,7 @@ export function ArmorialsPage({ armorials }: ArmorialsPageProps) {
             <span className="index__name">{armorial.name}</span>
             <p className="index__note">
               {tally(armorial.entries.length, 'entry', 'entries')} ·{' '}
-              {LANGUAGES[codeOf(armorial.language)].label} · {armorial.licence}
+              {LANGUAGES[codeOf(armorial.language)].named} · {armorial.licence}
             </p>
           </Link>
         ))}

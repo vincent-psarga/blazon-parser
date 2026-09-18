@@ -29,6 +29,6 @@ export const EnglishBlazonWording: BlazonWording = {
   vary: (word, tinctures, pieces) => `${word.value} ${OF} ${pieces} ${tinctures}`,
   // "semy of billets": the English spelling of the participle, though both it
   // and the French one are read.
-  strew: (word) => `${SOWN[0]} ${SOWN_OF} ${word.plural}`,
+  strew: (word) => `${SOWN[0].value} ${SOWN_OF} ${word.plural}`,
   conjunction: CONJUNCTION,
 };

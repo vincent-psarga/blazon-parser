@@ -41,7 +41,7 @@ const NAMED_STREWING = spelledTerm(strewnTerms(EnglishStrewings), asOrdinary);
 // "Azure semy of billets or": the figure itself, named in the plural, a field
 // being sown with more of it than anybody counts.
 const SOWN_CHARGE = kright(
-  seq(anyKeyword(SOWN), keyword(SOWN_OF)),
+  seq(anyKeyword(SOWN.map((word) => word.value)), keyword(SOWN_OF)),
   spelledTerm(EnglishChargeType, asOrdinary, asSeveral)
 );
 

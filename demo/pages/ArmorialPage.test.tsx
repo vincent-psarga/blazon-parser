@@ -75,7 +75,7 @@ describe('ArmorialPage', () => {
 
   test('says what the armorial holds, in which tongue, and under which licence', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
-    expect(screen.getByText(/2 entries/)).toHaveTextContent('2 entries · Français · MIT');
+    expect(screen.getByText(/2 entries/)).toHaveTextContent('2 entries · French · MIT');
   });
 
   test('carries one row per entry, unread ones included', () => {
