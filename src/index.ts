@@ -83,6 +83,7 @@ export {
   wordIn,
   wordOf,
   wordsOf,
+  writtenAs,
 } from './domain/translations/Translation';
 export type { Spelled, TermWord, Translation } from './domain/translations/Translation';
 export { counted, numberWord } from './domain/translations/Numbers';
@@ -90,7 +91,9 @@ export type { NumberWords } from './domain/translations/Numbers';
 export { strewnIn, strewnTerms } from './domain/translations/Strewings';
 export type { Strewings } from './domain/translations/Strewings';
 export { Word } from './domain/translations/Word';
+export type { AlternateWording, Spelling, Wording, WordOptions } from './domain/translations/Word';
 export { FrenchWord } from './domain/translations/fr/FrenchWord';
+export type { FrenchWordOptions } from './domain/translations/fr/FrenchWord';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';
 export { EnglishFurType } from './domain/translations/en/Furs';
 export { EnglishVariationType } from './domain/translations/en/Variations';

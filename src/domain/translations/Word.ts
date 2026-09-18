@@ -1,5 +1,40 @@
 import { TINCTURES, Tincture } from '../models/Tinctures';
 
+/** One way a word is written, and how that writing counts more than one of it. */
+export interface Spelling {
+  readonly value: string;
+  /** The spelling as more than one: "fleurs-de-lys" for "fleur-de-lys". */
+  readonly plural: string;
+}
+
+/** What an alternate spelling needs said about it, where the default is wrong. */
+export interface Wording {
+  readonly plural?: string;
+}
+
+/**
+ * The other ways the same word is written, each under the spelling itself.
+ *
+ * A spelling that differs from the canonical one in nothing but a hyphen or a
+ * letter is not another word — "fleur-de-lys" is the lily, spelled as half the
+ * armorials spell it — so it is declared on the word rather than beside it. All
+ * of them are read; one of them is written; and a reader who looks the word up
+ * is shown the lot under the one heading.
+ *
+ * A spelling that is genuinely another word stays a word of its own. Vairy is
+ * English and vairé is the French participle English borrowed, and telling a
+ * reader they are the same spelling would be telling them something false.
+ */
+export type AlternateWording = Readonly<Record<string, Wording>>;
+
+/** Everything a word may be told about itself beyond how it is spelled. */
+export interface WordOptions {
+  readonly plural?: string;
+  readonly alternateWording?: AlternateWording;
+  readonly allowedTinctures?: readonly Tincture[];
+  readonly defaultTincture?: Tincture;
+}
+
 /**
  * One word of a language's heraldic vocabulary, with what the grammar needs to
  * put it in a sentence and what a reader needs to know what it means.
@@ -17,6 +52,11 @@ import { TINCTURES, Tincture } from '../models/Tinctures';
  * describes the word, and a word added to the vocabulary arrives with its
  * meaning rather than waiting for a documentation page to catch up.
  *
+ * A word may be written more than one way without being more than one word. The
+ * spellings that differ in nothing but a hyphen or a letter are carried here, so
+ * that the vocabulary holds one entry where heraldry has one word and the parser
+ * still answers to every spelling of it.
+ *
  * A word may also carry the tincture, which is the roundel's doing. Heraldry
  * names that charge after the coin, the disc or the cake it is the picture of,
  * and each of those names is a tincture as well as a shape: a bezant is gold
@@ -29,6 +69,9 @@ import { TINCTURES, Tincture } from '../models/Tinctures';
 export class Word {
   /** The word as more than one: "fasces" for "fasce". */
   public readonly plural: string;
+
+  /** Every spelling this word answers to, its own first and the one it is written in. */
+  public readonly spellings: readonly Spelling[];
 
   /**
    * The tinctures the word may be borne in. Every one of them, for the words
@@ -43,21 +86,22 @@ export class Word {
   /**
    * What the word means, in as many sentences as it takes.
    *
-   * Empty where there is nothing of the word's own to say. A number is not a
-   * heraldic term and glossing "trois" would be glossing French; a spelling that
-   * differs from another only in its hyphens says exactly what that one says,
-   * and is read under it rather than beside it.
+   * Empty where there is nothing of the word's own to say: a number is not a
+   * heraldic term, and glossing "trois" would be glossing French.
    */
   constructor(
     public readonly value: string,
     public readonly description: string = '',
-    options?: Partial<{
-      plural: string;
-      allowedTinctures: readonly Tincture[];
-      defaultTincture: Tincture;
-    }>
+    options?: WordOptions
   ) {
     this.plural = options?.plural ?? `${value}s`;
+    this.spellings = [
+      { value, plural: this.plural },
+      ...Object.entries(options?.alternateWording ?? {}).map(([spelling, wording]) => ({
+        value: spelling,
+        plural: wording.plural ?? `${spelling}s`,
+      })),
+    ];
     this.defaultTincture = options?.defaultTincture;
     this.allowedTinctures =
       options?.allowedTinctures ??

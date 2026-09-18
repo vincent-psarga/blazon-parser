@@ -105,6 +105,32 @@ describe('writing a sown field back', () => {
     );
   });
 
+  describe('the ways a sowing is written', () => {
+    // One word, spelled as the armorials spell it: all of them are read and the
+    // English one is written.
+    test.each(['semy', 'semé', 'semee'])('reads "%s of annulets" as the same field', (sown) => {
+      expect(parser.parse(`Azure ${sown} of annulets or`).field).toEqual(
+        parser.parse('Azure semy of annulets or').field
+      );
+    });
+
+    test.each(['semy-de-lis', 'semy-de-lys', 'semé-de-lis', 'semy de lis'])(
+      'reads "%s" as the same field',
+      (sown) => {
+        expect(parser.parse(`Azure ${sown} or`).field).toEqual(
+          parser.parse('Azure semy-de-lis or').field
+        );
+      }
+    );
+
+    test('writes the one spelling back, whichever was read', () => {
+      expect(writer.write(parser.parse('Azure semee of annulets or'))).toBe(
+        'Azure semy of annulets or.'
+      );
+      expect(writer.write(parser.parse('Azure semy-de-lys or'))).toBe('Azure semy-de-lis or.');
+    });
+  });
+
   test.each([
     'Azure billetty or',
     'Azure semy of annulets or',

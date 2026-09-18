@@ -12,6 +12,7 @@ import {
   wordIn,
   wordOf,
   wordsOf,
+  writtenAs,
 } from './Translation';
 import { Word } from './Word';
 import { EnglishChargeType } from './en/Charges';
@@ -186,5 +187,50 @@ describe('a vocabulary looked up in the plural', () => {
   test('names every ordinary in the plural exactly once', () => {
     const plurals = bySpelling(FrenchOrdinaryType, asSeveral);
     expect(plurals.size).toBe(Object.values(OrdinaryType).length);
+  });
+});
+
+describe('a vocabulary whose words are written more than one way', () => {
+  const Lilies: Translation<Partition> = {
+    [Partition.mantled]: new Word('mantelé'),
+    [Partition.mantledReversed]: new Word('fleur-de-lis', '', {
+      plural: 'fleurs-de-lis',
+      alternateWording: { 'fleur de lys': { plural: 'fleurs de lys' } },
+    }),
+  };
+
+  test('counts the spellings a term accepts rather than the words', () => {
+    expect(spellingsOf(Lilies, Partition.mantledReversed)).toEqual([
+      'fleur-de-lis',
+      'fleur de lys',
+    ]);
+  });
+
+  test('reads the term back from an alternate as readily as from the canonical', () => {
+    const index = bySpelling(Lilies);
+    for (const spelling of ['fleur-de-lis', 'fleur de lys']) {
+      expect(index.get(spelling)?.term).toBe(Partition.mantledReversed);
+    }
+  });
+
+  test('leads from an alternate to the word itself, which is what agrees', () => {
+    // The grammar agrees with the word, and the word is the same word however it
+    // was written: there is no second one to disagree.
+    expect(bySpelling(Lilies).get('fleur de lys')?.word).toBe(
+      bySpelling(Lilies).get('fleur-de-lis')?.word
+    );
+  });
+
+  test('counts an alternate in its own plural', () => {
+    const several = bySpelling(Lilies, asSeveral);
+    expect(several.get('fleurs de lys')?.term).toBe(Partition.mantledReversed);
+    expect(several.get('fleurs-de-lis')?.term).toBe(Partition.mantledReversed);
+  });
+
+  test('names every way the vocabulary writes anything', () => {
+    expect(writtenAs(...wordsOf(Lilies, Partition.mantledReversed))).toEqual([
+      'fleur-de-lis',
+      'fleur de lys',
+    ]);
   });
 });

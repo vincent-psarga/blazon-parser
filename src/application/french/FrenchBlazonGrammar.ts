@@ -12,10 +12,10 @@ import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryA
 import { WrongTinctureArticle } from '../../domain/errors/parsing/WrongTinctureArticle';
 import { FrenchNumbers } from '../../domain/translations/fr/Numbers';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
-import { asSeveral } from '../../domain/translations/Translation';
+import { asSeveral, writtenAs } from '../../domain/translations/Translation';
 import { TokenKind } from '../lexer/Lexer';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
-import { guard, keyword, optional, spelledTerm, term } from '../parser/Combinators';
+import { anyKeyword, guard, keyword, optional, spelledTerm, term } from '../parser/Combinators';
 import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
 import { NOT_IN_NUMBER, alone, bearings, several } from '../parser/Borne';
 import { number } from '../parser/Numbers';
@@ -118,7 +118,7 @@ const NAMED_STREWING = spelledTerm(strewnTerms(FrenchStrewings), asOrdinary);
 // "D'azur semé de billettes d'or": the figure itself, named in the plural under
 // the same "de" a tincture is introduced by, which elides before it as readily.
 const SOWN_CHARGE = kright(
-  keyword(SOWN.value),
+  anyKeyword(writtenAs(SOWN)),
   apply(
     guard(
       seq(ARTICLE, spelledTerm(FrenchChargeType, asOrdinary, asSeveral)),

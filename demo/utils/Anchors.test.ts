@@ -8,11 +8,11 @@ describe('the address a word answers to', () => {
     expect(anchorOf('Per Bend')).toBe('per-bend');
   });
 
-  test('keeps the accents, two spellings differing in nothing else being two words', () => {
-    // English writes the borrowed participle both ways, and neither may take the
-    // other's address.
+  test('keeps the accents, which belong to the word as much as its letters do', () => {
+    // Folding them would file the French participle English borrowed at the
+    // address of the English word beside it.
     expect(anchorOf('vairé')).toBe('vairé');
-    expect(anchorOf('vaire')).toBe('vaire');
+    expect(anchorOf('émanché')).toBe('émanché');
   });
 
   test('names the rank after the word where one spelling names two things', () => {

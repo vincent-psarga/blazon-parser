@@ -1,5 +1,5 @@
 import { Tincture } from '../models/Tinctures';
-import { Word } from './Word';
+import { Spelling, Word } from './Word';
 
 /**
  * How one language spells every term of an enum. A term may have more than one
@@ -64,12 +64,20 @@ export function wordIn<T extends string, W extends Word>(
   );
 }
 
-/** Every spelling a term accepts, the canonical one first. */
+/**
+ * Every spelling a term accepts, the canonical one first.
+ *
+ * A word may answer to several spellings without being several words, so what is
+ * counted here is spellings and not words: "fleur-de-lys" is one of the lily's
+ * four and none of them is a word of its own.
+ */
 export function spellingsOf<T extends string, W extends Word>(
   translation: Translation<T, W>,
   term: T
 ): readonly string[] {
-  return wordsOf(translation, term).map((word) => word.value);
+  return wordsOf(translation, term).flatMap((word) =>
+    word.spellings.map((spelling) => spelling.value)
+  );
 }
 
 /** The spelling a term is written with. */
@@ -80,14 +88,25 @@ export function nameOf<T extends string, W extends Word>(
   return wordOf(translation, term).value;
 }
 
-/** Which spelling of a word a lookup is keyed on: the one, or the several. */
-export type Spelled<W extends Word> = (word: W) => string;
+/**
+ * Every way these words may be written, the alternates along with the canonical
+ * ones.
+ *
+ * What a grammar matching a bare word needs is the spellings and not the words:
+ * a keyword names no term, so all it can report is that one of them was there.
+ */
+export function writtenAs(...words: readonly Word[]): readonly string[] {
+  return words.flatMap((word) => word.spellings.map((spelling) => spelling.value));
+}
 
-/** A word as one of it: the spelling a translation is written in. */
-export const asOne = <W extends Word>(word: W): string => word.value;
+/** Which form of a spelling a lookup is keyed on: the one, or the several. */
+export type Spelled = (spelling: Spelling) => string;
 
-/** A word as several of them: "chevrons" for "chevron". */
-export const asSeveral = <W extends Word>(word: W): string => word.plural;
+/** A spelling as one of it, which is how a translation writes it. */
+export const asOne: Spelled = (spelling) => spelling.value;
+
+/** A spelling as several of them: "chevrons" for "chevron". */
+export const asSeveral: Spelled = (spelling) => spelling.plural;
 
 /**
  * Inverts a translation into a lookup from spelling to term, folded to lower
@@ -97,18 +116,25 @@ export const asSeveral = <W extends Word>(word: W): string => word.plural;
  * that reads a word has to agree with the one actually written rather than with
  * the term's canonical spelling.
  *
- * Which spelling is looked up is asked for, because a blazon naming several of
- * something names them in the plural, and the plural is a property of the word
- * rather than a term of its own.
+ * Which form is looked up is asked for, because a blazon naming several of
+ * something names them in the plural, and the plural is a property of the
+ * spelling rather than a term of its own.
+ *
+ * Every spelling a word answers to is indexed, the alternates along with the
+ * canonical one: they are the same word and lead to the same word, which is what
+ * lets a grammar agree with "fleur-de-lys" exactly as it agrees with the
+ * spelling that will be written back.
  */
 export function bySpelling<T extends string, W extends Word>(
   translation: Translation<T, W>,
-  spelled: Spelled<W> = asOne
+  spelled: Spelled = asOne
 ): ReadonlyMap<string, TermWord<T, W>> {
   const terms = new Map<string, TermWord<T, W>>();
   for (const term of Object.keys(translation) as T[]) {
     for (const word of wordsOf(translation, term)) {
-      terms.set(spelled(word).toLowerCase(), { term, word });
+      for (const spelling of word.spellings) {
+        terms.set(spelled(spelling).toLowerCase(), { term, word });
+      }
     }
   }
   return terms;

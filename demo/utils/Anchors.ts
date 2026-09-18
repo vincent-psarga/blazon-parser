@@ -4,8 +4,9 @@
  * A word is what the reader came for, so a word is what the address names:
  * /doc/vocabulary/fr#fleur-de-lys, /doc/vocabulary/en#bar-gemel. A spelling that
  * runs to several words is joined by the hyphen a URL prefers to a space, and
- * the accents are left alone — French has two spellings of the one English word
- * that differ in nothing else, and folding them would put both at one address.
+ * the accents are left alone: vairé is the French participle English borrowed
+ * and vairy is the English word beside it, and folding the accent would file the
+ * one at the other's address.
  *
  * Where one spelling names two things — a word that is a charge in one rank and
  * a band in another — the rank is named after it: #croix.charge. Only the

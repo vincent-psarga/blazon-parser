@@ -103,14 +103,15 @@ export function anyKeyword(expected: readonly string[]): Parser<TokenKind, Token
  * one — no term of either vocabulary begins with it, and a blazon that opens on
  * an article is naming a tincture rather than a charge.
  *
- * Which spelling is matched is the caller's to say: a blazon bearing several of
- * an ordinary names them in the plural, and only the rule reading the number
- * knows that it does.
+ * Which form is matched is the caller's to say: a blazon bearing several of an
+ * ordinary names them in the plural, and only the rule reading the number knows
+ * that it does. Every spelling a word answers to is offered under both, so an
+ * alternate wording is read exactly as the spelling it will be written back in.
  */
 export function spelledTerm<T extends string, W extends Word>(
   translation: Translation<T, W>,
   vocabulary: Vocabulary,
-  spelled: Spelled<W> = asOne
+  spelled: Spelled = asOne
 ): Parser<TokenKind, TermWord<T, W>> {
   const terms = bySpelling(translation, spelled);
   const longest = Math.max(...Array.from(terms.keys(), (spelling) => spelling.split(' ').length));

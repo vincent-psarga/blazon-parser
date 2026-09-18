@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
 import { BlazonShield } from './BlazonShield';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
-import { isAnchored } from '../utils/Anchors';
+import { anchorOf, isAnchored } from '../utils/Anchors';
 import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
 import { readingPath } from '../utils/Reading';
 import { Sighting, VocabularyEntry, lettersOf, vocabularyPath } from '../utils/Vocabulary';
@@ -39,8 +39,16 @@ export function Reference({
   colourings = COLOURINGS,
 }: ReferenceProps) {
   const { hash } = useLocation();
-  // No anchor means the head of the vocabulary, so the page is never empty.
-  const struck = entries.find((entry) => isAnchored(entry.anchor, hash)) ?? entries[0];
+  // A word answers to every way it is written, not only to the one it is written
+  // in: whoever met "bezant" in an armorial looks that up, and is shown the word
+  // it is a writing of. No anchor at all means the head of the vocabulary, so
+  // the page is never empty.
+  const struck =
+    entries.find((entry) => isAnchored(entry.anchor, hash)) ??
+    entries.find((entry) =>
+      entry.spellings.some((spelling) => isAnchored(anchorOf(spelling), hash))
+    ) ??
+    entries[0];
   const letters = lettersOf(entries);
 
   const reading = useRef<HTMLDivElement>(null);
@@ -161,9 +169,13 @@ export function Reference({
             </h2>
             <p className="showing__rank">{struck.rank}</p>
 
+            {/* The other ways the same word is written, which are the word and
+                not words of their own: they stand under it rather than beside it
+                in the stack, and the blazon below is written in the one that
+                leads. */}
             {struck.spellings.length > 1 && (
               <p className="showing__spellings">
-                Also written{' '}
+                <span className="showing__heading">Also written</span>
                 {struck.spellings
                   .filter((spelling) => spelling !== struck.word)
                   .map((spelling) => (

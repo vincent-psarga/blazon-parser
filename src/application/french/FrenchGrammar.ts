@@ -3,7 +3,8 @@ import { FrenchWord } from '../../domain/translations/fr/FrenchWord';
 import { FrenchPlain } from '../../domain/translations/fr/Plain';
 import { PIECES } from '../../domain/translations/fr/Variations';
 import { TokenKind } from '../lexer/Lexer';
-import { keyword } from '../parser/Combinators';
+import { writtenAs } from '../../domain/translations/Translation';
+import { anyKeyword, keyword } from '../parser/Combinators';
 
 // French plumbing, not heraldry: the articles and conjunctions that hold a
 // blazon together, whether it is being read or written. Every heraldic term
@@ -92,7 +93,7 @@ export function sownIn(word: FrenchWord): string {
  * say, and is said there, beside every other word a reader of the armorials
  * meets.
  */
-export const PLAIN = keyword(FrenchPlain.value);
+export const PLAIN = anyKeyword(writtenAs(FrenchPlain));
 
 /** The conjunction joining the halves of a divided field. */
 export const CONJUNCTION = 'et';

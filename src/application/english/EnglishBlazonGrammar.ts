@@ -5,7 +5,7 @@ import { EnglishVariationType, OF } from '../../domain/translations/en/Variation
 import { EnglishChargeType } from '../../domain/translations/en/Charges';
 import { EnglishStrewings, OF as SOWN_OF, SOWN } from '../../domain/translations/en/Strewings';
 import { strewnTerms } from '../../domain/translations/Strewings';
-import { asSeveral } from '../../domain/translations/Translation';
+import { asSeveral, writtenAs } from '../../domain/translations/Translation';
 import { EnglishOrdinaryType } from '../../domain/translations/en/Ordinaries';
 import { EnglishNumbers } from '../../domain/translations/en/Numbers';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
@@ -41,7 +41,7 @@ const NAMED_STREWING = spelledTerm(strewnTerms(EnglishStrewings), asOrdinary);
 // "Azure semy of billets or": the figure itself, named in the plural, a field
 // being sown with more of it than anybody counts.
 const SOWN_CHARGE = kright(
-  seq(anyKeyword(SOWN.map((word) => word.value)), keyword(SOWN_OF)),
+  seq(anyKeyword(writtenAs(...SOWN)), keyword(SOWN_OF)),
   spelledTerm(EnglishChargeType, asOrdinary, asSeveral)
 );
 

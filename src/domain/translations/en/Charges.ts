@@ -37,18 +37,12 @@ export const EnglishChargeType: Translation<ChargeType> = {
       'roundel',
       'A plain disc, named without its tincture. English keeps a name apiece for the colours it is drawn in, so this word is what is left for the tinctures it named none for — the furs — and for a blazon that would rather say the tincture out loud. Written in a tincture that has its own name, it comes back under that name.'
     ),
+    // The commoner spelling is the z, and the s is the one written back, French
+    // calling the same coin a besant.
     new Word(
       'besant',
       'A plain disc borne or, named for the gold coin of Byzantium: gold by being a besant, so the blazon writes no tincture after it.',
-      { defaultTincture: Metals.or }
-    ),
-    // The commoner spelling of the same coin, read and not written back.
-    new Word(
-      'bezant',
-      'A plain disc borne or, named for the gold coin of Byzantium: gold by being a bezant, so the blazon writes no tincture after it. This is the commoner of the two spellings.',
-      {
-        defaultTincture: Metals.or,
-      }
+      { defaultTincture: Metals.or, alternateWording: { bezant: {} } }
     ),
     new Word(
       'plate',
@@ -93,20 +87,18 @@ export const EnglishChargeType: Translation<ChargeType> = {
   //
   // The hyphens are not settled and neither is the last letter, so the armorials
   // are read however they spell it and written back Parker's way.
-  [ChargeType.fleurDeLis]: [
-    new Word(
-      'fleur-de-lis',
-      'The lily, not as it grows but as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. The plural counts the flowers rather than the lily — fleurs-de-lis.',
-      { plural: 'fleurs-de-lis' }
-    ),
-    new Word(
-      'fleur-de-lys',
-      'The lily as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. This is the spelling ending in the letter half the armorials prefer.',
-      { plural: 'fleurs-de-lys' }
-    ),
-    new Word('fleur de lis', '', { plural: 'fleurs de lis' }),
-    new Word('fleur de lys', '', { plural: 'fleurs de lys' }),
-  ],
+  [ChargeType.fleurDeLis]: new Word(
+    'fleur-de-lis',
+    'The lily, not as it grows but as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. The plural counts the flowers rather than the lily — fleurs-de-lis.',
+    {
+      plural: 'fleurs-de-lis',
+      alternateWording: {
+        'fleur-de-lys': { plural: 'fleurs-de-lys' },
+        'fleur de lis': { plural: 'fleurs de lis' },
+        'fleur de lys': { plural: 'fleurs de lys' },
+      },
+    }
+  ),
   // The ordinary's own figure made small, so English names it by the ordinary
   // and says where it stops. Humetty is the older word for couped and is read
   // too; the noun is what pluralises either way.

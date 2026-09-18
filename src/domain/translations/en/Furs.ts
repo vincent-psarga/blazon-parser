@@ -17,11 +17,8 @@ export const EnglishFurType: Translation<FurType> = {
     ),
     new Word(
       'vairé',
-      'The bells of vair, cut from two tinctures the blazon names rather than from the argent and azure vair is always drawn in. This is the borrowed participle, written with its accent.'
-    ),
-    new Word(
-      'vaire',
-      'The bells of vair, cut from two tinctures the blazon names rather than from the argent and azure vair is always drawn in. This is the borrowed participle with its accent dropped, as the armorials often write it.'
+      'The bells of vair, cut from two tinctures the blazon names rather than from the argent and azure vair is always drawn in. This is the French participle English borrowed whole, written with its accent or without it.',
+      { alternateWording: { vaire: {} } }
     ),
   ],
 };

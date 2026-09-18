@@ -55,9 +55,9 @@ export interface VocabularyEntry {
   /** The address it answers to, which is the spelling and, where two spellings
    * collide, the rank as well. */
   readonly anchor: string;
-  /** The spelling shown, which is the first of those that differ only in hyphens. */
+  /** The spelling the word is written in, which is the one shown. */
   readonly word: string;
-  /** Every spelling this entry answers for: "fleur-de-lis" and "fleur de lis". */
+  /** Every spelling the word answers to, the one it is written in first. */
   readonly spellings: readonly string[];
   readonly rank: Rank;
   /** Whether the rank must be shown beside the word, another word sharing it. */
@@ -506,41 +506,7 @@ function covering(word: Word, candidates: readonly Word[]): readonly Word[] {
   ];
 }
 
-/**
- * Spellings that differ in nothing but their hyphens are the one word.
- *
- * The hyphens alone. An accent is a difference a reader can see and an armorial
- * chose — English writes the borrowed participle vairé and vaire both — so those
- * are two words and are filed as two.
- */
-const sameSpelling = (word: string) => word.toLowerCase().replace(/[\s-]+/g, '');
-
 const capitalise = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
-
-/** A word and the spellings of it that differ only in their hyphens. */
-interface Grouped<W extends Word> {
-  readonly word: W;
-  readonly spellings: readonly string[];
-}
-
-function grouping<W extends Word>(words: readonly W[]): readonly Grouped<W>[] {
-  const grouped: Grouped<W>[] = [];
-  const at = new Map<string, number>();
-  for (const word of words) {
-    const key = sameSpelling(word.value);
-    const found = at.get(key);
-    if (found === undefined) {
-      at.set(key, grouped.length);
-      grouped.push({ word, spellings: [word.value] });
-    } else {
-      grouped[found] = {
-        word: grouped[found].word,
-        spellings: [...grouped[found].spellings, word.value],
-      };
-    }
-  }
-  return grouped;
-}
 
 /** Everything one tongue's page shows, in the order the letters of the index run. */
 function vocabularyOf<W extends Word, O extends Word>(
@@ -555,7 +521,7 @@ function vocabularyOf<W extends Word, O extends Word>(
   // Which spellings name more than one thing, and so must say which they name.
   const seen = new Map<string, number>();
   for (const sense of senses) {
-    for (const { word } of grouping(sense.words)) {
+    for (const word of sense.words) {
       const name = anchorOf(word.value);
       seen.set(name, (seen.get(name) ?? 0) + 1);
     }
@@ -568,9 +534,8 @@ function vocabularyOf<W extends Word, O extends Word>(
     language,
   });
 
-  const entries = senses.flatMap((sense) => {
-    const grouped = grouping(sense.words);
-    return grouped.map(({ word, spellings }): VocabularyEntry => {
+  const entries = senses.flatMap((sense) =>
+    sense.words.map((word): VocabularyEntry => {
       const qualified = (seen.get(anchorOf(word.value)) ?? 0) > 1;
       const blazon = armsOf(sense, word);
       const typed = typing(tongue, sense, word, blazon);
@@ -579,7 +544,7 @@ function vocabularyOf<W extends Word, O extends Word>(
       return {
         anchor: anchorOf(word.value, qualified ? sense.rank : undefined),
         word: word.value,
-        spellings,
+        spellings: word.spellings.map((spelling) => spelling.value),
         rank: sense.rank,
         qualified,
         letter: letterOf(word.value),
@@ -588,9 +553,9 @@ function vocabularyOf<W extends Word, O extends Word>(
         typed,
         written: written === typed ? undefined : written,
         refused: 'refused' in read ? read.refused : undefined,
-        alsoHere: grouped
-          .filter((sibling) => sibling.word !== word)
-          .map((sibling) => whereabouts(sense.rank, sibling.word, tongue.code)),
+        alsoHere: sense.words
+          .filter((sibling) => sibling !== word)
+          .map((sibling) => whereabouts(sense.rank, sibling, tongue.code)),
         otherTongue: covering(word, theirs.get(`${sense.rank}/${sense.term}`) ?? []).map(
           (counterpart) => ({
             word: counterpart.value,
@@ -601,8 +566,8 @@ function vocabularyOf<W extends Word, O extends Word>(
         note: noteOn(sense, tongue.code),
         otherwise: otherwise(tongue, sense, word),
       };
-    });
-  });
+    })
+  );
 
   return [...entries].sort(
     (one, another) =>

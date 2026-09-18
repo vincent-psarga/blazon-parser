@@ -70,6 +70,16 @@ describe('the vocabulary of one tongue', () => {
     mount(<VocabularyPage language="fr" />, '/doc/vocabulary/fr#sautoir');
     expect(struck()).toBe('sautoir');
   });
+
+  test('strikes the word an address names by any way it is written', () => {
+    // A reader who met the spelling in an armorial looks that up, and is shown
+    // the word it is a writing of rather than the head of the vocabulary.
+    mount(<VocabularyPage language="en" />, '/doc/vocabulary/en#bezant');
+    expect(struck()).toBe('besant');
+    cleanup();
+    mount(<VocabularyPage language="fr" />, '/doc/vocabulary/fr#fleur-de-lis');
+    expect(struck()).toBe('fleur de lys');
+  });
 });
 
 describe('a word read at full size', () => {
@@ -110,11 +120,11 @@ describe('a word read at full size', () => {
     expect(within(showing()).queryByText('Argent a billet gules.')).toBeNull();
   });
 
-  test('says what a spelling it reads and never writes comes back as', async () => {
+  test('says what a word it reads and never writes comes back as', async () => {
     mount(<VocabularyPage language="en" />);
-    await strike('bezant');
+    await strike('cross humetty');
     expect(within(showing()).getByText('Written back as')).toBeInTheDocument();
-    expect(within(showing()).getByText('Gules a besant.')).toBeInTheDocument();
+    expect(within(showing()).getByText('Argent a cross couped gules.')).toBeInTheDocument();
   });
 
   test('says nothing of the sort where the blazon comes back as it went in', async () => {
@@ -123,10 +133,22 @@ describe('a word read at full size', () => {
     expect(within(showing()).queryByText('Written back as')).toBeNull();
   });
 
-  test('stands the hyphenated spelling beside the one it says nothing more than', async () => {
+  test('stands every other way of writing the word beside the one that is written', async () => {
     mount(<VocabularyPage language="fr" />);
     await strike('fleur de lys');
-    expect(within(showing()).getByText('fleur-de-lys')).toBeInTheDocument();
+    const spellings = showing().querySelector('.showing__spellings') as HTMLElement;
+    expect(Array.from(spellings.querySelectorAll('b')).map((one) => one.textContent)).toEqual([
+      'fleur-de-lys',
+      'fleur de lis',
+      'fleur-de-lis',
+    ]);
+    // One entry, not four: the stack names the lily once.
+    const stack = document.querySelector('.stack') as HTMLElement;
+    expect(
+      Array.from(stack.querySelectorAll('.ghost__name')).filter((name) =>
+        name.textContent?.startsWith('fleur')
+      )
+    ).toHaveLength(1);
   });
 
   test('sends the reader to the other spellings of the same term, all of them', async () => {
@@ -136,7 +158,6 @@ describe('a word read at full size', () => {
     expect(Array.from(seen.querySelectorAll('a')).map((link) => link.textContent)).toEqual([
       'roundel',
       'besant',
-      'bezant',
       'plate',
       'torteau',
       'pellet',

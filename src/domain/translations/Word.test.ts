@@ -67,3 +67,51 @@ describe('what a word means', () => {
     expect(new Word('three').description).toBe('');
   });
 });
+
+describe('a word written more than one way', () => {
+  const lily = new Word('fleur-de-lis', 'The lily.', {
+    plural: 'fleurs-de-lis',
+    alternateWording: {
+      'fleur-de-lys': { plural: 'fleurs-de-lys' },
+      'fleur de lis': { plural: 'fleurs de lis' },
+    },
+  });
+
+  test('answers to every one of them, the one it is written in first', () => {
+    expect(lily.spellings.map(({ value }) => value)).toEqual([
+      'fleur-de-lis',
+      'fleur-de-lys',
+      'fleur de lis',
+    ]);
+  });
+
+  test('counts each of them the way that spelling counts', () => {
+    expect(lily.spellings.map(({ plural }) => plural)).toEqual([
+      'fleurs-de-lis',
+      'fleurs-de-lys',
+      'fleurs de lis',
+    ]);
+  });
+
+  test('is still written one way, which is the word it is', () => {
+    expect(lily.value).toBe('fleur-de-lis');
+    expect(lily.plural).toBe('fleurs-de-lis');
+  });
+
+  test('counts an alternate regularly where it says nothing about it', () => {
+    expect(new Word('besant', 'The coin.', { alternateWording: { bezant: {} } }).spellings).toEqual(
+      [
+        { value: 'besant', plural: 'besants' },
+        { value: 'bezant', plural: 'bezants' },
+      ]
+    );
+  });
+});
+
+describe('a word written one way only', () => {
+  test('answers to that one, so nothing has to ask whether it has others', () => {
+    expect(new Word('fess', 'A band.', { plural: 'fesses' }).spellings).toEqual([
+      { value: 'fess', plural: 'fesses' },
+    ]);
+  });
+});

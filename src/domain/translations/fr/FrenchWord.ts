@@ -1,5 +1,12 @@
-import { Tincture } from '../../models/Tinctures';
-import { Word } from '../Word';
+import { Word, WordOptions } from '../Word';
+
+/** Everything a French word may be told about itself beyond how it is spelled. */
+export interface FrenchWordOptions extends WordOptions {
+  readonly isFeminine?: boolean;
+  /** Whether the other gender is read too. */
+  readonly acceptsBothGender?: boolean;
+  readonly needsElision?: boolean;
+}
 
 /**
  * A French word, which agrees with what introduces it in two ways a bare
@@ -30,18 +37,7 @@ export class FrenchWord extends Word {
   /** Whether "de" contracts to "d'" before the word. */
   public readonly needsElision: boolean;
 
-  constructor(
-    value: string,
-    description: string = '',
-    options?: Partial<{
-      plural: string;
-      allowedTinctures: readonly Tincture[];
-      defaultTincture: Tincture;
-      isFeminine: boolean;
-      acceptsBothGender: boolean;
-      needsElision: boolean;
-    }>
-  ) {
+  constructor(value: string, description: string = '', options?: FrenchWordOptions) {
     super(value, description, options);
     this.isFeminine = options?.isFeminine ?? false;
     this.acceptsBothGender = options?.acceptsBothGender ?? false;

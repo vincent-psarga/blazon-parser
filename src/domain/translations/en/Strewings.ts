@@ -43,21 +43,17 @@ export const EnglishStrewings: Strewings = {
   // borrowing the word would promise a figure this does not draw.
   [ChargeType.crossCouped]: undefined,
   [ChargeType.crescent]: undefined,
-  [ChargeType.fleurDeLis]: [
-    new Word(
-      'semy-de-lis',
-      'A field sown with fleurs-de-lis: the arms of France before they were reduced to three. It is the one strewing English names after the figure itself rather than after an adjective made of it.'
-    ),
-    new Word(
-      'semy-de-lys',
-      'A field sown with fleurs-de-lys: the arms of France before they were reduced to three. This is the spelling ending in the letter half the armorials prefer.'
-    ),
-    new Word(
-      'semé-de-lis',
-      'A field sown with fleurs-de-lis: the arms of France before they were reduced to three. This is the spelling written with the French participle the word was taken from.'
-    ),
-    new Word('semy de lis', ''),
-  ],
+  [ChargeType.fleurDeLis]: new Word(
+    'semy-de-lis',
+    'A field sown with fleurs-de-lis: the arms of France before they were reduced to three. It is the one strewing English names after the figure itself rather than after an adjective made of it.',
+    {
+      alternateWording: {
+        'semy-de-lys': {},
+        'semé-de-lis': {},
+        'semy de lis': {},
+      },
+    }
+  ),
 };
 
 /**
@@ -76,11 +72,8 @@ export const SOWN: readonly Word[] = [
   ),
   new Word(
     'semé',
-    'The field sown with a figure English has no single word for, drawn small, running off every edge and past counting. This is the French participle the word was taken from.'
-  ),
-  new Word(
-    'semee',
-    'The field sown with a figure English has no single word for, drawn small, running off every edge and past counting. This is the borrowed participle with its accent spelled out, as the armorials often write it.'
+    'The field sown with a figure English has no single word for, drawn small, running off every edge and past counting. This is the French participle English took the word from, written with its accent or with the accent spelled out.',
+    { alternateWording: { semee: {} } }
   ),
 ];
 

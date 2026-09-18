@@ -449,10 +449,15 @@ body {
   color: var(--bone-quiet);
 }
 
-/* Spellings that differ in nothing but a hyphen are the one word, and are said
-   under it rather than filed apart from it. */
+/* The other ways the same word is written are the word, so they are said under
+   it rather than filed apart from it — and parted from each other, there being
+   as many of them as the armorials have habits. */
 .showing__spellings {
   margin: -0.85rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
   font-size: 0.9375rem;
   color: var(--bone-quiet);
 }

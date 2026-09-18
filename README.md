@@ -559,8 +559,16 @@ tourteau is not.
 
 Each word's example blazon carries that very spelling, written by handing the
 writer a vocabulary narrowed to the one word, and is parsed as the page is drawn;
-where the library reads a spelling and writes another, the entry says what it
-comes back as. Spellings that differ in nothing but a hyphen are the one word.
+where the library reads a word and writes another, the entry says what it comes
+back as.
+
+A word written more than one way is still one word. A `Word` carries its
+alternate wordings — `fleur-de-lys` and `fleur de lis` against `fleur-de-lis`,
+each with its own plural — so the vocabulary holds one entry where heraldry has
+one word, the parser answers to every spelling of it, and the reader is shown the
+lot under the one heading. A spelling that is genuinely another word keeps an
+entry of its own: `vairy` is English and `vairé` is the French participle English
+borrowed, and calling them one spelling would be saying something false.
 What the documentation never shows is the enum value behind a term: a reader of
 it is learning heraldry, and `Colours.gules` is the caller's business, which is
 what this README is for.

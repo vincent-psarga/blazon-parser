@@ -79,12 +79,10 @@ describe('what a word means', () => {
     for (const spelling of ['fleur-de-lis', 'fleur-de-lys']) {
       expect(word(english, spelling).description).toMatch(/middle petal rising to a point/);
     }
-    for (const spelling of ['besant', 'bezant']) {
-      expect(word(english, spelling).description).toMatch(/plain disc/);
-    }
-    for (const spelling of ['vairy', 'vairé', 'vaire']) {
+    for (const spelling of ['vairy', 'vairé']) {
       expect(word(english, spelling).description).toMatch(/bells of vair/);
     }
+    expect(word(english, 'besant').description).toMatch(/plain disc/);
     expect(word(english, 'cross humetty').description).toMatch(/four equal arms/);
     expect(word(english, 'border').description).toMatch(/whole edge of the shield/);
     expect(word(english, 'pily counter pily').description).toMatch(/long triangles/);
@@ -109,16 +107,55 @@ describe('the letters the words are filed under', () => {
   });
 });
 
-describe('spellings that differ in nothing but a hyphen', () => {
-  test('are the one word, and stand together', () => {
-    const lily = word(french, 'fleur-de-lys');
-    expect(lily.word).toBe('fleur de lys');
-    expect(lily.spellings).toEqual(['fleur de lys', 'fleur-de-lys']);
+describe('a word written more than one way', () => {
+  test('is the one word, and answers to every way of writing it', () => {
+    const lily = word(english, 'fleur-de-lys');
+    expect(lily.word).toBe('fleur-de-lis');
+    expect(lily.spellings).toEqual([
+      'fleur-de-lis',
+      'fleur-de-lys',
+      'fleur de lis',
+      'fleur de lys',
+    ]);
   });
 
-  test('are still two words where they differ by a letter as well', () => {
-    expect(word(english, 'fleur-de-lis').word).toBe('fleur-de-lis');
-    expect(word(english, 'fleur-de-lys').word).toBe('fleur-de-lys');
+  test('is one entry of the vocabulary and not several', () => {
+    for (const spelling of ['fleur-de-lys', 'fleur de lis', 'fleur de lys']) {
+      expect(english.filter((entry) => entry.word === spelling)).toEqual([]);
+    }
+    expect(french.filter((entry) => entry.word.startsWith('fleur'))).toHaveLength(1);
+  });
+
+  test('is read under every one of them all the same', () => {
+    // The vocabulary lists one; the parser answers to the lot.
+    for (const spelling of ['Argent a fleur-de-lys gules.', 'Argent a fleur de lis gules.']) {
+      const read = readBlazon(spelling, 'en');
+      expect('blazon' in read, spelling).toBe(true);
+    }
+    expect(readBlazon("D'argent à trois fleurs-de-lis de gueules.", 'fr')).toHaveProperty('blazon');
+    expect(readBlazon('Argent semy-de-lys gules.', 'en')).toHaveProperty('blazon');
+    expect(readBlazon('Argent semee of annulets gules.', 'en')).toHaveProperty('blazon');
+    expect(readBlazon('Gules a bezant.', 'en')).toHaveProperty('blazon');
+    expect(readBlazon('Vaire argent and gules.', 'en')).toHaveProperty('blazon');
+  });
+
+  test('keeps a spelling that is another word rather than another writing of one', () => {
+    // Vairy is English and vairé the French participle English borrowed; semy
+    // and semé the same pair. Telling a reader they were one spelling would be
+    // telling them something false.
+    expect(word(english, 'vairy').word).toBe('vairy');
+    expect(word(english, 'vairé').word).toBe('vairé');
+    expect(word(english, 'semy').word).toBe('semy');
+    expect(word(english, 'semé').word).toBe('semé');
+    expect(word(english, 'border').word).toBe('border');
+    expect(word(english, 'cross humetty').word).toBe('cross humetty');
+  });
+
+  test('gathers the accent and the hyphen under the word they are a writing of', () => {
+    expect(word(english, 'vaire').word).toBe('vairé');
+    expect(word(english, 'semee').word).toBe('semé');
+    expect(word(english, 'bezant').word).toBe('besant');
+    expect(word(english, 'semé-de-lis').word).toBe('semy-de-lis');
   });
 });
 
@@ -146,8 +183,8 @@ describe('the arms a word is shown in', () => {
   });
 
   test('says what a spelling read and never written comes back as', () => {
-    expect(word(english, 'bezant').typed).toBe('Gules a bezant.');
-    expect(word(english, 'bezant').written).toBe('Gules a besant.');
+    expect(word(english, 'cross humetty').typed).toBe('Argent a cross humetty gules.');
+    expect(word(english, 'cross humetty').written).toBe('Argent a cross couped gules.');
     expect(word(english, 'border').written).toBe('Argent a bordure gules.');
     // Plain is read and never written at all, so what it comes back as is the
     // field without it.
@@ -190,7 +227,6 @@ describe('the same word elsewhere', () => {
     expect(word(english, 'hurt').alsoHere.map((seen) => seen.word)).toEqual([
       'roundel',
       'besant',
-      'bezant',
       'plate',
       'torteau',
       'pellet',
@@ -285,12 +321,10 @@ describe('the words that say more than one drawing can', () => {
   });
 });
 
-describe('spellings that differ by more than a hyphen', () => {
-  test('are filed apart, an accent being a difference an armorial chose', () => {
-    // English borrowed the French participle and writes it both ways.
-    expect(word(english, 'vairé').word).toBe('vairé');
-    expect(word(english, 'vaire').word).toBe('vaire');
+describe('a word written one way only', () => {
+  test('answers to that way and no other', () => {
     expect(word(english, 'vairy').spellings).toEqual(['vairy']);
+    expect(word(french, 'sautoir').spellings).toEqual(['sautoir']);
   });
 });
 

@@ -75,20 +75,19 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
   //
   // "De" inside the name is the same word the grammar reads as an article
   // everywhere else; what tells them apart is that this one has a name around it.
-  [ChargeType.fleurDeLis]: [
-    new FrenchWord(
-      'fleur de lys',
-      'The lily, not as it grows but as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. Armorials spell it four ways, with the hyphens or without and ending in either letter, and all four are read.',
-      { plural: 'fleurs de lys', isFeminine: true }
-    ),
-    new FrenchWord('fleur-de-lys', '', { plural: 'fleurs-de-lys', isFeminine: true }),
-    new FrenchWord(
-      'fleur de lis',
-      'The lily as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. This is the spelling ending in the letter half the armorials prefer.',
-      { plural: 'fleurs de lis', isFeminine: true }
-    ),
-    new FrenchWord('fleur-de-lis', '', { plural: 'fleurs-de-lis', isFeminine: true }),
-  ],
+  [ChargeType.fleurDeLis]: new FrenchWord(
+    'fleur de lys',
+    'The lily, not as it grows but as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. Armorials spell it four ways, with the hyphens or without and ending in either letter, and all four are read.',
+    {
+      plural: 'fleurs de lys',
+      isFeminine: true,
+      alternateWording: {
+        'fleur-de-lys': { plural: 'fleurs-de-lys' },
+        'fleur de lis': { plural: 'fleurs de lis' },
+        'fleur-de-lis': { plural: 'fleurs-de-lis' },
+      },
+    }
+  ),
   // The little cross, where the croix is the band laid across the shield. One
   // word where English needs two, French having made a noun of the small one.
   [ChargeType.crossCouped]: new FrenchWord(
