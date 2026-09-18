@@ -16,6 +16,8 @@ const ENGLISH = vocabularyIn('en');
 
 const ghost = (word: string) => screen.getByRole('link', { name: word });
 const showing = () => document.querySelector('.showing') as HTMLElement;
+/** What scrolls inside the reading, where the reading is a pane of its own. */
+const leaf = () => document.querySelector('.showing__leaf') as HTMLElement;
 const struck = () => showing().querySelector('.showing__spelling')?.textContent;
 /** What the other tongue says it with, said beside the word itself. */
 const abroad = () => showing().querySelector('.showing__abroad')?.textContent?.trim();
@@ -207,6 +209,19 @@ describe('a word read at full size', () => {
     await strike('plain');
     expect(struck()).toBe('plain');
     expect(abroad()).toBeUndefined();
+  });
+
+  test('opens each word at its head, however far the last one was read', async () => {
+    // Where the reading perches beside the vocabulary it scrolls itself, so a
+    // long word read to the foot would leave the next one opened halfway down
+    // itself. jsdom lays nothing out, so the scroll is set by hand and the
+    // question put is only whether striking a word returns it.
+    mount(<VocabularyPage language="fr" />, '/doc/vocabulary/fr#losange');
+    expect(struck()).toBe('losange');
+    leaf().scrollTop = 705;
+    await strike('chef');
+    expect(struck()).toBe('chef');
+    expect(leaf().scrollTop).toBe(0);
   });
 
   test('sets the blazon with the arms it drew, the two being the one fact', async () => {

@@ -354,10 +354,106 @@ body {
   align-items: start;
 }
 
-.plane--reference > .showing {
-  position: sticky;
-  top: clamp(1rem, 3vw, 2rem);
-  margin-top: 0;
+/*
+ * Two panes filling the screen, each scrolling itself: the vocabulary on the
+ * left and the reading beside it, with no page scrolling behind either.
+ *
+ * Perching the reading and letting the page move under it is wrong at both ends,
+ * and no arithmetic saves it. A pinned panel taller than the screen cannot be
+ * pinned and read at once: the wheel moves the page, the panel holds still
+ * because holding still is what pinning it was for, and its foot arrives only
+ * after the whole vocabulary has gone by. Give it the screen's height and a
+ * scroll of its own and the ends go wrong instead — before it reaches its perch
+ * its foot hangs below the screen, and where the page runs out it is dragged up
+ * by its heels and loses its head.
+ *
+ * Every one of those is the page moving underneath something that must not move.
+ * So the page stops moving. Each pane is exactly as tall as the screen and holds
+ * what it holds, which is the one arrangement in which neither end of the
+ * reading can be lost.
+ *
+ * Each keeps its own scroll: a pane that handed the rest of it on would throw
+ * the reader down the other the moment they reached the last line of what they
+ * were reading.
+ */
+/*
+ * Two panes filling the screen, each scrolling itself: the vocabulary on the
+ * left and the reading of one word beside it.
+ *
+ * Every pixel below the rail belongs to one of them. The plane's margins, its
+ * padding and the gutter between the columns are all given to the panes, and
+ * each pane's inset is set inside the box that scrolls rather than around it —
+ * padding outside a scroller is a strip of the screen the wheel falls through,
+ * which is the whole defect this arrangement exists to close.
+ *
+ * Nothing is perched and nothing scrolls behind anything, which is why neither
+ * end of the reading can be lost. A panel pinned to a scrolling page cannot be
+ * taller than the screen and still be read: the wheel moves the page, the panel
+ * holds still because holding still is what pinning it was for, and its foot
+ * arrives only after the whole vocabulary has gone by. Give such a panel a
+ * height and a scroll of its own and the ends go wrong instead — before it
+ * reaches its perch its foot hangs below the screen, and where the page runs out
+ * it is dragged up by its heels and loses its head. Both are the page moving
+ * underneath something that must not move, so the page stops moving.
+ *
+ * Each pane keeps its own scroll: one that handed the rest of it on would throw
+ * the reader down the other the moment they reached the last line of what they
+ * were reading.
+ */
+@media (width > 64rem) {
+  body:has(.plane--reference) {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Where the application is mounted, and the only box standing between the
+     body and the rail: the column has to be made here or the panes have no
+     height to fill. */
+  body:has(.plane--reference) > #root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+  }
+
+  /* The rail is as tall as it is; only the panes below it give way. */
+  body:has(.plane--reference) .rail {
+    flex: none;
+  }
+
+  .plane--reference {
+    --edge: clamp(1rem, 5vw, 3rem);
+    --gutter: clamp(1.5rem, 4vw, 3.5rem);
+    flex: 1;
+    min-height: 0;
+    /* Full bleed: the measure is kept by what stands inside each pane rather
+       than by a box drawn around both, so no margin is left over to fall
+       through. */
+    max-width: none;
+    width: 100%;
+    padding: 0;
+    column-gap: 0;
+    align-items: stretch;
+    grid-template-columns: minmax(0, 40rem) minmax(0, 1fr);
+  }
+
+  .plane--reference > .reference__read {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: clamp(1.5rem, 4vw, 2.5rem) calc(var(--gutter) / 2) clamp(2rem, 5vw, 3.5rem) var(--edge);
+  }
+
+  .plane--reference > .showing {
+    margin: 0;
+    min-height: 0;
+    padding: 0;
+  }
+
+  .plane--reference .showing__leaf {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: clamp(1.5rem, 4vw, 2.5rem) var(--edge) clamp(2rem, 5vw, 3.5rem) calc(var(--gutter) / 2);
+  }
 }
 
 .reference__read {
@@ -383,8 +479,26 @@ body {
   /* Solid, so nothing reads through the arms or the words beside them. */
   background: var(--void);
   display: grid;
+}
+
+/*
+ * What the reading is made of, and what scrolls where the reading is a pane.
+ *
+ * The ground and the name stay outside it: a box that scrolls is a box the
+ * keyboard can reach, and an address ending in #losange that named this one
+ * would have the browser focus it and the page ring it in the strike it keeps
+ * for the keyboard — which is not what anybody meant by refreshing a page.
+ */
+.showing__leaf {
+  display: grid;
   gap: clamp(1.25rem, 3vw, 2rem);
   align-items: start;
+  /* Packed at the head, and the spare room left at the foot. A pane is as tall
+     as the screen whatever it holds, and a grid handed height it does not need
+     shares it out among the rows — which would set the arms and the words that
+     describe them further apart the less there was to say about them. */
+  align-content: start;
+  min-height: 0;
 }
 
 /*
@@ -1241,6 +1355,8 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* In flow it is as tall as it likes: the page's own scroll reaches the foot
+     of it, so a scroll of its own would only be a second one to fight. */
   .plane--reference > .showing {
     position: relative;
     margin-top: 1.75rem;
