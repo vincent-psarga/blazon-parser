@@ -1,3 +1,4 @@
+import { Modifier } from './Modifier';
 import { Tincture } from './Tinctures';
 
 /**
@@ -55,6 +56,74 @@ export enum ChargeType {
 }
 
 /**
+ * What is true of a charge whatever blazon names it: today, which modifiers it
+ * may be borne under.
+ *
+ * It is not the drawing and it is not the word. A charge is a term of the model,
+ * and what may be said of that term is the model's to know — "an annulet voided"
+ * is refused in either tongue, and for the same reason, so neither vocabulary
+ * should have to hold the list.
+ */
+export class ChargeDefinition {
+  /**
+   * The modifiers a blazon may bear it under, which is none for most of them.
+   *
+   * Empty says the charge is what it is and admits of nothing: the annulet is a
+   * roundel voided already, and the mullet has no middle to take out.
+   */
+  public readonly allowedModifiers: readonly Modifier[];
+
+  constructor(
+    public readonly type: ChargeType,
+    opts?: Partial<{
+      allowedModifiers: readonly Modifier[];
+    }>
+  ) {
+    this.allowedModifiers = opts?.allowedModifiers ?? [];
+  }
+}
+
+/**
+ * Every charge, and what may be said of it.
+ *
+ * Keyed on ChargeType, so a charge added to the vocabulary breaks this until it
+ * has been said what it will take — which is the question worth asking of a new
+ * charge, and the one easiest to forget.
+ */
+export const ChargeDefinitions: Record<ChargeType, ChargeDefinition> = {
+  [ChargeType.annulet]: new ChargeDefinition(ChargeType.annulet),
+  [ChargeType.billet]: new ChargeDefinition(ChargeType.billet, {
+    allowedModifiers: [Modifier.voided],
+  }),
+  [ChargeType.crescent]: new ChargeDefinition(ChargeType.crescent),
+  [ChargeType.crossCouped]: new ChargeDefinition(ChargeType.crossCouped),
+  [ChargeType.fleurDeLis]: new ChargeDefinition(ChargeType.fleurDeLis),
+  [ChargeType.goutte]: new ChargeDefinition(ChargeType.goutte),
+  [ChargeType.lozenge]: new ChargeDefinition(ChargeType.lozenge, {
+    allowedModifiers: [Modifier.voided],
+  }),
+  [ChargeType.mullet]: new ChargeDefinition(ChargeType.mullet),
+  [ChargeType.roundel]: new ChargeDefinition(ChargeType.roundel, {
+    allowedModifiers: [Modifier.voided],
+  }),
+};
+
+/** The modifiers a charge may be borne under, in the order they are declared. */
+export function modifiersOf(type: ChargeType): readonly Modifier[] {
+  return ChargeDefinitions[type].allowedModifiers;
+}
+
+/**
+ * Whether a charge may be borne under a modifier.
+ *
+ * Asked of the term rather than of the word, because the answer is the same in
+ * every tongue: an annelet is no more voidable than an annulet.
+ */
+export function allowsModifier(type: ChargeType, modifier: Modifier): boolean {
+  return modifiersOf(type).includes(modifier);
+}
+
+/**
  * One charge, in its own tincture, borne once or several times over.
  *
  * Every charge may be borne in number — that is what a charge is for, where an
@@ -73,6 +142,14 @@ export type Charge = {
   tincture: Tincture;
   /** How many are borne, where more than one is. */
   count?: number;
+  /**
+   * What the blazon says has been done to the figure, where it says anything:
+   * a lozenge voided is a lozenge still, and is drawn with its middle out.
+   *
+   * Left off rather than named where nothing was said, as the count is, so that
+   * a plain lozenge reads back as the lozenge it was written as.
+   */
+  modifier?: Modifier;
 };
 
 /** How many of a charge a blazon bears: one, unless it says otherwise. */

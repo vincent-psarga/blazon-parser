@@ -2,7 +2,15 @@
 
 - Handle line modifications (indented, embattled etc)
 - Handle the disposition of charges (en chef, en orle, mal ordonnées)
-- Handle modifiers (eg: "à la billette percée d'or")
+- Grow the modifiers past "voided": percé, alésé, and the rest
+- Let an ordinary take a modifier, its own being lines drawn otherwise
+- Settle the French word for a voided charge charge by charge. blason-armoiries,
+  under Vidé, gives "on se sert du terme percées, pour les billettes ; évidés,
+  pour les triangles et étoiles", and blazons the croix vidée — so one term of
+  the model is spelled three ways in French according to what it is said of,
+  which is a thing no Translation can express today
+- Name the figures heraldry gave a name of their own: a lozenge voided is a
+  mascle, which French calls a macle, exactly as a gold roundel is a besant
 - Allow complex partition (eg: "per fess azur a bend or and argent")
 - Handle a semy of more than one figure ("semé alterné de tours et de fleurs de lys")
 - Sow a divided field, once the blazon can say which half was sown

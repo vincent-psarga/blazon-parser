@@ -49,6 +49,12 @@ const PARKER_SEMY = (
   </a>
 );
 
+const PARKER_VOIDED = (
+  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossv.htm">
+    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Voided
+  </a>
+);
+
 const BLASON = (
   <a href="http://lalanguedublason.blogspot.com/2012/08/plain-et-plein-en-langue-du-blason.html">
     <cite>La langue du blason</cite>, “plain” et “plein”
@@ -79,7 +85,9 @@ export const RULES: readonly Rule[] = [
           dictionaries are indifferent, the form the two tongues share leads — besant is written
           where bezant is read, French calling the same coin a besant. And a word the armorials
           write under either article is written under the one the heraldic dictionaries give: la
-          losange, where modern French has gone masculine.
+          losange, where modern French has gone masculine. Where a tongue has two words for the one
+          thing and neither is a spelling of the other, the same holds: French voids a charge with
+          évidé and with vidé, and writes the first.
         </p>
         <p className="rule__law">
           The same settling reaches the plumbing around a word. Blazonry says “à trois tourteaux”
@@ -104,6 +112,7 @@ export const RULES: readonly Rule[] = [
       en('Azure a bezant'),
       en('Pily counter pily of four or and azure'),
       fr("D'argent au losange de gueules"),
+      fr("D'azur à la losange vidée d'or"),
       fr("D'or aux trois tourteaux de gueules"),
     ],
   },
@@ -294,6 +303,71 @@ export const RULES: readonly Rule[] = [
       </>
     ),
     cases: [fr('De gueules plain'), fr("D'hermine plain"), fr("D'or plain au chef de gueules")],
+  },
+  {
+    id: 'a-modifier-is-written-last',
+    heading: 'A modifier stands after the charge and before its tincture',
+    law: (
+      <>
+        <p className="rule__law">
+          A blazon may say what was done to a charge as well as what the charge is: a lozenge with
+          its middle out is a lozenge voided, and what shows through the hole is the field. Blazon
+          takes its word order from French, so what qualifies the charge follows the charge, and the
+          tincture comes last of all — two bars voided gules, à la croix vidée de gueules. That is
+          where it is written.
+        </p>
+        <p className="rule__law">
+          It is read after the tincture as well. The model holds which modifier and not where the
+          armorial put it, so an armorial that says it late is understood and answered in the
+          settled order. What is not read is the word set before the charge: “a voided lozenge” is
+          modern English describing a shield rather than blazon naming one, and a vocabulary that
+          answered to it would be teaching a word order heraldry does not use.
+        </p>
+        <p className="rule__law">
+          French agrees the word with what it qualifies, and what it has to agree with is what the
+          blazon itself said. “Au losange” makes the charge masculine and is owed évidé; “à la
+          losange” makes it feminine and is owed évidée; and a blazon that chose one gender and then
+          said the other is refused rather than quietly mended. Both are read, the two articles
+          being read already, and what is written back agrees with the gender the charge is written
+          back in — the feminine the heraldic dictionaries give the losange. English agrees with
+          nothing and writes the one word after one charge or three. None of this reaches the
+          ordinaries, whose modifiers are lines drawn otherwise rather than middles taken out; and a
+          charge that is already what the modifier says refuses it by name, an annulet being a
+          roundel voided already.
+        </p>
+      </>
+    ),
+    source: (
+      <>
+        Both tongues put the word between the charge and its tincture. Parker blazons “Argent, two
+        bars voided gules” and “Argent, a cross voided and double cottised sable, within a bordure
+        or” — {PARKER_VOIDED}; and{' '}
+        <a href="http://www.blason-armoiries.org/heraldique/e/evide.htm">
+          <cite>blason-armoiries</cite>, under Évidé
+        </a>{' '}
+        gives “d’azur, à l’étoile évidée d’argent”, as its{' '}
+        <a href="http://www.blason-armoiries.org/heraldique/v/vide.htm">Vidé</a> gives “D’or, à la
+        croix vidée de gueules”. The order is the language’s own: “adjectives are normally placed
+        after nouns rather than before”, and a charge’s attributes are named before its tincture —{' '}
+        <a href="https://en.wikipedia.org/wiki/Blazon">
+          <cite>Blazon</cite>
+        </a>
+        . The gender agreed with is the word’s, which{' '}
+        <a href="http://www.blason-armoiries.org/heraldique/l/losange.htm">
+          <cite>blason-armoiries</cite>
+        </a>{' '}
+        gives as feminine for the losange, as the spelling rule above already has it.
+      </>
+    ),
+    cases: [
+      en('Azure a lozenge voided or'),
+      en('Azure a lozenge or voided'),
+      fr("D'azur au losange évidé d'or"),
+      fr("D'or à trois billettes de sable évidées"),
+      fr("D'azur au losange évidée d'or"),
+      en('Azure a voided lozenge or'),
+      en('Azure an annulet voided or'),
+    ],
   },
   {
     id: 'the-smaller-settlements',

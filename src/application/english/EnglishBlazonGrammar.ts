@@ -3,6 +3,7 @@ import { EnglishDivisionType } from '../../domain/translations/en/Divisions';
 import { EnglishFurType } from '../../domain/translations/en/Furs';
 import { EnglishVariationType, OF } from '../../domain/translations/en/Variations';
 import { EnglishChargeType } from '../../domain/translations/en/Charges';
+import { EnglishModifiers } from '../../domain/translations/en/Modifiers';
 import { EnglishStrewings, OF as SOWN_OF, SOWN } from '../../domain/translations/en/Strewings';
 import { strewnTerms } from '../../domain/translations/Strewings';
 import { asSeveral, writtenAs } from '../../domain/translations/Translation';
@@ -12,7 +13,8 @@ import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
 import { anyKeyword, keyword, optional, spelledTerm, term } from '../parser/Combinators';
 import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
-import { NOT_IN_NUMBER, alone, bearings, several } from '../parser/Borne';
+import { NOT_IN_NUMBER, alone, bearings, modifiable, several } from '../parser/Borne';
+import { anyWriting, modifying } from '../parser/Modifiers';
 import { number } from '../parser/Numbers';
 import { strewing } from '../parser/Treatment';
 import { VariedField, varied } from '../parser/Variations';
@@ -51,6 +53,12 @@ const SOWN_CHARGE = kright(
 // inventing heraldry rather than reading it.
 const TREATMENT = strewing(alt(NAMED_STREWING, SOWN_CHARGE), term(EnglishTinctures, asTincture));
 
+// What a blazon may say of a charge after its tincture. English agrees with
+// nothing: "voided" stands after one lozenge and after three of them unchanged,
+// so the one rule serves every phrase and no writing of the word is ever wrong
+// where another would have been right.
+const MODIFIER = modifying(anyWriting(EnglishModifiers));
+
 export const EnglishBlazonGrammar: BlazonGrammar = {
   tincture: term(EnglishTinctures, asTincture),
   division: term(EnglishDivisionType, asDivision),
@@ -65,8 +73,8 @@ export const EnglishBlazonGrammar: BlazonGrammar = {
   // it instead, and English puts nothing before the count: "Or three chevrons
   // gules".
   borne: alt(
-    alone(kright(ARTICLE, spelledTerm(BEARINGS, asOrdinary))),
-    several(BEARINGS, EnglishNumbers, asOrdinary, NOT_IN_NUMBER)
+    modifiable(alone(kright(ARTICLE, spelledTerm(BEARINGS, asOrdinary))), () => MODIFIER),
+    modifiable(several(BEARINGS, EnglishNumbers, asOrdinary, NOT_IN_NUMBER), () => MODIFIER)
   ),
   and: AND,
 };

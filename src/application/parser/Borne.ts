@@ -10,7 +10,8 @@ import {
 import { BlazonParseError, TextPosition } from '../../domain/errors/parsing/BlazonParseError';
 import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
-import { ChargeType } from '../../domain/models/Charge';
+import { ChargeType, allowsModifier, isChargeType } from '../../domain/models/Charge';
+import { Modifier } from '../../domain/models/Modifier';
 import { OrdinaryType, SEVERAL, bornInNumber, isOrdinaryType } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords } from '../../domain/translations/Numbers';
@@ -30,16 +31,29 @@ import { number } from './Numbers';
  * business. A band and a charge are named by the same phrase, so both are read
  * into this.
  */
-export interface Borne<T extends string> {
+export interface Borne<T extends string, W extends Word = Word> {
   readonly type: T;
   /**
    * The word that named it, which the phrase is not done with once the term is
    * known: a word may be a tincture as well as a name — a besant is gold — and
    * only the word can say what tincture is understood after it, or refused.
    */
-  readonly word: Word;
+  readonly word: W;
   /** How many are borne, where more than one is. */
   readonly count?: number;
+  /**
+   * What the blazon may say of it once its tincture has been named, where the
+   * language lets a blazon say anything: "voided", "évidée".
+   *
+   * It is a rule and not a word because the words that may stand here are the
+   * phrase's own business. A modifier agrees with what it modifies, and what it
+   * has to agree with is what this very phrase said — "au losange" made the
+   * charge masculine and "à la losange" made it feminine, and no later rule can
+   * recover which was written. So the phrase that named the charge hands on the
+   * reading of whatever may follow it, and a tongue that agrees with nothing
+   * hands on one that accepts the word as it stands.
+   */
+  readonly modifier?: Parser<TokenKind, TermWord<Modifier> | undefined>;
 }
 
 /**
@@ -62,8 +76,8 @@ export interface Refusal<T extends string, W extends Word> {
 /** One of something, which is what a name with no number before it says. */
 export function alone<T extends string, W extends Word>(
   named: Parser<TokenKind, TermWord<T, W>>
-): Parser<TokenKind, Borne<T>> {
-  return apply(named, ({ term, word }): Borne<T> => ({ type: term, word }));
+): Parser<TokenKind, Borne<T, W>> {
+  return apply(named, ({ term, word }): Borne<T, W> => ({ type: term, word }));
 }
 
 /**
@@ -94,7 +108,7 @@ export function several<T extends string, W extends Word, N extends Word>(
   numbers: NumberWords<N>,
   vocabulary: Vocabulary,
   refusal?: Refusal<T, W>
-): Parser<TokenKind, Borne<T>> {
+): Parser<TokenKind, Borne<T, W>> {
   const counting = number(numbers);
   const named = seq(count(counting), spelledTerm(terms, vocabulary, asSeveral));
   return begunByTheCount(
@@ -107,7 +121,7 @@ export function several<T extends string, W extends Word, N extends Word>(
             ([count, match]) => refusal.accepts(match, count),
             ([count, match], position) => refusal.complain(match, count, position)
           ),
-      ([count, { term, word }]): Borne<T> => ({ type: term, word, count })
+      ([count, { term, word }]): Borne<T, W> => ({ type: term, word, count })
     )
   );
 }
@@ -156,6 +170,33 @@ function begunByTheCount<T>(
 export type BorneType = OrdinaryType | ChargeType;
 
 export type BorneTerm = Borne<BorneType>;
+
+/**
+ * Something borne, told what may be said of it after its tincture.
+ *
+ * The rule is built from the word, because a tongue that agrees with its words
+ * cannot say which writings are right until it knows what they will stand
+ * beside — and built once the phrase has been read, because the phrase is the
+ * only thing that knows how it introduced the word.
+ */
+export function modifiable<T extends string, W extends Word>(
+  borne: Parser<TokenKind, Borne<T, W>>,
+  modifier: (word: W) => Parser<TokenKind, TermWord<Modifier> | undefined>
+): Parser<TokenKind, Borne<T, W>> {
+  return apply(borne, (one): Borne<T, W> => ({ ...one, modifier: modifier(one.word) }));
+}
+
+/**
+ * Whether what is borne may be borne under a modifier.
+ *
+ * Only a charge may, and only the modifiers its own definition declares. A band
+ * takes none: what a blazon does to an ordinary it does to the line the band is
+ * drawn with — indented, embattled — which is another vocabulary and is not read
+ * yet, so nothing is quietly accepted here in its name.
+ */
+export function bornUnder(type: BorneType, modifier: Modifier): boolean {
+  return isChargeType(type) && allowsModifier(type, modifier);
+}
 
 /** The two vocabularies a field's bearings are named from, as one. */
 export function bearings<W extends Word>(

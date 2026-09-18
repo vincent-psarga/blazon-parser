@@ -16,6 +16,7 @@ import {
 import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
 import { ChargedPlainField } from '../../domain/errors/parsing/ChargedPlainField';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
+import { WrongModifier } from '../../domain/errors/parsing/WrongModifier';
 import { Blazon, ChargeOrOrdinary } from '../../domain/models/Blazon';
 import {
   Division,
@@ -28,9 +29,10 @@ import {
   cutInPieces,
   usualPieces,
 } from '../../domain/models/Field';
+import { Modifier } from '../../domain/models/Modifier';
 import { Tincture } from '../../domain/models/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
-import { BorneTerm, carried } from './Borne';
+import { BorneTerm, bornUnder, carried } from './Borne';
 import { guard, optional, optionalUnlessBegun } from './Combinators';
 import { within } from './Failures';
 import { Treatment, isBare } from './Treatment';
@@ -72,6 +74,12 @@ export interface BlazonGrammar {
   /**
    * The name of a band or a charge, with whatever says the field bears it, and
    * how many. Both are named by the same phrase, so both are read by one rule.
+   *
+   * What the blazon may then say of it — that it is voided — comes back on the
+   * term rather than being asked for separately, because a modifier agrees with
+   * what the phrase called the charge and the phrase is the only thing that
+   * knows what it called it. A tongue whose blazons say nothing of the sort
+   * hands back nothing, and nothing is read.
    */
   readonly borne: Parser<TokenKind, BorneTerm>;
   /** The conjunction joining the halves of a divided field. */
@@ -215,14 +223,37 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // been read rather than beside it, and the word that was written decides what
   // it will take and what it means when nothing follows at all.
   //
+  // What may then be said of it — that it is voided — stands between the name and
+  // the tincture, which is where the armorials of both tongues put it: "two bars
+  // voided gules", "à la croix vidée de gueules". It is read after the tincture
+  // as well, and never twice, an armorial being free to say it late and nothing
+  // being gained by refusing to understand one that does.
+  //
+  // Which of the two places it was written in is not kept. Where a thing is said
+  // is no part of what was said, and the writer puts it back where the armorials
+  // put it.
+  //
+  // Whichever place it stands in, it is read by the phrase that named the charge
+  // rather than by this rule: the words that may stand there have to agree with
+  // what the blazon called the charge, and only the phrase knows what it called
+  // it. What comes back is checked against the charge itself, that being a thing
+  // no tongue disagrees about.
+  //
   // The count is left off rather than set to one when a single one is borne, so
   // that a fess reads back as the fess it was before a field could bear two.
   const bearing = within(
     combine(grammar.borne, (borne) =>
-      apply(carried(grammar.tincture, borne.word), (tincture): ChargeOrOrdinary =>
-        borne.count === undefined
-          ? { type: borne.type, tincture }
-          : { type: borne.type, tincture, count: borne.count }
+      combine(modifying(borne), (early) =>
+        combine(carried(grammar.tincture, borne.word), (tincture) =>
+          apply(early === undefined ? modifying(borne) : nil(), (late): ChargeOrOrdinary => {
+            const one =
+              borne.count === undefined
+                ? { type: borne.type, tincture }
+                : { type: borne.type, tincture, count: borne.count };
+            const modifier = early ?? late;
+            return modifier === undefined ? one : { ...one, modifier };
+          })
+        )
       )
     )
   );
@@ -268,6 +299,38 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // blazon copied out of an armorial can end on the mark that set it apart from
   // the next one, which means no more than the stop does.
   return kleft(arms, optional(alt(tok(TokenKind.Period), SEPARATOR)));
+}
+
+/**
+ * What the blazon says has been done to what it bears, where the tongue lets it
+ * say anything and the charge will take what it said.
+ *
+ * Whether the charge will take it is settled here rather than by the phrase that
+ * read the word, because it is settled the same way in every tongue: an annulet
+ * is a ring already and there is nothing in it to void, whichever vocabulary
+ * named it. A tongue that says nothing of modifiers at all leaves this off, and
+ * nothing whatever is read.
+ *
+ * It answers with one reading and never two: where a modifier stands, it is
+ * taken, and where none stands, none is. That is what keeps a blazon that may
+ * say the word in either of two places from being read in both — a besant
+ * voided, whose tincture is written nowhere, would otherwise be a blazon with
+ * two readings and no way to choose. It also means a word that was both a
+ * modifier and a tincture would be taken for the modifier; the vocabularies hold
+ * no such word, and the one that arrives will have to be given a place to stand.
+ */
+function modifying(borne: BorneTerm): Parser<TokenKind, Modifier | undefined> {
+  if (borne.modifier === undefined) {
+    return nil();
+  }
+  return apply(
+    guard(
+      borne.modifier,
+      (named) => named === undefined || bornUnder(borne.type, named.term),
+      (named, position) => new WrongModifier(borne.word.value, named?.word.value ?? '', position)
+    ),
+    (named) => named?.term
+  );
 }
 
 /**

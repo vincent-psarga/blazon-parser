@@ -85,6 +85,46 @@ export function sownIn(word: FrenchWord): string {
 }
 
 /**
+ * How a word that qualifies another agrees with it: in gender, and in number.
+ *
+ * It is what the phrase said and not what the word is. A modifier has no gender
+ * of its own — "évidé" is neither masculine nor feminine until it is put beside
+ * something — so the agreement travels from the phrase that named the charge to
+ * the word that qualifies it, and a blazon that chose one gender is held to it.
+ */
+export interface Agreement {
+  readonly feminine: boolean;
+  readonly several: boolean;
+}
+
+/**
+ * Every agreement a phrase naming this word will take, the one it is written
+ * back out in first.
+ *
+ * Usually the one: the word's own gender, in whatever number the phrase bears
+ * it. A word heraldry and the language at large disagree about the gender of is
+ * agreed with either way, by the same reckoning that reads it under either
+ * article — where nothing in the phrase says which gender was meant, nothing can
+ * be held against the writer for choosing the other.
+ */
+export function agreementsOf(word: FrenchWord, several: boolean): readonly Agreement[] {
+  const own: Agreement = { feminine: word.isFeminine, several };
+  return word.acceptsBothGender ? [own, { feminine: !word.isFeminine, several }] : [own];
+}
+
+/**
+ * Renders a modifier agreeing with what it modifies: "au tourteau de gueules
+ * évidé", "à la billette d'or évidée", "à trois billettes d'or évidées".
+ *
+ * It agrees with the word the charge is written back out in, whatever gender the
+ * blazon that was read had chosen: the losange is written feminine here, so what
+ * is said of it is feminine too.
+ */
+export function agreeing(word: FrenchWord, modifier: FrenchWord, several: boolean): string {
+  return modifier.agreeing(word.isFeminine, several);
+}
+
+/**
  * The word French calls a bare field by: "de gueules plain", which says the
  * shield carries its tincture and nothing whatever besides.
  *

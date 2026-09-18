@@ -43,8 +43,17 @@ export {
   bornInNumber,
   isOrdinaryType,
 } from './domain/models/Ordinary';
-export { ChargeType, isChargeType, numberBorne } from './domain/models/Charge';
+export {
+  ChargeDefinition,
+  ChargeDefinitions,
+  ChargeType,
+  allowsModifier,
+  isChargeType,
+  modifiersOf,
+  numberBorne,
+} from './domain/models/Charge';
 export type { Charge } from './domain/models/Charge';
+export { Modifier } from './domain/models/Modifier';
 
 export { BlazonParseError } from './domain/errors/parsing/BlazonParseError';
 export type { TextPosition } from './domain/errors/parsing/BlazonParseError';
@@ -59,6 +68,8 @@ export { MissingOrdinary } from './domain/errors/parsing/MissingOrdinary';
 export { ChargedPlainField } from './domain/errors/parsing/ChargedPlainField';
 export { WrongTinctureArticle } from './domain/errors/parsing/WrongTinctureArticle';
 export { WrongOrdinaryArticle } from './domain/errors/parsing/WrongOrdinaryArticle';
+export { WrongModifier } from './domain/errors/parsing/WrongModifier';
+export { WrongAgreement } from './domain/errors/parsing/WrongAgreement';
 export type { Ordinary } from './domain/models/Ordinary';
 export {
   COLOURS,
@@ -100,6 +111,7 @@ export { EnglishVariationType } from './domain/translations/en/Variations';
 export { EnglishNumbers } from './domain/translations/en/Numbers';
 export { EnglishOrdinaryType } from './domain/translations/en/Ordinaries';
 export { EnglishChargeType } from './domain/translations/en/Charges';
+export { EnglishModifiers } from './domain/translations/en/Modifiers';
 export { EnglishStrewings } from './domain/translations/en/Strewings';
 export {
   EnglishColours,
@@ -112,6 +124,7 @@ export { FrenchVariationType } from './domain/translations/fr/Variations';
 export { FrenchNumbers } from './domain/translations/fr/Numbers';
 export { FrenchOrdinaryType } from './domain/translations/fr/Ordinaries';
 export { FrenchChargeType } from './domain/translations/fr/Charges';
+export { FrenchModifiers } from './domain/translations/fr/Modifiers';
 export { FrenchStrewings } from './domain/translations/fr/Strewings';
 export {
   FrenchColours,
@@ -122,12 +135,15 @@ export {
 
 export { TokenKind, lexer, tokenise } from './application/lexer/Lexer';
 export {
+  agreeing,
+  agreementsOf,
   bearing,
   cutIn,
   everyBearing,
   sownIn,
   withArticle,
 } from './application/french/FrenchGrammar';
+export type { Agreement } from './application/french/FrenchGrammar';
 export { bearing as englishBearing, indefiniteArticle } from './application/english/EnglishGrammar';
 
 export { HatchingColours } from './infra/colours/HatchingColours';

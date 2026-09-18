@@ -286,7 +286,7 @@ describe('the words that say more than one drawing can', () => {
   });
 
   test('bears a charge in number and sows it, every charge being both', () => {
-    expect(word(french, 'billette').otherwise?.entries.map(({ label }) => label)).toEqual([
+    expect(word(french, 'croisette').otherwise?.entries.map(({ label }) => label)).toEqual([
       'Twice',
       'Thrice',
       'Sown',
@@ -294,6 +294,61 @@ describe('the words that say more than one drawing can', () => {
     expect(word(french, 'billette').otherwise?.entries[2].typed).toBe(
       "D'argent billeté de gueules."
     );
+  });
+
+  test('shows a charge under every modifier it will take, agreement and all', () => {
+    // The label names the word as the blazon beneath it names it: a billette is
+    // évidée where a tourteau is évidé.
+    expect(word(french, 'billette').otherwise?.entries.map(({ label }) => label)).toEqual([
+      'Twice',
+      'Thrice',
+      'Sown',
+      'Évidée',
+    ]);
+    expect(word(french, 'billette').otherwise?.entries[3].typed).toBe(
+      "D'argent à la billette évidée de gueules."
+    );
+    expect(word(english, 'billet').otherwise?.entries[3].typed).toBe(
+      'Argent a billet voided gules.'
+    );
+  });
+
+  test('shows a modifier on the charges that take it, having no figure of its own', () => {
+    // The first of them is the arms the word is shown by; the rest stand under
+    // it, so that what the word does is seen done to more than one thing.
+    expect(word(english, 'voided').typed).toBe('Argent a billet voided gules.');
+    expect(word(english, 'voided').otherwise?.entries.map(({ label }) => label)).toEqual([
+      'Lozenge',
+      'Roundel',
+    ]);
+    expect(word(french, 'évidé').typed).toBe("D'argent à la billette évidée de gueules.");
+  });
+
+  test("files each of a tongue's words for the one modifier under itself", () => {
+    // Évider and vider are two verbs, so the page holds two words and says what
+    // each is, rather than one word with the other hidden inside it as a
+    // spelling.
+    expect(word(french, 'vidé').rank).toBe('modifier');
+    expect(word(french, 'vidé').typed).toBe("D'argent à la billette vidée de gueules.");
+    expect(word(french, 'vidé').written).toBe("D'argent à la billette évidée de gueules.");
+    expect(word(french, 'vidé').alsoHere.map(({ word }) => word)).toEqual(['évidé']);
+    expect(word(french, 'évidé').alsoHere.map(({ word }) => word)).toEqual(['vidé']);
+    expect(word(french, 'vidé').otherTongue.map(({ word }) => word)).toEqual(['voided']);
+    // The note shows the word's own agreements and never the other word's.
+    expect(word(french, 'vidé').note).toContain('vidé, vidés, vidée, vidées');
+    expect(word(french, 'vidé').note).not.toContain('évidé');
+    expect(word(french, 'évidé').note).toContain('évidé, évidés, évidée, évidées');
+  });
+
+  test('binds a charge to what may be said of it, and back again', () => {
+    expect(word(english, 'billet').related?.sightings.map(({ word }) => word)).toEqual(['voided']);
+    expect(word(english, 'voided').related?.sightings.map(({ word }) => word)).toEqual([
+      'billet',
+      'lozenge',
+      'roundel',
+    ]);
+    // A charge that will take none says nothing rather than saying none.
+    expect(word(english, 'annulet').related).toBeUndefined();
   });
 
   test('tells each tongue its own rule about counting the pieces', () => {

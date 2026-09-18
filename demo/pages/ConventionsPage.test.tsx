@@ -48,6 +48,7 @@ const HEADINGS = [
   'A tincture that has a name of its own is written by it',
   'A strewing is named where heraldry names it',
   'A word that says nothing is read and never written',
+  'A modifier stands after the charge and before its tincture',
   'The smaller settlements',
 ];
 
@@ -106,6 +107,10 @@ describe('what each rule shows', () => {
     );
     expect(shown("D'or aux trois tourteaux de gueules").written).toContain(
       "D'or à trois tourteaux de gueules."
+    );
+    // Two words for the one thing, and neither a spelling of the other.
+    expect(shown("D'azur à la losange vidée d'or").written).toContain(
+      "D'azur à la losange évidée d'or."
     );
   });
 
@@ -182,6 +187,48 @@ describe('what each rule shows', () => {
     expect(refused.written).toEqual([]);
   });
 
+  test('writes a modifier between the charge and its tincture', () => {
+    mount(<ConventionsPage />);
+    expect(shown('Azure a lozenge voided or').written).toEqual([
+      "D'azur à la losange évidée d'or.",
+      'Azure a lozenge voided or.',
+    ]);
+    expect(shown("D'or à trois billettes de sable évidées").written).toContain(
+      'Or three billets voided sable.'
+    );
+  });
+
+  test('reads it after the tincture too, and answers in the settled order', () => {
+    mount(<ConventionsPage />);
+    expect(shown('Azure a lozenge or voided').written).toEqual(
+      shown('Azure a lozenge voided or').written
+    );
+  });
+
+  test('refuses the word set before the charge, which is no word order of blazon', () => {
+    mount(<ConventionsPage />);
+    const refused = shown('Azure a voided lozenge or');
+    expect(refused.refused).toBe('Unknown ordinary: voided');
+    expect(refused.arms).toBe(0);
+  });
+
+  test('reads the losange under either gender and writes it under the one', () => {
+    mount(<ConventionsPage />);
+    expect(shown("D'azur au losange évidé d'or").written).toContain(
+      "D'azur à la losange évidée d'or."
+    );
+    const refused = shown("D'azur au losange évidée d'or");
+    expect(refused.refused).toBe('Wrong agreement: expected "évidé"');
+    expect(refused.written).toEqual([]);
+  });
+
+  test('refuses a modifier on a charge that is already what it says', () => {
+    mount(<ConventionsPage />);
+    const refused = shown('Azure an annulet voided or');
+    expect(refused.refused).toBe('Wrong modifier: annulet is never voided');
+    expect(refused.arms).toBe(0);
+  });
+
   test('parts one charge from the next, and writes the blazon as a sentence', () => {
     mount(<ConventionsPage />);
     expect(shown('or a chief gules a bordure azure').written).toContain(
@@ -252,6 +299,10 @@ describe('the authorities the decisions rest on', () => {
     ['https://www.heraldsnet.org/saitou/parker/Jpglossr.htm'],
     ['http://www.blason-armoiries.org/heraldique/b/besant.htm'],
     ['http://www.blason-armoiries.org/heraldique/l/losange.htm'],
+    ['https://www.heraldsnet.org/saitou/parker/Jpglossv.htm'],
+    ['http://www.blason-armoiries.org/heraldique/e/evide.htm'],
+    ['http://www.blason-armoiries.org/heraldique/v/vide.htm'],
+    ['https://en.wikipedia.org/wiki/Blazon'],
   ])('cites %s', (href) => {
     mount(<ConventionsPage />);
     expect(document.querySelector(`.rule__source a[href="${href}"]`)).toBeInTheDocument();

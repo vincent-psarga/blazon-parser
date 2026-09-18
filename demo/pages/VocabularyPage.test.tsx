@@ -185,13 +185,26 @@ describe('a word read at full size', () => {
 describe('what one drawing cannot say', () => {
   test('bears a charge in number, and sows it', async () => {
     mount(<VocabularyPage language="en" />);
-    await strike('billet');
+    await strike('cross couped');
     const borne = Array.from(showing().querySelectorAll('.showing__variant'));
     expect(borne.map((figure) => figure.querySelector('b')?.textContent)).toEqual([
       'Twice',
       'Thrice',
       'Sown',
     ]);
+  });
+
+  test('shows a charge under whatever may be said of it, where anything may', async () => {
+    mount(<VocabularyPage language="en" />);
+    await strike('billet');
+    const borne = Array.from(showing().querySelectorAll('.showing__variant'));
+    expect(borne.map((figure) => figure.querySelector('b')?.textContent)).toEqual([
+      'Twice',
+      'Thrice',
+      'Sown',
+      'Voided',
+    ]);
+    expect(within(showing()).getByText('Said of it')).toBeInTheDocument();
   });
 
   test('says why an ordinary is borne but once, rather than bearing it twice', async () => {

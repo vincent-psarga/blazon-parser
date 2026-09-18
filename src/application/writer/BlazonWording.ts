@@ -1,5 +1,6 @@
-import { Blazon, ChargeOrOrdinary, isOrdinary } from '../../domain/models/Blazon';
+import { Blazon, ChargeOrOrdinary, isCharge, isOrdinary } from '../../domain/models/Blazon';
 import { ChargeType, numberBorne } from '../../domain/models/Charge';
+import { Modifier } from '../../domain/models/Modifier';
 import {
   Division,
   DivisionType,
@@ -34,6 +35,7 @@ export interface BlazonWording<W extends Word = Word> {
   readonly furs: Translation<FurType, W>;
   readonly ordinaries: Translation<OrdinaryType, W>;
   readonly charges: Translation<ChargeType, W>;
+  readonly modifiers: Translation<Modifier, W>;
   /** What the language calls a field sown with each charge, where it has a word. */
   readonly strewings: Strewings<W>;
   /** How the language counts what a field bears several of. */
@@ -58,6 +60,17 @@ export interface BlazonWording<W extends Word = Word> {
    * is the usual one. So the whole phrase is the language's to assemble.
    */
   readonly vary: (word: W, tinctures: string, pieces: string, usual: boolean) => string;
+  /**
+   * How the language writes what was done to a charge, once the charge and its
+   * tincture have been written: "voided", "évidée".
+   *
+   * What comes back is the modifier alone and not the phrase around it, both
+   * tongues writing it last and writing nothing between. What differs is
+   * agreement: French agrees the word with the one the charge comes back in, in
+   * gender and in number, and English writes it as it stands. So the word the
+   * charge was written with is handed over beside it, and how many are borne.
+   */
+  readonly modify: (word: W, modifier: W, several: boolean) => string;
   /**
    * How a field says it is sown with a figure the language has no word of its
    * own for: "semé de billettes" in French, "semy of billets" in English. The
@@ -111,13 +124,40 @@ export function writeBlazon<W extends Word>(wording: BlazonWording<W>, blazon: B
  * gold roundel entire — and an armorial that wrote the tincture after it would
  * be saying the same thing twice. So "d'azur au besant d'or" comes back as
  * "D'azur au besant", which is what the blazon was trying to be.
+ *
+ * What was done to the charge stands between the name and the tincture, which is
+ * where the armorials of both tongues put it: blazon takes its word order from
+ * French, where what qualifies a thing follows the thing and the tincture comes
+ * last of all.
  */
 function writeBorne<W extends Word>(wording: BlazonWording<W>, one: ChargeOrOrdinary): string {
   const { word, count } = named(wording, one);
-  const bearing = wording.bear(word, count < SEVERAL ? undefined : counted(wording.numbers, count));
-  return word.defaultTincture === one.tincture
-    ? bearing
-    : [bearing, writeTincture(wording, one.tincture)].join(' ');
+  const several = count >= SEVERAL;
+  const bearing = wording.bear(word, several ? counted(wording.numbers, count) : undefined);
+  const tincture =
+    word.defaultTincture === one.tincture ? undefined : writeTincture(wording, one.tincture);
+  const modifier = modifying(wording, one)?.(word, several);
+  return [bearing, modifier, tincture].filter((part) => part !== undefined).join(' ');
+}
+
+/**
+ * What was done to the charge, written as the language writes it — and nothing
+ * at all where the blazon said nothing, or where what is borne is a band, which
+ * takes none.
+ *
+ * It is written between the name and the tincture, which is where both tongues
+ * put it: "a lozenge voided or", "à la croix vidée de gueules".
+ */
+function modifying<W extends Word>(
+  wording: BlazonWording<W>,
+  one: ChargeOrOrdinary
+): ((word: W, several: boolean) => string) | undefined {
+  const modifier = isCharge(one) ? one.modifier : undefined;
+  if (modifier === undefined) {
+    return undefined;
+  }
+  const said = wordOf(wording.modifiers, modifier);
+  return (word, several) => wording.modify(word, said, several);
 }
 
 /**

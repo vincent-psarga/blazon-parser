@@ -1,3 +1,4 @@
+import { Modifier } from '../../../../domain/models/Modifier';
 import { Frame } from '../Ground';
 import { Shape } from '../shapes/Shape';
 import { Tile } from '../shapes/tile';
@@ -66,4 +67,15 @@ export type ChargeFigure = BorneFigure & {
   readonly at: (spot: Spot) => Shape;
   /** The figures of a semy: small, past counting, and running off every edge. */
   readonly strewn: (frame: Frame) => readonly Shape[];
+  /**
+   * The same charge as each modifier leaves it, for the modifiers it may be
+   * borne under, and empty for the charges that take none.
+   *
+   * What a modifier leaves is a charge in its own right and not a shape: it
+   * stands where the plain one would stand, in the same number, and is sown the
+   * same way — a voided lozenge is a lozenge in everything but the hole in it.
+   * So what is held here is a figure, and the rest of the drawing never learns
+   * that there was a modifier at all.
+   */
+  readonly modified: Readonly<Partial<Record<Modifier, ChargeFigure>>>;
 };

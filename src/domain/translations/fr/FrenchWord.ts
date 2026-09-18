@@ -6,6 +6,10 @@ export interface FrenchWordOptions extends WordOptions {
   /** Whether the other gender is read too. */
   readonly acceptsBothGender?: boolean;
   readonly needsElision?: boolean;
+  /** How the word is written agreeing with a feminine noun, where the "-e" is wrong. */
+  readonly feminine?: string;
+  /** The same, several times over, where the "-es" is wrong. */
+  readonly feminines?: string;
 }
 
 /**
@@ -23,6 +27,11 @@ export interface FrenchWordOptions extends WordOptions {
  * feminine "la losange" where the language at large went masculine, and
  * armorials are written both ways, so such a word declares the gender it is
  * written back out in and is read under either.
+ *
+ * A word that qualifies rather than names has no gender of its own and takes
+ * the one it is put beside, so it carries the four ways it may be written out:
+ * évidé, évidés, évidée, évidées. A word that names something answers those too
+ * and is never asked, exactly as a tincture carries a plural nobody writes.
  */
 export class FrenchWord extends Word {
   /** Whether the word is feminine: "la fasce" against "le chevron". */
@@ -37,10 +46,33 @@ export class FrenchWord extends Word {
   /** Whether "de" contracts to "d'" before the word. */
   public readonly needsElision: boolean;
 
+  /** The word agreeing with a feminine noun: "évidée" for "évidé". */
+  public readonly feminine: string;
+
+  /** The same, several times over: "évidées". */
+  public readonly feminines: string;
+
   constructor(value: string, description: string = '', options?: FrenchWordOptions) {
     super(value, description, options);
     this.isFeminine = options?.isFeminine ?? false;
     this.acceptsBothGender = options?.acceptsBothGender ?? false;
     this.needsElision = options?.needsElision ?? /^[aeiouyàâäéèêëîïôöùûü]/.test(value);
+    this.feminine = options?.feminine ?? `${value}e`;
+    this.feminines = options?.feminines ?? `${this.feminine}s`;
+  }
+
+  /**
+   * The word written to agree with what it qualifies, in gender and in number:
+   * "au tourteau évidé", "à la billette évidée", "à trois billettes évidées".
+   *
+   * Which gender it is asked for is the phrase's business rather than the
+   * word's own — a modifier has no gender, it borrows one — so both are handed
+   * in rather than read off anything here.
+   */
+  agreeing(feminine: boolean, several: boolean): string {
+    if (feminine) {
+      return several ? this.feminines : this.feminine;
+    }
+    return several ? this.plural : this.value;
   }
 }

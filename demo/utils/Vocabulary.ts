@@ -3,7 +3,8 @@ import { FrenchBlazonWording } from '../../src/application/french/FrenchBlazonWo
 import { sownIn } from '../../src/application/french/FrenchGrammar';
 import { BlazonWording, writeBlazon } from '../../src/application/writer/BlazonWording';
 import { Blazon } from '../../src/domain/models/Blazon';
-import { ChargeType } from '../../src/domain/models/Charge';
+import { ChargeType, allowsModifier, modifiersOf } from '../../src/domain/models/Charge';
+import { Modifier } from '../../src/domain/models/Modifier';
 import { VariationType, usualPieces } from '../../src/domain/models/Field';
 import { OrdinaryType, bornInNumber } from '../../src/domain/models/Ordinary';
 import { COLOURS, Colours, Metals, Tincture, isFur } from '../../src/domain/models/Tinctures';
@@ -14,7 +15,7 @@ import { FrenchWord } from '../../src/domain/translations/fr/FrenchWord';
 import { FrenchPlain } from '../../src/domain/translations/fr/Plain';
 import { SOWN as FrenchSown } from '../../src/domain/translations/fr/Strewings';
 import { Strewings } from '../../src/domain/translations/Strewings';
-import { Translation, wordsOf } from '../../src/domain/translations/Translation';
+import { Translation, wordOf, wordsOf } from '../../src/domain/translations/Translation';
 import { Word } from '../../src/domain/translations/Word';
 import { anchorOf, folded, letterOf } from './Anchors';
 import { LanguageCode } from './Languages';
@@ -32,6 +33,7 @@ export type Rank =
   | 'furred field'
   | 'ordinary'
   | 'charge'
+  | 'modifier'
   | 'strewing'
   | 'field';
 
@@ -75,6 +77,13 @@ export interface VocabularyEntry {
   readonly refused?: string;
   /** The other spellings of the same term in this tongue. */
   readonly alsoHere: readonly Sighting[];
+  /**
+   * The words of this tongue the term is bound to rather than spelled by: the
+   * modifiers a charge may be borne under, and the charges a modifier may be
+   * borne on. Each such pair is written twice over, once from either side, so
+   * that whichever word a reader arrived at leads to the other.
+   */
+  readonly related?: { readonly heading: string; readonly sightings: readonly Sighting[] };
   /** What the other tongue says it with, where it says it at all. */
   readonly otherTongue: readonly Sighting[];
   /** A rule about the term itself, where the term is governed by one. */
@@ -100,6 +109,21 @@ const SOWN_FIGURE = ChargeType.annulet;
 
 const PLAIN_TERM = 'Field.plain';
 const SOWN_TERM = 'Field.sown';
+
+const CHARGE_TYPES = Object.values(ChargeType);
+
+/**
+ * The charges a modifier may be borne on, in the order the model declares them.
+ *
+ * A modifier is not a thing to be drawn on its own — there is no picture of
+ * "voided" — so it is shown doing what it does to something, and the first
+ * charge that will take it is what it is shown on. Which charges those are is
+ * asked of the model rather than written down here, so a charge that stops
+ * taking a modifier stops being shown under it.
+ */
+function bearingModifier(modifier: Modifier): readonly ChargeType[] {
+  return CHARGE_TYPES.filter((type) => allowsModifier(type, modifier));
+}
 
 /** One term as one tongue spells it, which may be several words. */
 interface Sense<W extends Word = Word> {
@@ -153,6 +177,7 @@ function sensesOf<W extends Word>(tongue: Tongue<W>): readonly Sense<W>[] {
     ...spelled('furred field', wording.furs),
     ...spelled('ordinary', wording.ordinaries),
     ...spelled('charge', wording.charges),
+    ...spelled('modifier', wording.modifiers),
     ...strewn(wording.strewings),
     ...(tongue.plain === undefined
       ? []
@@ -207,7 +232,7 @@ function against(tincture: Tincture): Tincture {
 }
 
 /** The arms that show a word, and nothing else. */
-function armsOf<W extends Word>(sense: Sense<W>, word: W): Blazon {
+function armsOf<W extends Word>(tongue: Tongue<W>, sense: Sense<W>, word: W): Blazon {
   const borne = borneIn(word);
   switch (sense.rank) {
     case 'tincture':
@@ -236,6 +261,19 @@ function armsOf<W extends Word>(sense: Sense<W>, word: W): Blazon {
         field: { tincture: against(borne) },
         chargesOrOrdinaries: [{ type: sense.term as never, tincture: borne }],
       };
+    case 'modifier': {
+      // Shown on the first charge that will take it, and in whatever tincture
+      // that charge's own word allows — a modifier means no tincture and names
+      // no figure, so everything about the arms but the modifier comes from the
+      // charge it is shown doing its work on.
+      const modifier = sense.term as Modifier;
+      const type = bearingModifier(modifier)[0] ?? CHARGE_TYPES[0];
+      const shown = borneIn(wordOf(tongue.wording.charges, type));
+      return {
+        field: { tincture: against(shown) },
+        chargesOrOrdinaries: [{ type, tincture: shown, modifier }],
+      };
+    }
     case 'strewing':
       return {
         field: {
@@ -276,6 +314,8 @@ function insisting<W extends Word>(tongue: Tongue<W>, sense: Sense<W>, word: W):
       return { ...wording, ordinaries: { ...wording.ordinaries, ...only } };
     case 'charge':
       return { ...wording, charges: { ...wording.charges, ...only } };
+    case 'modifier':
+      return { ...wording, modifiers: { ...wording.modifiers, ...only } };
     case 'strewing':
       return { ...wording, strewings: { ...wording.strewings, ...only } };
     case 'field':
@@ -347,10 +387,44 @@ function counting(type: VariationType, language: LanguageCode): string {
     : COUNTING[language](capitalise(counted(EnglishNumbers, usual)));
 }
 
+/**
+ * What a modifier is, said once for whichever tongue the reader came in by, and
+ * then what that tongue asks of it.
+ *
+ * The two tongues differ here and it is the language rather than heraldry that
+ * differs: a French participle agrees with what it qualifies and an English one
+ * does not, so a reader of either page is told their own rule and not the
+ * other's.
+ */
+const MODIFIER_NOTE: Record<LanguageCode, (word: Word) => string> = {
+  fr: (word) =>
+    `Said of a charge after its tincture, and never on its own: it names no figure and no tincture, only what was done to one. It agrees with the charge in gender and in number — ${writings(word)} — and agrees with what the blazon called the charge, so a losange borne “au” is said masculine and borne “à la” feminine. Written back, it agrees with the gender the charge itself is written in. A charge that will not take it refuses it by name.`,
+  en: () =>
+    'Said of a charge after its tincture, and never on its own: it names no figure and no tincture, only what was done to one. It agrees with nothing and is written the same after one charge or three. A charge that will not take it refuses it by name.',
+};
+
+/**
+ * The ways a word is written to agree with what it qualifies, read off the word
+ * rather than written down beside it.
+ *
+ * A tongue holds more than one word for the one modifier — French voids a charge
+ * with évidé and with vidé — and a note that quoted one of them on the other's
+ * page would be showing a reader the wrong four words.
+ */
+function writings(word: Word): string {
+  return word instanceof FrenchWord
+    ? [word.value, word.plural, word.feminine, word.feminines].join(', ')
+    : word.value;
+}
+
 const FURRED_NOTE =
   'Named where the fur itself is not. A fur is a tincture and carries its pair with it, so naming it is the whole of what a blazon says; a furred field is owed the two tinctures its figures are cut from.';
 
-function noteOn<W extends Word>(sense: Sense<W>, language: LanguageCode): string | undefined {
+function noteOn<W extends Word>(
+  sense: Sense<W>,
+  word: W,
+  language: LanguageCode
+): string | undefined {
   switch (sense.rank) {
     case 'ordinary':
       return BUT_ONCE[sense.term as OrdinaryType];
@@ -358,6 +432,8 @@ function noteOn<W extends Word>(sense: Sense<W>, language: LanguageCode): string
       return counting(sense.term as VariationType, language);
     case 'furred field':
       return FURRED_NOTE;
+    case 'modifier':
+      return MODIFIER_NOTE[language](word);
     default:
       return undefined;
   }
@@ -406,8 +482,15 @@ function otherwise<W extends Word>(
   }
 
   if (sense.rank === 'charge') {
+    // What may be said of it is shown as it is drawn rather than only named: a
+    // reader who has never met the word learns more from the hole in the figure
+    // than from being told there is one.
+    const modifiers = modifiersOf(sense.term as ChargeType);
     return {
-      heading: 'Borne in number, and sown',
+      heading:
+        modifiers.length === 0
+          ? 'Borne in number, and sown'
+          : 'Borne in number, sown, and modified',
       entries: [
         ...COUNTS.map(([label, count]) =>
           say(
@@ -422,7 +505,45 @@ function otherwise<W extends Word>(
           { field: { ...field, semy: { type: sense.term as ChargeType, tincture: borne } } },
           'Sown'
         ),
+        ...modifiers.map((modifier) =>
+          say(
+            {
+              field,
+              chargesOrOrdinaries: [{ type: sense.term as ChargeType, tincture: borne, modifier }],
+            },
+            // Named as the blazon beneath it names it, agreement and all: a
+            // billette is évidée and a tourteau is évidé, and a label that said
+            // otherwise would be teaching the reader the wrong word.
+            capitalise(
+              tongue.wording.modify(word, wordOf(tongue.wording.modifiers, modifier), false)
+            )
+          )
+        ),
       ],
+    };
+  }
+
+  if (sense.rank === 'modifier') {
+    // The first charge that takes it is the arms above; the rest stand here, so
+    // that what the word does is seen done to more than one thing. A modifier no
+    // charge will take shows nothing, and the arms above show the refusal.
+    const modifier = sense.term as Modifier;
+    const others = bearingModifier(modifier).slice(1);
+    if (others.length === 0) {
+      return undefined;
+    }
+    return {
+      heading: 'Said of other charges',
+      entries: others.map((type) => {
+        const shown = borneIn(wordOf(tongue.wording.charges, type));
+        return say(
+          {
+            field: { tincture: against(shown) },
+            chargesOrOrdinaries: [{ type, tincture: shown, modifier }],
+          },
+          capitalise(wordOf(tongue.wording.charges, type).value)
+        );
+      }),
     };
   }
 
@@ -534,10 +655,45 @@ function vocabularyOf<W extends Word, O extends Word>(
     language,
   });
 
+  /**
+   * The words this one is bound to without being spelled by them: a charge leads
+   * to what may be said of it, and what may be said leads back to everything it
+   * may be said of.
+   *
+   * Written from either side off the one declaration in the model, so the two
+   * lists cannot come to disagree: a charge that stops taking a modifier
+   * disappears from that modifier's list as it loses its own.
+   */
+  const boundTo = (sense: Sense<W>): VocabularyEntry['related'] => {
+    if (sense.rank === 'charge') {
+      const modifiers = modifiersOf(sense.term as ChargeType);
+      return modifiers.length === 0
+        ? undefined
+        : {
+            heading: 'Said of it',
+            sightings: modifiers.map((modifier) =>
+              whereabouts('modifier', wordOf(tongue.wording.modifiers, modifier), tongue.code)
+            ),
+          };
+    }
+    if (sense.rank === 'modifier') {
+      const charges = bearingModifier(sense.term as Modifier);
+      return charges.length === 0
+        ? undefined
+        : {
+            heading: 'Said of',
+            sightings: charges.map((type) =>
+              whereabouts('charge', wordOf(tongue.wording.charges, type), tongue.code)
+            ),
+          };
+    }
+    return undefined;
+  };
+
   const entries = senses.flatMap((sense) =>
     sense.words.map((word): VocabularyEntry => {
       const qualified = (seen.get(anchorOf(word.value)) ?? 0) > 1;
-      const blazon = armsOf(sense, word);
+      const blazon = armsOf(tongue, sense, word);
       const typed = typing(tongue, sense, word, blazon);
       const read = readBlazon(typed, tongue.code);
       const written = 'blazon' in read ? writeBlazon(tongue.wording, read.blazon) : undefined;
@@ -556,6 +712,7 @@ function vocabularyOf<W extends Word, O extends Word>(
         alsoHere: sense.words
           .filter((sibling) => sibling !== word)
           .map((sibling) => whereabouts(sense.rank, sibling, tongue.code)),
+        related: boundTo(sense),
         otherTongue: covering(word, theirs.get(`${sense.rank}/${sense.term}`) ?? []).map(
           (counterpart) => ({
             word: counterpart.value,
@@ -563,7 +720,7 @@ function vocabularyOf<W extends Word, O extends Word>(
             language: other.code,
           })
         ),
-        note: noteOn(sense, tongue.code),
+        note: noteOn(sense, word, tongue.code),
         otherwise: otherwise(tongue, sense, word),
       };
     })

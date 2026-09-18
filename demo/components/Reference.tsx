@@ -211,6 +211,15 @@ export function Reference({
             {struck.alsoHere.length !== 0 && (
               <Sightings heading="See also" sightings={struck.alsoHere} page={language} />
             )}
+            {/* What the word is bound to rather than spelled by: the modifiers a
+                charge takes, and the charges a modifier is said of. */}
+            {struck.related !== undefined && (
+              <Sightings
+                heading={struck.related.heading}
+                sightings={struck.related.sightings}
+                page={language}
+              />
+            )}
             {struck.otherTongue.length !== 0 && (
               <Sightings
                 heading={`In ${LANGUAGES[otherThan(language)].named}`}

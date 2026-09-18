@@ -51,8 +51,10 @@ describe('what each folder is allowed to know', () => {
   });
 
   test('every tag in the drawing is written in one of these shapes', () => {
-    // Five primitives, two figures whose own shape is theirs alone — the ermine
-    // spot and the vair bell — and the tile that repeats one over a plane. The
+    // Six primitives — the fifth and sixth being a path filled and a pair of
+    // them with the middle left out — two figures whose own shape is theirs
+    // alone, the ermine spot and the vair bell, and the tile that repeats one
+    // over a plane. The
     // rest of shapes/ composes these rather than writing markup of its own, and
     // nothing above shapes/ writes any. The document's own envelope is the
     // exception, being the drawing rather than anything drawn in it.
@@ -60,6 +62,7 @@ describe('what each folder is allowed to know', () => {
     expect(drawing.map(({ name }) => name).sort()).toEqual([
       'shapes/bell.ts',
       'shapes/disc.ts',
+      'shapes/hollow.ts',
       'shapes/path.ts',
       'shapes/polygon.ts',
       'shapes/rectangle.ts',
