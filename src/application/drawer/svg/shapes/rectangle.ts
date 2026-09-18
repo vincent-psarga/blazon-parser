@@ -1,4 +1,5 @@
 import { Shape } from './Shape';
+import { circleOutline } from './disc';
 import { hollow } from './hollow';
 
 export const rectangle =
@@ -25,4 +26,26 @@ export const hollowRectangle = (
   hollow(
     outline(x, y, width, height),
     outline(x + band, y + band, Math.max(0, width - 2 * band), Math.max(0, height - 2 * band))
+  );
+
+/**
+ * The same rectangle with a round hole punched through the middle of it, the
+ * rest of it left painted.
+ *
+ * It is not the hollow one with a rounder hole. What a voided figure leaves is
+ * its own outline, the band following every side; what a pierced one leaves is
+ * the figure itself, short of what the hole took out — so the hole is reckoned
+ * off the rectangle rather than the band, and is drawn small enough that the
+ * charge is still plainly the charge.
+ */
+export const piercedRectangle = (
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  radius: number
+): Shape =>
+  hollow(
+    outline(x, y, width, height),
+    circleOutline(x + Math.round(width / 2), y + Math.round(height / 2), radius)
   );

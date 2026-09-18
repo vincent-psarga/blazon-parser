@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ChargeType } from '../models/Charge';
+import { Modifier } from '../models/Modifier';
 import { DivisionType } from '../models/Field';
 import { COLOURS, Colours, Furs, METALS, Metals, PELTS, TINCTURES } from '../models/Tinctures';
 import { OrdinaryType } from '../models/Ordinary';
@@ -11,12 +12,15 @@ import {
   spellingsOf,
   wordIn,
   wordOf,
+  wordSaidOf,
   wordsOf,
   writtenAs,
 } from './Translation';
 import { Word } from './Word';
 import { EnglishChargeType } from './en/Charges';
+import { EnglishModifiers } from './en/Modifiers';
 import { FrenchChargeType } from './fr/Charges';
+import { FrenchModifiers } from './fr/Modifiers';
 import { FrenchDivisionType } from './fr/Divisions';
 import { FrenchOrdinaryType } from './fr/Ordinaries';
 import { FrenchTinctures } from './fr/Tinctures';
@@ -89,6 +93,82 @@ describe('wordIn', () => {
       expect(wordIn(EnglishChargeType, ChargeType.roundel, tincture).accepts(tincture)).toBe(true);
       expect(wordIn(FrenchChargeType, ChargeType.roundel, tincture).accepts(tincture)).toBe(true);
     }
+  });
+});
+
+describe('wordSaidOf', () => {
+  test('prefers the word that claims the charge asked about', () => {
+    expect(wordSaidOf(FrenchModifiers, Modifier.voided, ChargeType.mullet).value).toBe('évidé');
+  });
+
+  test('falls back on the word that claims nothing, which is the general one', () => {
+    for (const type of [ChargeType.lozenge, ChargeType.roundel, ChargeType.billet]) {
+      expect(wordSaidOf(FrenchModifiers, Modifier.voided, type).value).toBe('vidé');
+    }
+  });
+
+  test('hands back the one word where a tongue holds one', () => {
+    for (const type of Object.values(ChargeType)) {
+      expect(wordSaidOf(EnglishModifiers, Modifier.voided, type).value).toBe('voided');
+    }
+  });
+
+  test('is a claim on charges and never a licence, every word being read of every charge', () => {
+    // The star's word claims the star and the general word claims nothing, so
+    // neither refuses anything: what this settles is which comes back.
+    const [general, starred] = wordsOf(FrenchModifiers, Modifier.voided);
+    expect(general.saidOf).toBeUndefined();
+    expect(starred.saidOf).toEqual([ChargeType.mullet]);
+    expect(starred.claims(ChargeType.mullet)).toBe(true);
+    expect(starred.claims(ChargeType.lozenge)).toBe(false);
+    expect(general.claims(ChargeType.mullet)).toBe(false);
+  });
+});
+
+describe('the lozenge, which has a name for what was done to it', () => {
+  test('writes the plain name where nothing was done', () => {
+    expect(wordIn(EnglishChargeType, ChargeType.lozenge, Colours.gules).value).toBe('lozenge');
+    expect(wordIn(FrenchChargeType, ChargeType.lozenge, Colours.gules).value).toBe('losange');
+  });
+
+  test('writes the name that means the modifier where one was done', () => {
+    expect(
+      wordIn(EnglishChargeType, ChargeType.lozenge, Colours.gules, Modifier.voided).value
+    ).toBe('mascle');
+    expect(
+      wordIn(EnglishChargeType, ChargeType.lozenge, Colours.gules, Modifier.pierced).value
+    ).toBe('rustre');
+    expect(wordIn(FrenchChargeType, ChargeType.lozenge, Colours.gules, Modifier.voided).value).toBe(
+      'macle'
+    );
+    expect(wordIn(FrenchChargeType, ChargeType.mullet, Colours.gules, Modifier.pierced).value).toBe(
+      'molette'
+    );
+  });
+
+  test('falls back on the plain name where the tongue named no such figure', () => {
+    // English named no pierced star and neither tongue named a pierced billet,
+    // so the question is dropped and the modifier written after the plain name.
+    expect(
+      wordIn(EnglishChargeType, ChargeType.mullet, Colours.gules, Modifier.pierced).value
+    ).toBe('mullet');
+    expect(wordIn(FrenchChargeType, ChargeType.billet, Colours.gules, Modifier.pierced).value).toBe(
+      'billette'
+    );
+  });
+
+  test('says what it means and what it will take, strictly both ways', () => {
+    const [plain, mascle, rustre] = wordsOf(EnglishChargeType, ChargeType.lozenge);
+    expect(plain.means(undefined)).toBe(true);
+    expect(plain.means(Modifier.voided)).toBe(false);
+    expect(mascle.means(Modifier.voided)).toBe(true);
+    expect(mascle.means(undefined)).toBe(false);
+    // A word that says nothing takes anything the charge takes; one that says a
+    // modifier takes that one and refuses the rest.
+    expect(plain.takes(Modifier.pierced)).toBe(true);
+    expect(mascle.takes(Modifier.voided)).toBe(true);
+    expect(mascle.takes(Modifier.pierced)).toBe(false);
+    expect(rustre.takes(Modifier.voided)).toBe(false);
   });
 });
 

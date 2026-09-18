@@ -46,9 +46,11 @@ const HEADINGS = [
   'English counts the pieces, French counts only when it must',
   'A name that means a tincture is written without one',
   'A tincture that has a name of its own is written by it',
+  'A name that means what was done to the charge is written without saying it',
   'A strewing is named where heraldry names it',
   'A word that says nothing is read and never written',
   'A modifier stands after the charge and before its tincture',
+  'A word the armorials keep for one charge is written of that charge alone',
   'The smaller settlements',
 ];
 
@@ -107,10 +109,6 @@ describe('what each rule shows', () => {
     );
     expect(shown("D'or aux trois tourteaux de gueules").written).toContain(
       "D'or à trois tourteaux de gueules."
-    );
-    // Two words for the one thing, and neither a spelling of the other.
-    expect(shown("D'azur à la losange vidée d'or").written).toContain(
-      "D'azur à la losange évidée d'or."
     );
   });
 
@@ -189,19 +187,50 @@ describe('what each rule shows', () => {
 
   test('writes a modifier between the charge and its tincture', () => {
     mount(<ConventionsPage />);
-    expect(shown('Azure a lozenge voided or').written).toEqual([
-      "D'azur à la losange évidée d'or.",
-      'Azure a lozenge voided or.',
+    expect(shown('Azure a billet voided or').written).toEqual([
+      "D'azur à la billette vidée d'or.",
+      'Azure a billet voided or.',
     ]);
-    expect(shown("D'or à trois billettes de sable évidées").written).toContain(
+    expect(shown("D'or à trois billettes de sable vidées").written).toContain(
       'Or three billets voided sable.'
     );
   });
 
+  test('writes the name heraldry gave the modified figure, and drops the modifier into it', () => {
+    mount(<ConventionsPage />);
+    expect(shown('Azure a lozenge voided or').written).toEqual([
+      "D'azur à la macle d'or.",
+      'Azure a mascle or.',
+    ]);
+    expect(shown('Or three lozenges pierced sable').written).toEqual([
+      "D'or à trois rustres de sable.",
+      'Or three rustres sable.',
+    ]);
+    // Said twice and understood; said two ways and refused.
+    expect(shown('Azure a mascle voided or').written).toContain('Azure a mascle or.');
+    const refused = shown('Azure a mascle pierced or');
+    expect(refused.refused).toBe('Wrong modifier: mascle is never pierced');
+    expect(refused.arms).toBe(0);
+    // English named no pierced star, so it writes the two words French says in
+    // one — and reads its own writing back.
+    expect(shown('Azure a mullet pierced or').written).toEqual([
+      "D'azur à la molette d'or.",
+      'Azure a mullet pierced or.',
+    ]);
+  });
+
+  test('never writes a pierced charge as a voided one, the two being two things', () => {
+    mount(<ConventionsPage />);
+    expect(shown("D'azur à la billette percée d'or").written).toEqual([
+      "D'azur à la billette percée d'or.",
+      'Azure a billet pierced or.',
+    ]);
+  });
+
   test('reads it after the tincture too, and answers in the settled order', () => {
     mount(<ConventionsPage />);
-    expect(shown('Azure a lozenge or voided').written).toEqual(
-      shown('Azure a lozenge voided or').written
+    expect(shown('Azure a billet or voided').written).toEqual(
+      shown('Azure a billet voided or').written
     );
   });
 
@@ -212,14 +241,37 @@ describe('what each rule shows', () => {
     expect(refused.arms).toBe(0);
   });
 
-  test('reads the losange under either gender and writes it under the one', () => {
+  test('holds a blazon to the gender it chose for the charge', () => {
     mount(<ConventionsPage />);
-    expect(shown("D'azur au losange évidé d'or").written).toContain(
-      "D'azur à la losange évidée d'or."
-    );
-    const refused = shown("D'azur au losange évidée d'or");
-    expect(refused.refused).toBe('Wrong agreement: expected "évidé"');
+    const refused = shown("D'azur à la billette vidé d'or");
+    expect(refused.refused).toBe('Wrong agreement: expected "vidée"');
     expect(refused.written).toEqual([]);
+    // The losange is read under either article and the word said of it has to
+    // agree with the one the blazon chose — which is the other rule's case, the
+    // losange voided having a name of its own to come back under.
+    expect(shown("D'azur au losange vidé d'or").written).toContain("D'azur à la macle d'or.");
+  });
+
+  test('writes each of the two French voidings of the charges it is kept for', () => {
+    mount(<ConventionsPage />);
+    // Read with the other word and answered with the charge's own: the star is
+    // évidée where everything else is vidée, and neither reading is refused.
+    expect(shown("D'azur à la billette évidée d'or").written).toEqual([
+      "D'azur à la billette vidée d'or.",
+      'Azure a billet voided or.',
+    ]);
+    expect(shown("D'argent à l'étoile vidée de gueules").written).toEqual([
+      "D'argent à l'étoile évidée de gueules.",
+      'Argent a mullet voided gules.',
+    ]);
+    expect(shown("D'or à trois billettes vidées de sable").written).toContain(
+      "D'or à trois billettes vidées de sable."
+    );
+    // English says it with the one word wherever it says it.
+    expect(shown('Azure a mullet voided or').written).toEqual([
+      "D'azur à l'étoile évidée d'or.",
+      'Azure a mullet voided or.',
+    ]);
   });
 
   test('refuses a modifier on a charge that is already what it says', () => {

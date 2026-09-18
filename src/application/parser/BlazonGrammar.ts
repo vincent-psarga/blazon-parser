@@ -250,7 +250,10 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
               borne.count === undefined
                 ? { type: borne.type, tincture }
                 : { type: borne.type, tincture, count: borne.count };
-            const modifier = early ?? late;
+            // The name may have said it already: a mascle is a lozenge voided
+            // and says so by being the word it is, so where the blazon wrote no
+            // modifier the word supplies its own.
+            const modifier = early ?? late ?? borne.word.defaultModifier;
             return modifier === undefined ? one : { ...one, modifier };
           })
         )
@@ -318,6 +321,12 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
  * two readings and no way to choose. It also means a word that was both a
  * modifier and a tincture would be taken for the modifier; the vocabularies hold
  * no such word, and the one that arrives will have to be given a place to stand.
+ *
+ * The word that was written has a say as well as the charge behind it. A name
+ * that already means a modifier will take that one and no other: "a mascle
+ * voided" says the voiding twice and is understood, as "a besant or" says the
+ * gold twice; "a mascle pierced" says two different things of the one figure and
+ * is refused by name.
  */
 function modifying(borne: BorneTerm): Parser<TokenKind, Modifier | undefined> {
   if (borne.modifier === undefined) {
@@ -326,7 +335,8 @@ function modifying(borne: BorneTerm): Parser<TokenKind, Modifier | undefined> {
   return apply(
     guard(
       borne.modifier,
-      (named) => named === undefined || bornUnder(borne.type, named.term),
+      (named) =>
+        named === undefined || (bornUnder(borne.type, named.term) && borne.word.takes(named.term)),
       (named, position) => new WrongModifier(borne.word.value, named?.word.value ?? '', position)
     ),
     (named) => named?.term

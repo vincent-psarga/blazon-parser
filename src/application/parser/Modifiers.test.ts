@@ -21,6 +21,7 @@ const writeEnglish = new EnglishBlazonWriter();
 const drawer = new SvgBlazonDrawer(WikipediaColours);
 
 const CHARGES = Object.values(ChargeType);
+const MODIFIERS = Object.values(Modifier);
 
 describe('a charge borne under a modifier', () => {
   test('is the same charge, with what was done to it beside the tincture', () => {
@@ -113,9 +114,24 @@ describe('where the word may stand', () => {
 
 describe('what a charge will take', () => {
   test('is declared with the charge rather than with either vocabulary', () => {
-    expect(modifiersOf(ChargeType.lozenge)).toEqual([Modifier.voided]);
+    expect(modifiersOf(ChargeType.roundel)).toEqual([Modifier.voided]);
     expect(modifiersOf(ChargeType.annulet)).toEqual([]);
     expect(allowsModifier(ChargeType.roundel, Modifier.voided)).toBe(true);
+  });
+
+  test('is one list and not one modifier, a charge being able to take two', () => {
+    // The three heraldry named twice over: a lozenge voided is a mascle and a
+    // lozenge pierced a rustre, a mullet pierced is the molette, and a billet is
+    // as ready to be pierced as to be voided.
+    for (const type of [ChargeType.billet, ChargeType.lozenge, ChargeType.mullet]) {
+      expect(modifiersOf(type)).toEqual([Modifier.voided, Modifier.pierced]);
+    }
+    // And the roundel, which heraldry named once: voided it is the annulet, and
+    // pierced it would be an annulet again by another road.
+    expect(allowsModifier(ChargeType.roundel, Modifier.pierced)).toBe(false);
+    expect(() => inEnglish.parse('Azure a roundel pierced or')).toThrow(
+      'Wrong modifier: roundel is never pierced'
+    );
   });
 
   test('refuses a charge that is already what the modifier says', () => {
@@ -141,18 +157,19 @@ describe('what a charge will take', () => {
     // Whatever the model says each charge takes, the parser takes exactly that:
     // a charge given a modifier in the model and refused here would be a promise
     // the vocabulary could not keep.
-    const allowed = allowsModifier(type, Modifier.voided);
-    const written = writeEnglish.write({
-      field: { tincture: Colours.azure },
-      chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier: Modifier.voided }],
-    });
-    if (allowed) {
-      expect(inEnglish.parse(written).chargesOrOrdinaries?.[0]).toHaveProperty(
-        'modifier',
-        Modifier.voided
-      );
-    } else {
-      expect(() => inEnglish.parse(written)).toThrow(WrongModifier);
+    for (const modifier of MODIFIERS) {
+      const written = writeEnglish.write({
+        field: { tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
+      });
+      if (allowsModifier(type, modifier)) {
+        expect(inEnglish.parse(written).chargesOrOrdinaries?.[0]).toHaveProperty(
+          'modifier',
+          modifier
+        );
+      } else {
+        expect(() => inEnglish.parse(written)).toThrow(WrongModifier);
+      }
     }
   });
 });
@@ -229,9 +246,21 @@ describe('the two participles French voids a charge with', () => {
     );
   });
 
-  test('come back as the first of the two, which is the word French writes', () => {
-    expect(writeFrench.write(inFrench.parse("D'azur à la losange vidée d'or"))).toBe(
-      "D'azur à la losange évidée d'or."
+  test('come back as whichever of the two the charge is written with', () => {
+    // Vidé claims no charge and is therefore the general word; évidé claims the
+    // star, which the dictionaries say it of. Either is read of either charge,
+    // and each charge answers in its own.
+    expect(writeFrench.write(inFrench.parse("D'azur à la billette vidée d'or"))).toBe(
+      "D'azur à la billette vidée d'or."
+    );
+    expect(writeFrench.write(inFrench.parse("D'azur à la billette évidée d'or"))).toBe(
+      "D'azur à la billette vidée d'or."
+    );
+    expect(writeFrench.write(inFrench.parse("D'azur à l'étoile évidée d'or"))).toBe(
+      "D'azur à l'étoile évidée d'or."
+    );
+    expect(writeFrench.write(inFrench.parse("D'azur à l'étoile vidée d'or"))).toBe(
+      "D'azur à l'étoile évidée d'or."
     );
   });
 
@@ -244,48 +273,56 @@ describe('the two participles French voids a charge with', () => {
 
 describe('writing a modified charge', () => {
   test('writes it between the charge and its tincture, in either tongue', () => {
-    const blazon = inEnglish.parse('Azure a lozenge voided or');
-    expect(writeEnglish.write(blazon)).toBe('Azure a lozenge voided or.');
-    expect(writeFrench.write(blazon)).toBe("D'azur à la losange évidée d'or.");
+    const blazon = inEnglish.parse('Azure a billet voided or');
+    expect(writeEnglish.write(blazon)).toBe('Azure a billet voided or.');
+    expect(writeFrench.write(blazon)).toBe("D'azur à la billette vidée d'or.");
   });
 
   test('writes the settled order whichever order was read', () => {
-    expect(writeEnglish.write(inEnglish.parse('Azure a lozenge or voided'))).toBe(
-      'Azure a lozenge voided or.'
+    expect(writeEnglish.write(inEnglish.parse('Azure a billet or voided'))).toBe(
+      'Azure a billet voided or.'
     );
-    expect(writeFrench.write(inFrench.parse("D'azur à la losange d'or évidée"))).toBe(
-      "D'azur à la losange évidée d'or."
+    expect(writeFrench.write(inFrench.parse("D'azur à la billette d'or vidée"))).toBe(
+      "D'azur à la billette vidée d'or."
     );
   });
 
   test('agrees the French word with the gender the charge is written back in', () => {
-    // Read masculine, written feminine: the losange comes back under the article
-    // the dictionaries give it, and what is said of it follows the article.
-    expect(writeFrench.write(inFrench.parse("D'azur au losange évidé d'or"))).toBe(
-      "D'azur à la losange évidée d'or."
+    // The billette is feminine and the besant masculine, and what is said of
+    // each follows the word rather than anything the blazon supplied.
+    expect(writeFrench.write(inFrench.parse("D'azur à la billette d'or vidée"))).toBe(
+      "D'azur à la billette vidée d'or."
+    );
+    expect(writeFrench.write(inFrench.parse("D'azur au besant vidé"))).toBe(
+      "D'azur au besant vidé."
     );
   });
 
   test('agrees it in number too', () => {
     const blazon = inEnglish.parse('Or three billets voided sable');
-    expect(writeFrench.write(blazon)).toBe("D'or à trois billettes évidées de sable.");
+    expect(writeFrench.write(blazon)).toBe("D'or à trois billettes vidées de sable.");
     expect(writeEnglish.write(blazon)).toBe('Or three billets voided sable.');
   });
 
   test('writes it after a tincture the name had already said, where the name says one', () => {
     const blazon = inEnglish.parse('Azure a besant voided');
     expect(writeEnglish.write(blazon)).toBe('Azure a besant voided.');
-    expect(writeFrench.write(blazon)).toBe("D'azur au besant évidé.");
+    expect(writeFrench.write(blazon)).toBe("D'azur au besant vidé.");
   });
 
   test('reads back everything it writes', () => {
-    for (const type of CHARGES.filter((type) => allowsModifier(type, Modifier.voided))) {
-      const blazon = {
-        field: { tincture: Colours.azure },
-        chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier: Modifier.voided }],
-      };
-      expect(inFrench.parse(writeFrench.write(blazon))).toEqual(blazon);
-      expect(inEnglish.parse(writeEnglish.write(blazon))).toEqual(blazon);
+    // Every charge under every modifier it will take, so that a tongue keeping a
+    // word for one charge is held to reading its own writing: the star comes
+    // back évidée and is understood, as the lozenge comes back vidée.
+    for (const type of CHARGES) {
+      for (const modifier of modifiersOf(type)) {
+        const blazon = {
+          field: { tincture: Colours.azure },
+          chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
+        };
+        expect(inFrench.parse(writeFrench.write(blazon))).toEqual(blazon);
+        expect(inEnglish.parse(writeEnglish.write(blazon))).toEqual(blazon);
+      }
     }
   });
 
@@ -296,6 +333,194 @@ describe('writing a modified charge', () => {
         chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
       })
     ).toBe('Azure a fess or.');
+  });
+});
+
+describe('piercing a charge, which is not voiding it', () => {
+  test('is a term of its own rather than a second word for the voiding', () => {
+    expect(inEnglish.parse('Azure a billet pierced or').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.billet, tincture: Metals.or, modifier: Modifier.pierced },
+    ]);
+    expect(inEnglish.parse('Azure a billet pierced or')).not.toEqual(
+      inEnglish.parse('Azure a billet voided or')
+    );
+  });
+
+  test('is said with percé in French, which the dictionaries file under vidé', () => {
+    expect(inFrench.parse("D'azur à la billette percée d'or")).toEqual(
+      inEnglish.parse('Azure a billet pierced or')
+    );
+    // Filed together and never written for one another: a billette vidée is the
+    // outline of a billette and a billette percée is a billette with a hole.
+    expect(inFrench.parse("D'azur à la billette percée d'or")).not.toEqual(
+      inFrench.parse("D'azur à la billette vidée d'or")
+    );
+  });
+
+  test('agrees as the voiding does, being a participle like it', () => {
+    expect(inFrench.parse("D'or à trois billettes percées de sable").chargesOrOrdinaries).toEqual([
+      {
+        type: ChargeType.billet,
+        tincture: Colours.sable,
+        count: 3,
+        modifier: Modifier.pierced,
+      },
+    ]);
+    expect(() => inFrench.parse("D'or à trois billettes percée de sable")).toThrow(
+      'Wrong agreement: expected "percées"'
+    );
+  });
+
+  test('comes back as itself in either tongue', () => {
+    const blazon = inEnglish.parse('Or three billets pierced sable');
+    expect(writeEnglish.write(blazon)).toBe('Or three billets pierced sable.');
+    expect(writeFrench.write(blazon)).toBe("D'or à trois billettes percées de sable.");
+  });
+
+  test('draws a hole in the charge where the voiding draws its outline', () => {
+    const drawn = (blazon: string) => drawer.draw(inEnglish.parse(blazon));
+    expect(drawn('Azure a billet pierced or')).not.toBe(drawn('Azure a billet voided or'));
+    // The hole is round and the charge keeps its own shape around it, where the
+    // voided one keeps nothing but a band along its sides.
+    expect(drawn('Azure a billet pierced or')).toContain('A ');
+    expect(drawn('Azure a billet pierced or')).toContain('fill-rule="evenodd"');
+  });
+
+  test('is drawn the same way of every charge that takes it, each in its own room', () => {
+    // The three heraldry named: the rustre, the molette and the pierced billet.
+    // Each keeps its own outline and loses a round bite of the middle, and the
+    // bite is half the room that figure has — so no two are the same drawing,
+    // and none of them is the voided one.
+    const drawn = (blazon: string) => drawer.draw(inEnglish.parse(blazon));
+    const pierced = CHARGES.filter((type) => allowsModifier(type, Modifier.pierced));
+    expect(pierced).toEqual([ChargeType.billet, ChargeType.lozenge, ChargeType.mullet]);
+    for (const type of pierced) {
+      const written = writeEnglish.write({
+        field: { tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier: Modifier.pierced }],
+      });
+      expect(drawn(written)).toContain('fill-rule="evenodd"');
+      expect(drawn(written)).toContain('A ');
+      expect(drawn(written)).not.toBe(
+        drawn(
+          writeEnglish.write({
+            field: { tincture: Colours.azure },
+            chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier: Modifier.voided }],
+          })
+        )
+      );
+    }
+  });
+});
+
+describe('the names heraldry gave a modified charge', () => {
+  test('are the charge and what was done to it, and not a charge of their own', () => {
+    // A mascle is a lozenge voided, so it reads as one: the model holds the
+    // lozenge it always held, and the name is the vocabulary's business.
+    expect(inEnglish.parse('Azure a mascle or').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.lozenge, tincture: Metals.or, modifier: Modifier.voided },
+    ]);
+    expect(inEnglish.parse('Azure a mascle or')).toEqual(
+      inEnglish.parse('Azure a lozenge voided or')
+    );
+    expect(inEnglish.parse('Azure a rustre or')).toEqual(
+      inEnglish.parse('Azure a lozenge pierced or')
+    );
+    expect(inFrench.parse("D'azur à la molette d'or")).toEqual(
+      inEnglish.parse('Azure a mullet pierced or')
+    );
+  });
+
+  test('are read in either tongue, each tongue spelling its own', () => {
+    expect(inFrench.parse("D'azur à la macle d'or")).toEqual(inEnglish.parse('Azure a mascle or'));
+    expect(inFrench.parse("D'azur au rustre d'or")).toEqual(inEnglish.parse('Azure a rustre or'));
+  });
+
+  test('take the article their own gender asks for, which is not the charge’s', () => {
+    // La macle and la molette against le rustre, the losange being feminine and
+    // the word for its pierced self masculine.
+    expect(() => inFrench.parse("D'azur au macle d'or")).toThrow();
+    expect(() => inFrench.parse("D'azur à la rustre d'or")).toThrow();
+  });
+
+  test('are borne in number as any other name is', () => {
+    expect(inEnglish.parse('Or three mascles sable').chargesOrOrdinaries).toEqual([
+      {
+        type: ChargeType.lozenge,
+        tincture: Colours.sable,
+        count: 3,
+        modifier: Modifier.voided,
+      },
+    ]);
+    expect(inFrench.parse("D'or à trois molettes de sable")).toEqual(
+      inEnglish.parse('Or three mullets pierced sable')
+    );
+  });
+
+  test('say the modifier twice where a blazon writes it, and are understood', () => {
+    // "A mascle voided" is "a besant or" again: the word already said it, and
+    // saying it a second time changes nothing about the arms.
+    expect(inEnglish.parse('Azure a mascle voided or')).toEqual(
+      inEnglish.parse('Azure a mascle or')
+    );
+    expect(inFrench.parse("D'azur à la macle vidée d'or")).toEqual(
+      inFrench.parse("D'azur à la macle d'or")
+    );
+  });
+
+  test('refuse a modifier that says something else, there being no telling which was meant', () => {
+    expect(() => inEnglish.parse('Azure a mascle pierced or')).toThrow(WrongModifier);
+    expect(() => inEnglish.parse('Azure a mascle pierced or')).toThrow(
+      'Wrong modifier: mascle is never pierced'
+    );
+    expect(() => inFrench.parse("D'azur à la molette vidée d'or")).toThrow(
+      'Wrong modifier: molette is never vidé'
+    );
+  });
+
+  test('are what a modified charge comes back as, the tincture following as ever', () => {
+    const voided = inEnglish.parse('Azure a lozenge voided or');
+    expect(writeEnglish.write(voided)).toBe('Azure a mascle or.');
+    expect(writeFrench.write(voided)).toBe("D'azur à la macle d'or.");
+    const pierced = inEnglish.parse('Or three lozenges pierced sable');
+    expect(writeEnglish.write(pierced)).toBe('Or three rustres sable.');
+    expect(writeFrench.write(pierced)).toBe("D'or à trois rustres de sable.");
+  });
+
+  test('leave the plain charge its plain name, a name meaning what it says', () => {
+    expect(writeEnglish.write(inEnglish.parse('Azure a lozenge or'))).toBe('Azure a lozenge or.');
+    expect(writeFrench.write(inFrench.parse("D'azur à l'étoile d'or"))).toBe(
+      "D'azur à l'étoile d'or."
+    );
+  });
+
+  test('are not invented where the tongue has none, the modifier being written instead', () => {
+    // English names no pierced star — molette is French, and the English molet
+    // is an old spelling of the mullet itself — so English blazons the two words
+    // where French has the one.
+    const blazon = inFrench.parse("D'azur à la molette d'or");
+    expect(writeEnglish.write(blazon)).toBe('Azure a mullet pierced or.');
+    expect(writeFrench.write(blazon)).toBe("D'azur à la molette d'or.");
+    // Nor does either tongue name a voided star or a pierced billet.
+    expect(writeFrench.write(inEnglish.parse('Azure a mullet voided or'))).toBe(
+      "D'azur à l'étoile évidée d'or."
+    );
+    expect(writeFrench.write(inEnglish.parse('Azure a billet pierced or'))).toBe(
+      "D'azur à la billette percée d'or."
+    );
+  });
+
+  test('read back everything they write', () => {
+    for (const type of CHARGES) {
+      for (const modifier of modifiersOf(type)) {
+        const blazon = {
+          field: { tincture: Colours.azure },
+          chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
+        };
+        expect(inFrench.parse(writeFrench.write(blazon))).toEqual(blazon);
+        expect(inEnglish.parse(writeEnglish.write(blazon))).toEqual(blazon);
+      }
+    }
   });
 });
 
@@ -321,5 +546,13 @@ describe('drawing a modified charge', () => {
 
   test('draws a roundel voided as the annulet it is, heraldry naming the one figure twice', () => {
     expect(drawn('Azure a roundel voided or')).toBe(drawn('Azure an annulet or'));
+  });
+
+  test('takes the middle out of a star as readily as out of a lozenge', () => {
+    expect(drawn('Azure a mullet voided or')).not.toBe(drawn('Azure a mullet or'));
+    expect(drawn('Azure a mullet voided or')).toContain('fill-rule="evenodd"');
+    // The rays survive the voiding: five points outside and five within, which
+    // is what parts a voided star from a ring with a star-shaped hole.
+    expect((drawn('Azure a mullet voided or').match(/ L /g) ?? []).length).toBe(18);
   });
 });

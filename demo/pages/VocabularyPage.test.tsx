@@ -203,6 +203,7 @@ describe('what one drawing cannot say', () => {
       'Thrice',
       'Sown',
       'Voided',
+      'Pierced',
     ]);
     expect(within(showing()).getByText('Said of it')).toBeInTheDocument();
   });

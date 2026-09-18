@@ -69,7 +69,7 @@ export class ChargeDefinition {
    * The modifiers a blazon may bear it under, which is none for most of them.
    *
    * Empty says the charge is what it is and admits of nothing: the annulet is a
-   * roundel voided already, and the mullet has no middle to take out.
+   * roundel voided already, and voiding one again names no figure.
    */
   public readonly allowedModifiers: readonly Modifier[];
 
@@ -92,17 +92,31 @@ export class ChargeDefinition {
  */
 export const ChargeDefinitions: Record<ChargeType, ChargeDefinition> = {
   [ChargeType.annulet]: new ChargeDefinition(ChargeType.annulet),
+  // Voided and pierced both, which are two things done to it and not one said
+  // twice: the outline of a billet is one figure and a billet with a hole in it
+  // is another. The armorials name the second oftener than the first — "on se
+  // sert du terme percées, pour les billettes" — and name it as a way of voiding,
+  // which is the one thing it is not.
   [ChargeType.billet]: new ChargeDefinition(ChargeType.billet, {
-    allowedModifiers: [Modifier.voided],
+    allowedModifiers: [Modifier.voided, Modifier.pierced],
   }),
   [ChargeType.crescent]: new ChargeDefinition(ChargeType.crescent),
   [ChargeType.crossCouped]: new ChargeDefinition(ChargeType.crossCouped),
   [ChargeType.fleurDeLis]: new ChargeDefinition(ChargeType.fleurDeLis),
   [ChargeType.goutte]: new ChargeDefinition(ChargeType.goutte),
+  // Both, and heraldry gave each of the two a name of its own: a lozenge voided
+  // is the mascle and a lozenge pierced is the rustre, which is the plainest
+  // proof the two are not one thing said twice.
   [ChargeType.lozenge]: new ChargeDefinition(ChargeType.lozenge, {
-    allowedModifiers: [Modifier.voided],
+    allowedModifiers: [Modifier.voided, Modifier.pierced],
   }),
-  [ChargeType.mullet]: new ChargeDefinition(ChargeType.mullet),
+  // The star is voided as readily as the lozenge, and the dictionaries say so in
+  // a word of their own: blason-armoiries blazons "d'azur, à l'étoile évidée
+  // d'argent", and gives évidé as the term used "pour les triangles et étoiles".
+  // Pierced it is the rowel of a spur, which French names outright: the molette.
+  [ChargeType.mullet]: new ChargeDefinition(ChargeType.mullet, {
+    allowedModifiers: [Modifier.voided, Modifier.pierced],
+  }),
   [ChargeType.roundel]: new ChargeDefinition(ChargeType.roundel, {
     allowedModifiers: [Modifier.voided],
   }),

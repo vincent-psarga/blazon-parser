@@ -55,6 +55,24 @@ const PARKER_VOIDED = (
   </a>
 );
 
+const PARKER_MASCLE = (
+  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossm.htm">
+    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Mascle
+  </a>
+);
+
+const PARKER_RUSTRE = (
+  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossr.htm">
+    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Rustre
+  </a>
+);
+
+const PARKER_MULLET = (
+  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossm.htm">
+    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Mullet
+  </a>
+);
+
 const BLASON = (
   <a href="http://lalanguedublason.blogspot.com/2012/08/plain-et-plein-en-langue-du-blason.html">
     <cite>La langue du blason</cite>, “plain” et “plein”
@@ -86,8 +104,8 @@ export const RULES: readonly Rule[] = [
           where bezant is read, French calling the same coin a besant. And a word the armorials
           write under either article is written under the one the heraldic dictionaries give: la
           losange, where modern French has gone masculine. Where a tongue has two words for the one
-          thing and neither is a spelling of the other, the same holds: French voids a charge with
-          évidé and with vidé, and writes the first.
+          thing and neither is a spelling of the other, one of them still leads — though not always
+          the same one, the armorials keeping some words for some charges: that is the rule below.
         </p>
         <p className="rule__law">
           The same settling reaches the plumbing around a word. Blazonry says “à trois tourteaux”
@@ -112,7 +130,6 @@ export const RULES: readonly Rule[] = [
       en('Azure a bezant'),
       en('Pily counter pily of four or and azure'),
       fr("D'argent au losange de gueules"),
-      fr("D'azur à la losange vidée d'or"),
       fr("D'or aux trois tourteaux de gueules"),
     ],
   },
@@ -232,6 +249,61 @@ export const RULES: readonly Rule[] = [
     ],
   },
   {
+    id: 'a-name-that-means-what-was-done',
+    heading: 'A name that means what was done to the charge is written without saying it',
+    law: (
+      <>
+        <p className="rule__law">
+          The besant’s rule again, read of the modifier instead of the tincture. Heraldry named some
+          of the modified figures outright — a lozenge voided is a mascle, a lozenge pierced a
+          rustre, a pierced star a molette — and such a name says what was done by being the word it
+          is. Where the vocabulary keeps one, that word is written and the modifier disappears into
+          it: “Azure a lozenge voided or” comes back “Azure a mascle or”, which is shorter and says
+          exactly as much.
+        </p>
+        <p className="rule__law">
+          Said twice, it is read and written once. “A mascle voided” is “a besant or” over again —
+          the word had already said it, and saying it a second time changes nothing about the arms,
+          so it is understood and quietly dropped. Said two different ways it is refused: a mascle
+          keeps nothing but its outline and a rustre keeps everything but a round hole, so “a mascle
+          pierced” names no figure and there is no telling which the writer meant.
+        </p>
+        <p className="rule__law">
+          None of this reaches the model, which holds one lozenge and what was done to it. A mascle
+          is not a charge of its own any more than a besant is: it is the lozenge, drawn as the
+          voiding draws it, under the name the armorials give that drawing. So a tongue that named
+          no such figure loses nothing — English has no word for the pierced star, molette being
+          French and the English molet an old spelling of the mullet itself, and blazons the star
+          and the piercing in the ordinary way.
+        </p>
+      </>
+    ),
+    source: (
+      <>
+        “Mascle, (fr. macle): a lozenge voided” — {PARKER_MASCLE}; a rustre is “a lozenge with a
+        circular perforation” — {PARKER_RUSTRE}. French draws the same line in the same words:{' '}
+        <a href="http://www.blason-armoiries.org/heraldique/m/macle.htm">
+          <cite>blason-armoiries</cite>
+        </a>{' '}
+        gives “MACLE, subst. fém., meuble de l’écu fait en losange, et percé dans le même sens”
+        against its <a href="http://www.blason-armoiries.org/heraldique/r/rustre.htm">rustre</a>,
+        “Meuble en forme de losange, percé en rond au centre, de sorte que l’on voit le champ de
+        l’écu à travers” — percé dans le même sens against percé en rond, which is the whole
+        difference. Of the pierced star Parker says it “is generally taken to represent the rowel of
+        a spur, and in modern French heraldry is called molette d’éperon” — {PARKER_MULLET}, which
+        is also why English is given no word for it here.
+      </>
+    ),
+    cases: [
+      en('Azure a lozenge voided or'),
+      fr("D'azur au losange vidé d'or"),
+      en('Or three lozenges pierced sable'),
+      en('Azure a mascle voided or'),
+      en('Azure a mascle pierced or'),
+      en('Azure a mullet pierced or'),
+    ],
+  },
+  {
     id: 'naming-a-strewing',
     heading: 'A strewing is named where heraldry names it',
     law: (
@@ -325,15 +397,23 @@ export const RULES: readonly Rule[] = [
         </p>
         <p className="rule__law">
           French agrees the word with what it qualifies, and what it has to agree with is what the
-          blazon itself said. “Au losange” makes the charge masculine and is owed évidé; “à la
-          losange” makes it feminine and is owed évidée; and a blazon that chose one gender and then
-          said the other is refused rather than quietly mended. Both are read, the two articles
-          being read already, and what is written back agrees with the gender the charge is written
-          back in — the feminine the heraldic dictionaries give the losange. English agrees with
-          nothing and writes the one word after one charge or three. None of this reaches the
-          ordinaries, whose modifiers are lines drawn otherwise rather than middles taken out; and a
-          charge that is already what the modifier says refuses it by name, an annulet being a
-          roundel voided already.
+          blazon itself said. “À la billette” makes the charge feminine and is owed vidée, “au
+          besant” makes it masculine and is owed vidé, and a word the armorials write under either
+          article is owed whichever the blazon chose: “au losange vidé” and “à la losange vidée” are
+          both read, and a blazon that chose one gender and then said the other is refused rather
+          than quietly mended. What is written back agrees with the gender the charge is written
+          back in, which is the word’s own and not the blazon’s. English agrees with nothing and
+          writes the one word after one charge or three. None of this reaches the ordinaries, whose
+          modifiers are lines drawn otherwise rather than middles taken out; and a charge that is
+          already what the modifier says refuses it by name, an annulet being a roundel voided
+          already.
+        </p>
+        <p className="rule__law">
+          What is said is not always the voiding. A billette percée is not a billette vidée however
+          the dictionaries file the two words: voiding leaves the outline of the charge and nothing
+          else, piercing leaves the charge with a round hole in it, and two drawings are two things
+          to have said. So they are two words of the model and not one word written twice, and
+          neither is ever written for the other.
         </p>
       </>
     ),
@@ -360,13 +440,62 @@ export const RULES: readonly Rule[] = [
       </>
     ),
     cases: [
-      en('Azure a lozenge voided or'),
-      en('Azure a lozenge or voided'),
-      fr("D'azur au losange évidé d'or"),
-      fr("D'or à trois billettes de sable évidées"),
-      fr("D'azur au losange évidée d'or"),
+      en('Azure a billet voided or'),
+      en('Azure a billet or voided'),
+      fr("D'azur à la billette vidée d'or"),
+      fr("D'or à trois billettes de sable vidées"),
+      fr("D'azur à la billette percée d'or"),
+      fr("D'azur à la billette vidé d'or"),
       en('Azure a voided lozenge or'),
       en('Azure an annulet voided or'),
+    ],
+  },
+  {
+    id: 'a-word-kept-for-one-charge',
+    heading: 'A word the armorials keep for one charge is written of that charge alone',
+    law: (
+      <>
+        <p className="rule__law">
+          A tongue may say the one thing with two words and give each its own figures. French takes
+          the middle out of a charge with vidé and with évidé — two verbs, so two words, neither a
+          spelling of the other — and the heraldic dictionaries do not use them interchangeably:
+          évidé is the word for the star, and vidé is the word for the rest. Both are read of every
+          charge that will take the voiding at all, and what comes back is the word that charge is
+          written with. An étoile vidée is understood and answered évidée; a losange évidée is
+          understood and answered vidée.
+        </p>
+        <p className="rule__law">
+          Which word claims which charge is declared on the word, beside the charges it names and
+          the tinctures it will take — the same place the roundel’s two names settle which of them
+          means gold. A word that claims nothing is the general one, and is written wherever no
+          other word has claimed the charge, so a charge added to the vocabulary is spelled without
+          anybody having to remember it. The model holds none of this: one voiding, one drawing, and
+          two tongues that need not agree on how many words it takes to say.
+        </p>
+        <p className="rule__law">
+          English has no such quarrel here. It voids everything with voided, and a rule about which
+          word is owed which charge is a rule about French until some English term needs it.
+        </p>
+      </>
+    ),
+    source: (
+      <>
+        <a href="http://www.blason-armoiries.org/heraldique/v/vide.htm">
+          <cite>blason-armoiries</cite>, under Vidé
+        </a>{' '}
+        gives “on se sert du terme percées, pour les billettes ; évidés, pour les triangles et
+        étoiles”, and blazons “D’or, à la croix vidée de gueules”; its{' '}
+        <a href="http://www.blason-armoiries.org/heraldique/e/evide.htm">Évidé</a> blazons “d’azur,
+        à l’étoile évidée d’argent”. The billettes are the one the same entry gets wrong: percé is
+        another thing done to a charge and not another way of saying this one, as the rule above has
+        it.
+      </>
+    ),
+    cases: [
+      fr("D'azur à la billette évidée d'or"),
+      fr("D'argent à l'étoile vidée de gueules"),
+      fr("D'or à trois billettes vidées de sable"),
+      en('Azure a mullet voided or'),
     ],
   },
   {

@@ -20,7 +20,13 @@ import { OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords, counted } from '../../domain/translations/Numbers';
 import { Strewings, strewnIn } from '../../domain/translations/Strewings';
-import { Translation, nameOf, wordIn, wordOf } from '../../domain/translations/Translation';
+import {
+  Translation,
+  nameOf,
+  wordIn,
+  wordOf,
+  wordSaidOf,
+} from '../../domain/translations/Translation';
 import { Word } from '../../domain/translations/Word';
 
 /**
@@ -136,7 +142,7 @@ function writeBorne<W extends Word>(wording: BlazonWording<W>, one: ChargeOrOrdi
   const bearing = wording.bear(word, several ? counted(wording.numbers, count) : undefined);
   const tincture =
     word.defaultTincture === one.tincture ? undefined : writeTincture(wording, one.tincture);
-  const modifier = modifying(wording, one)?.(word, several);
+  const modifier = modifying(wording, one, word)?.(several);
   return [bearing, modifier, tincture].filter((part) => part !== undefined).join(' ');
 }
 
@@ -147,17 +153,29 @@ function writeBorne<W extends Word>(wording: BlazonWording<W>, one: ChargeOrOrdi
  *
  * It is written between the name and the tincture, which is where both tongues
  * put it: "a lozenge voided or", "à la croix vidée de gueules".
+ *
+ * Which word says it is asked for the charge as well as for the term, a tongue
+ * being free to keep a word apiece for the charges it is said of: French voids
+ * the star with évidé and everything else with vidé. It is the same question the
+ * name itself is chosen by — a gold roundel is a besant — and it is asked here
+ * rather than settled by the term, because two words for the one term is a fact
+ * about the tongue and not about what was done to the figure.
+ *
+ * Nothing is written at all where the name has already said it. Heraldry gives
+ * some of the modified figures a name outright — a lozenge voided is a mascle —
+ * and an armorial that wrote the modifier after such a name would be saying the
+ * same thing twice, exactly as one writing the tincture after a besant would.
  */
 function modifying<W extends Word>(
   wording: BlazonWording<W>,
-  one: ChargeOrOrdinary
-): ((word: W, several: boolean) => string) | undefined {
-  const modifier = isCharge(one) ? one.modifier : undefined;
-  if (modifier === undefined) {
+  one: ChargeOrOrdinary,
+  named: W
+): ((several: boolean) => string) | undefined {
+  if (!isCharge(one) || one.modifier === undefined || named.means(one.modifier)) {
     return undefined;
   }
-  const said = wordOf(wording.modifiers, modifier);
-  return (word, several) => wording.modify(word, said, several);
+  const said = wordSaidOf(wording.modifiers, one.modifier, one.type);
+  return (several) => wording.modify(named, said, several);
 }
 
 /**
@@ -180,7 +198,10 @@ function named<W extends Word>(
 ): { readonly word: W; readonly count: number } {
   return isOrdinary(one)
     ? { word: wordIn(wording.ordinaries, one.type, one.tincture), count: borne(one) }
-    : { word: wordIn(wording.charges, one.type, one.tincture), count: numberBorne(one) };
+    : {
+        word: wordIn(wording.charges, one.type, one.tincture, one.modifier),
+        count: numberBorne(one),
+      };
 }
 
 function writeField<W extends Word>(wording: BlazonWording<W>, field: Field): string {

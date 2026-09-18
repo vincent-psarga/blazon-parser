@@ -64,14 +64,25 @@ Supported vocabulary as it stands:
 - **Ordinaries (10)** — chief, pale, fess, bar gemel, bend, bend sinister, chevron, cross, saltire,
   bordure. Laid on the field in the order the blazon names them, which is the order they are drawn.
   That order is the model's to keep: sorting what a field bears into separate lists would lose it.
-- **Modifiers (1)** — voided: the charge's middle taken out, so the field shows through the outline.
-  Written between the charge and its tincture, which is where the armorials of both tongues put it —
-  blazon takes its word order from French, so what qualifies the charge follows it and the tincture
-  comes last. Read after the tincture as well, and never before the charge, blazon setting no
-  adjective there. Refused where the charge is already what it says — an annulet is a roundel
-  voided. Which charges take which modifier is declared on the charge, so the answer is the same in
-  either tongue. French agrees the word with what the blazon called the charge, in gender and in
-  number, and refuses a blazon that chose one gender and said the other.
+- **Modifiers (2)** — voided: the charge's middle taken out, so the field shows through the outline;
+  and pierced: a round hole punched through it, the rest of the charge left as it was. Two things
+  and not one said twice, whatever the dictionaries' filing — a billette percée is not a billette
+  vidée, and the two are drawn differently because they are different. Written between the charge
+  and its tincture, which is where the armorials of both tongues put it — blazon takes its word
+  order from French, so what qualifies the charge follows it and the tincture comes last. Read after
+  the tincture as well, and never before the charge, blazon setting no adjective there. Refused
+  where the charge is already what it says — an annulet is a roundel voided. Which charges take
+  which modifier is declared on the charge, so the answer is the same in either tongue. French
+  agrees the word with what the blazon called the charge, in gender and in number, and refuses a
+  blazon that chose one gender and said the other. It also says the voiding with two words and keeps
+  each for its own charges: the star is évidée where every other charge is vidée. Both are read of
+  every charge, and each charge is written with its own. The billet, the lozenge and the mullet take
+  both modifiers, and where heraldry gave the modified figure a name of its own that name is read
+  and written in place of the two words: a lozenge voided is a mascle (French macle), a lozenge
+  pierced a rustre, a pierced star the French molette. Such a name says the modifier by being
+  written, exactly as a besant says gold, so nothing follows it — and a blazon that says the
+  modifier anyway is understood where it agrees and refused where it does not. English names no
+  pierced star, molette being French, and blazons it in the ordinary way.
 - **Charges (9)** — annulet, billet, lozenge, roundel, goutte, mullet, fleur-de-lis, cross couped,
   crescent. Some are plain shapes and some are pictures of something; all are borne once or in
   number, and any of them may be sown over a plain field instead. They

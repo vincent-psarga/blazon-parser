@@ -1,5 +1,5 @@
 import { Modifier } from '../../../../../domain/models/Modifier';
-import { hollowRectangle, rectangle } from '../../shapes/rectangle';
+import { hollowRectangle, piercedRectangle, rectangle } from '../../shapes/rectangle';
 import { ChargeFigure } from '../Figures';
 import { charge } from './Charge';
 
@@ -16,6 +16,19 @@ const WIDE = 0.5;
  */
 const BAND = 0.22;
 
+/**
+ * How wide the hole in a pierced billet is, against the room the figure has for
+ * one.
+ *
+ * Half of it, which is every pierced charge's proportion: what is pierced keeps
+ * its shape and loses a bite out of the middle, where what is voided keeps
+ * nothing but its outline, so the hole has to leave plainly more charge than
+ * hole. The room is the distance from the middle to the nearest side, which for
+ * a billet is half its width — reckoned across rather than down for the same
+ * reason the band is, the billet standing twice as tall as it is wide.
+ */
+const HOLE = 0.5;
+
 /** An upright rectangle: the little billet, a note or a log. */
 export const billet: ChargeFigure = charge(
   ({ x, y, size }) => {
@@ -31,6 +44,16 @@ export const billet: ChargeFigure = charge(
         across,
         size,
         Math.round(across * BAND)
+      );
+    },
+    [Modifier.pierced]: ({ x, y, size }) => {
+      const across = Math.round(size * WIDE);
+      return piercedRectangle(
+        x - Math.round(across / 2),
+        y - Math.round(size / 2),
+        across,
+        size,
+        Math.round((across * HOLE) / 2)
       );
     },
   }

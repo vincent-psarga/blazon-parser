@@ -1,4 +1,5 @@
 import { ChargeType } from '../../models/Charge';
+import { Modifier } from '../../models/Modifier';
 import { COLOURS, METALS, Metals, PELTS } from '../../models/Tinctures';
 import { Translation } from '../Translation';
 import { FrenchWord } from './FrenchWord';
@@ -30,14 +31,29 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
     'An upright rectangle, twice as tall as it is wide. The name is the little billet — a note, or a log.',
     { isFeminine: true }
   ),
-  [ChargeType.lozenge]: new FrenchWord(
-    'losange',
-    'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again. Blazon kept the word feminine where modern French went masculine, so it is read under either article.',
-    {
-      isFeminine: true,
-      acceptsBothGender: true,
-    }
-  ),
+  // French names the modified lozenge twice over as English does, and keeps the
+  // genders apart: la macle and le rustre. Each says what was done to the charge
+  // by being the word it is, so nothing is written after it.
+  [ChargeType.lozenge]: [
+    new FrenchWord(
+      'losange',
+      'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again. Blazon kept the word feminine where modern French went masculine, so it is read under either article. Vidée or percée it has a name of its own, so this word is the plain figure.',
+      {
+        isFeminine: true,
+        acceptsBothGender: true,
+      }
+    ),
+    new FrenchWord(
+      'macle',
+      'A losange vidée: the middle taken out, and the field showing through the outline. Vidée by being a macle, so the blazon writes nothing after it. English spells the same word mascle.',
+      { isFeminine: true, defaultModifier: Modifier.voided }
+    ),
+    new FrenchWord(
+      'rustre',
+      'A losange percée: a round hole punched through the middle, the rest of the figure left as it was. It is not the macle, which keeps nothing but its outline. Masculine, where the macle and the losange are feminine.',
+      { defaultModifier: Modifier.pierced }
+    ),
+  ],
   [ChargeType.roundel]: [
     new FrenchWord(
       'besant',
@@ -64,11 +80,22 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
   // "Sa figuration ordinaire comporte cinq pointes que l'on appelle rais", which
   // is the number English understands of a mullet too, so the one figure serves
   // both tongues and neither counts the rays.
-  [ChargeType.mullet]: new FrenchWord(
-    'étoile',
-    'A star of five straight rays, which the dictionaries call rais. Five is understood wherever the blazon counts none. The rays are straight: drawn wavy, and of six, the figure would be another one altogether.',
-    { isFeminine: true }
-  ),
+  // The star is named twice as well, and the second name is a thing rather than a
+  // star: a molette is the rowel of a spur, which is what a pierced star is a
+  // picture of. English has no word for it and blazons the star and the piercing
+  // separately.
+  [ChargeType.mullet]: [
+    new FrenchWord(
+      'étoile',
+      'A star of five straight rays, which the dictionaries call rais. Five is understood wherever the blazon counts none. The rays are straight: drawn wavy, and of six, the figure would be another one altogether. Percée it is a molette, so this word is the plain star and the vidée one.',
+      { isFeminine: true }
+    ),
+    new FrenchWord(
+      'molette',
+      'An étoile percée: a star with a round hole through the middle, which is the rowel of a spur — a molette d’éperon. Pierced by being a molette, so the blazon writes nothing after it.',
+      { isFeminine: true, defaultModifier: Modifier.pierced }
+    ),
+  ],
   // The lily, spelled four ways by armorials that agree about everything else:
   // with the hyphens or without, and ending in either letter. All four are read
   // and the first is written, which is how the armorials here spell it.

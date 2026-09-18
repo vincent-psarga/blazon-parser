@@ -1,3 +1,5 @@
+import { ChargeType } from '../models/Charge';
+import { Modifier } from '../models/Modifier';
 import { TINCTURES, Tincture } from '../models/Tinctures';
 
 /** One way a word is written, and how that writing counts more than one of it. */
@@ -33,6 +35,10 @@ export interface WordOptions {
   readonly alternateWording?: AlternateWording;
   readonly allowedTinctures?: readonly Tincture[];
   readonly defaultTincture?: Tincture;
+  /** The charges this word alone is said of, for a word that qualifies rather than names. */
+  readonly saidOf?: readonly ChargeType[];
+  /** What the word already says was done to the charge, for a name that says it. */
+  readonly defaultModifier?: Modifier;
 }
 
 /**
@@ -56,6 +62,19 @@ export interface WordOptions {
  * spellings that differ in nothing but a hyphen or a letter are carried here, so
  * that the vocabulary holds one entry where heraldry has one word and the parser
  * still answers to every spelling of it.
+ *
+ * A word may also carry the charges it is said of, which is the same question
+ * asked of a word that qualifies instead of naming. A tongue may hold two words
+ * for the one thing and give each its own charges — French voids the star with
+ * évidé and everything else with vidé — and which is which is no more the term's
+ * business than the difference between a besant and a tourteau is.
+ *
+ * A word may also carry what was done to the figure. Heraldry gives some of the
+ * modified charges a name of their own — a lozenge voided is a mascle and a
+ * lozenge pierced is a rustre — and such a name says the modifier by being
+ * written, exactly as a besant says gold by being written. It is the same charge
+ * and the same drawing either way, so it is a word of the term and not a term of
+ * its own: the model holds one lozenge, voided or not.
  *
  * A word may also carry the tincture, which is the roundel's doing. Heraldry
  * names that charge after the coin, the disc or the cake it is the picture of,
@@ -84,6 +103,31 @@ export class Word {
   public readonly defaultTincture?: Tincture;
 
   /**
+   * The charges this word alone is said of, where the armorials keep it for
+   * some and not for others.
+   *
+   * Left unsaid by every word that is said of whatever will take it, which is
+   * every word that names something and most of the words that qualify one: the
+   * list is a claim on particular charges and not a licence, so a word making no
+   * claim is the general one and is written wherever no other word has claimed
+   * the charge. Every word is read of every charge either way — this settles
+   * which comes back, and never what may be said.
+   */
+  public readonly saidOf?: readonly ChargeType[];
+
+  /**
+   * What the word already says was done to the charge, where the word says it.
+   *
+   * Left unsaid by every word that names the figure and nothing more, which is
+   * most of them: a lozenge is a lozenge whatever has been done to it, and what
+   * was done is written after it. A mascle is a lozenge voided and says so by
+   * being the word it is, so a blazon writing the modifier after it would be
+   * saying the same thing twice — which is read and not written, as a besant
+   * borne or is.
+   */
+  public readonly defaultModifier?: Modifier;
+
+  /**
    * What the word means, in as many sentences as it takes.
    *
    * Empty where there is nothing of the word's own to say: a number is not a
@@ -103,6 +147,8 @@ export class Word {
       })),
     ];
     this.defaultTincture = options?.defaultTincture;
+    this.saidOf = options?.saidOf;
+    this.defaultModifier = options?.defaultModifier;
     this.allowedTinctures =
       options?.allowedTinctures ??
       (this.defaultTincture === undefined ? TINCTURES : [this.defaultTincture]);
@@ -111,5 +157,34 @@ export class Word {
   /** Whether the word may be borne in a tincture. */
   accepts(tincture: Tincture): boolean {
     return this.allowedTinctures.includes(tincture);
+  }
+
+  /** Whether the word claims a charge as one of its own. */
+  claims(type: ChargeType): boolean {
+    return this.saidOf?.includes(type) ?? false;
+  }
+
+  /**
+   * Whether the word is the one that means exactly this much: a modifier, or
+   * none at all.
+   *
+   * Asked when a blazon is written rather than read, and answered strictly both
+   * ways — a mascle is not the word for a plain lozenge, and a lozenge is not
+   * the word for a voided one where a word for that exists.
+   */
+  means(modifier: Modifier | undefined): boolean {
+    return this.defaultModifier === modifier;
+  }
+
+  /**
+   * Whether a blazon may write a modifier after the word.
+   *
+   * Anything the charge itself will take, for a word that says nothing about it;
+   * and for a word that already says one, that one alone. "A mascle voided" says
+   * the voiding twice and is understood; "a mascle pierced" says two different
+   * things and is refused, exactly as "a besant argent" is.
+   */
+  takes(modifier: Modifier): boolean {
+    return this.defaultModifier === undefined || this.defaultModifier === modifier;
   }
 }

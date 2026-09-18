@@ -1,4 +1,5 @@
 import { ChargeType } from '../../models/Charge';
+import { Modifier } from '../../models/Modifier';
 import { Colours, Metals } from '../../models/Tinctures';
 import { Translation } from '../Translation';
 import { Word } from '../Word';
@@ -27,11 +28,34 @@ export const EnglishChargeType: Translation<ChargeType> = {
     'billet',
     'An upright rectangle, twice as tall as it is wide. The name is the little billet — a note, or a log.'
   ),
-  [ChargeType.lozenge]: new Word(
-    'lozenge',
-    'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again.',
-    { plural: 'lozenges' }
-  ),
+  // The lozenge is the other charge English names more than one way, and it
+  // names the modified figures rather than the tinctures: a voided one is a
+  // mascle and a pierced one a rustre. Each of those names says what was done to
+  // the charge as well as which charge it is, so a blazon that writes one need
+  // not write the modifier, and a blazon that writes both must write the one the
+  // name already means — a mascle is never pierced.
+  //
+  // The pierced mullet English leaves unnamed: molette is the French word, and
+  // the English cognate molet is an old spelling of the mullet itself rather
+  // than of the pierced one. So a pierced star is blazoned in the ordinary way,
+  // which is what a tongue with no name for a figure does.
+  [ChargeType.lozenge]: [
+    new Word(
+      'lozenge',
+      'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again. Voided or pierced it has a name of its own, so this word is the plain figure.',
+      { plural: 'lozenges' }
+    ),
+    new Word(
+      'mascle',
+      'A lozenge voided: the middle taken out, and the field showing through the outline. Voided by being a mascle, so the blazon writes no modifier after it.',
+      { defaultModifier: Modifier.voided }
+    ),
+    new Word(
+      'rustre',
+      'A lozenge pierced: a round hole punched through the middle, the rest of the figure left as it was. It is not the mascle, which keeps nothing but its outline.',
+      { defaultModifier: Modifier.pierced }
+    ),
+  ],
   [ChargeType.roundel]: [
     new Word(
       'roundel',

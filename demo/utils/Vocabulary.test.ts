@@ -298,18 +298,41 @@ describe('the words that say more than one drawing can', () => {
 
   test('shows a charge under every modifier it will take, agreement and all', () => {
     // The label names the word as the blazon beneath it names it: a billette is
-    // évidée where a tourteau is évidé.
+    // vidée where a tourteau is vidé, and it is percée rather than vidée when
+    // the hole is a hole and not the whole middle.
     expect(word(french, 'billette').otherwise?.entries.map(({ label }) => label)).toEqual([
       'Twice',
       'Thrice',
       'Sown',
-      'Évidée',
+      'Vidée',
+      'Percée',
     ]);
     expect(word(french, 'billette').otherwise?.entries[3].typed).toBe(
-      "D'argent à la billette évidée de gueules."
+      "D'argent à la billette vidée de gueules."
+    );
+    expect(word(french, 'billette').otherwise?.entries[4].typed).toBe(
+      "D'argent à la billette percée de gueules."
     );
     expect(word(english, 'billet').otherwise?.entries[3].typed).toBe(
       'Argent a billet voided gules.'
+    );
+    expect(word(english, 'billet').otherwise?.entries[4].typed).toBe(
+      'Argent a billet pierced gules.'
+    );
+    // The star is voided in a word of its own, so its page says that word — and
+    // pierced in the word every other charge is pierced with.
+    expect(word(french, 'étoile').otherwise?.entries.map(({ label }) => label)).toEqual([
+      'Twice',
+      'Thrice',
+      'Sown',
+      'Évidée',
+      'Percée',
+    ]);
+    expect(word(french, 'étoile').otherwise?.entries[3].typed).toBe(
+      "D'argent à l'étoile évidée de gueules."
+    );
+    expect(word(french, 'étoile').otherwise?.entries[4].typed).toBe(
+      "D'argent à l'étoile percée de gueules."
     );
   });
 
@@ -320,8 +343,25 @@ describe('the words that say more than one drawing can', () => {
     expect(word(english, 'voided').otherwise?.entries.map(({ label }) => label)).toEqual([
       'Lozenge',
       'Roundel',
+      'Mullet',
     ]);
-    expect(word(french, 'évidé').typed).toBe("D'argent à la billette évidée de gueules.");
+    // A tongue that keeps a word for one charge shows it on that charge and on
+    // no other: évidé is the star's word, so the star is the whole of its page
+    // and there is nothing left to stand under it.
+    expect(word(french, 'évidé').typed).toBe("D'argent à l'étoile évidée de gueules.");
+    expect(word(french, 'évidé').otherwise).toBeUndefined();
+    expect(word(french, 'vidé').typed).toBe("D'argent à la billette vidée de gueules.");
+    expect(word(french, 'vidé').otherwise?.entries.map(({ label }) => label)).toEqual([
+      'Losange',
+      'Besant',
+    ]);
+    // Percé is nobody's word in particular, so it stands on every charge that
+    // will take the piercing.
+    expect(word(english, 'pierced').otherwise?.entries.map(({ label }) => label)).toEqual([
+      'Lozenge',
+      'Mullet',
+    ]);
+    expect(word(french, 'percé').typed).toBe("D'argent à la billette percée de gueules.");
   });
 
   test("files each of a tongue's words for the one modifier under itself", () => {
@@ -330,7 +370,10 @@ describe('the words that say more than one drawing can', () => {
     // spelling.
     expect(word(french, 'vidé').rank).toBe('modifier');
     expect(word(french, 'vidé').typed).toBe("D'argent à la billette vidée de gueules.");
-    expect(word(french, 'vidé').written).toBe("D'argent à la billette évidée de gueules.");
+    // Each is shown on a charge it is itself the word for, so neither page is
+    // quietly rewritten into the other's word.
+    expect(word(french, 'vidé').written).toBeUndefined();
+    expect(word(french, 'évidé').written).toBeUndefined();
     expect(word(french, 'vidé').alsoHere.map(({ word }) => word)).toEqual(['évidé']);
     expect(word(french, 'évidé').alsoHere.map(({ word }) => word)).toEqual(['vidé']);
     expect(word(french, 'vidé').otherTongue.map(({ word }) => word)).toEqual(['voided']);
@@ -340,15 +383,82 @@ describe('the words that say more than one drawing can', () => {
     expect(word(french, 'évidé').note).toContain('évidé, évidés, évidée, évidées');
   });
 
+  test('files a name for a modified figure as the charge it is, and draws it modified', () => {
+    // A mascle is the lozenge with the voiding done to it, so its page draws
+    // that and not a plain lozenge, and its blazon is one a reader could type.
+    expect(word(english, 'mascle').rank).toBe('charge');
+    expect(word(english, 'mascle').typed).toBe('Argent a mascle gules.');
+    expect(word(english, 'mascle').written).toBeUndefined();
+    expect(word(english, 'mascle').blazon.chargesOrOrdinaries?.[0]).toHaveProperty(
+      'modifier',
+      'Modifier.voided'
+    );
+    expect(word(french, 'macle').typed).toBe("D'argent à la macle de gueules.");
+    expect(word(french, 'rustre').typed).toBe("D'argent au rustre de gueules.");
+    expect(word(french, 'molette').typed).toBe("D'argent à la molette de gueules.");
+  });
+
+  test('shows such a name borne in number and nothing else', () => {
+    // Nothing may be said of it that it has not said, and it cannot be sown: a
+    // field is sown with a charge and not with a charge under a modifier, so a
+    // semy of mascles is a blazon the model cannot hold.
+    expect(word(english, 'mascle').otherwise?.heading).toBe('Borne in number');
+    expect(word(english, 'mascle').otherwise?.entries.map(({ label }) => label)).toEqual([
+      'Twice',
+      'Thrice',
+    ]);
+    expect(word(english, 'mascle').otherwise?.entries[1].typed).toBe('Argent three mascles gules.');
+    // The plain name keeps all of it, being the word that says nothing.
+    expect(word(english, 'lozenge').otherwise?.heading).toBe('Borne in number, sown, and modified');
+  });
+
+  test('leads such a name to what it already says, and not to what it refuses', () => {
+    expect(word(english, 'mascle').related?.sightings.map(({ word }) => word)).toEqual(['voided']);
+    expect(word(english, 'rustre').related?.sightings.map(({ word }) => word)).toEqual(['pierced']);
+    expect(word(french, 'molette').related?.sightings.map(({ word }) => word)).toEqual(['percé']);
+    expect(word(english, 'lozenge').related?.sightings.map(({ word }) => word)).toEqual([
+      'voided',
+      'pierced',
+    ]);
+  });
+
   test('binds a charge to what may be said of it, and back again', () => {
-    expect(word(english, 'billet').related?.sightings.map(({ word }) => word)).toEqual(['voided']);
+    expect(word(english, 'billet').related?.sightings.map(({ word }) => word)).toEqual([
+      'voided',
+      'pierced',
+    ]);
     expect(word(english, 'voided').related?.sightings.map(({ word }) => word)).toEqual([
       'billet',
       'lozenge',
       'roundel',
+      'mullet',
     ]);
     // A charge that will take none says nothing rather than saying none.
     expect(word(english, 'annulet').related).toBeUndefined();
+  });
+
+  test('leads a charge to the word its own tongue says of it, where two words say it', () => {
+    // French voids the star with évidé and everything else with vidé, so the
+    // two charges lead to two different words for the one modifier — and each
+    // word leads back to the charges it is written of and no others.
+    expect(word(french, 'losange').related?.sightings.map(({ word }) => word)).toEqual([
+      'vidé',
+      'percé',
+    ]);
+    expect(word(french, 'étoile').related?.sightings.map(({ word }) => word)).toEqual([
+      'évidé',
+      'percé',
+    ]);
+    expect(word(french, 'billette').related?.sightings.map(({ word }) => word)).toEqual([
+      'vidé',
+      'percé',
+    ]);
+    expect(word(french, 'vidé').related?.sightings.map(({ word }) => word)).toEqual([
+      'billette',
+      'losange',
+      'besant',
+    ]);
+    expect(word(french, 'évidé').related?.sightings.map(({ word }) => word)).toEqual(['étoile']);
   });
 
   test('tells each tongue its own rule about counting the pieces', () => {

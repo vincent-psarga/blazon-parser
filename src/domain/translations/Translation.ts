@@ -1,3 +1,5 @@
+import { ChargeType } from '../models/Charge';
+import { Modifier } from '../models/Modifier';
 import { Tincture } from '../models/Tinctures';
 import { Spelling, Word } from './Word';
 
@@ -50,16 +52,60 @@ export function wordOf<T extends string, W extends Word>(
  * — "a roundel ermine", English having no name for that one — and failing that
  * the canonical word, which will be wrong about the tincture but is at least the
  * charge that was asked for.
+ *
+ * What was done to the charge is asked first, where anything was. Heraldry names
+ * some of the modified figures outright — a lozenge voided is a mascle and a
+ * lozenge pierced is a rustre — and such a name says the modifier by being
+ * written, so the words that say this much are what the tincture is then chosen
+ * among. Where the tongue has no such name the question is dropped rather than
+ * answered wrongly: every word is considered again, the plain name wins, and the
+ * modifier is written after it in the ordinary way.
+ *
+ * The two questions do not cross today, no charge having both a name per
+ * tincture and a name per modifier. Asked in this order they could: the tincture
+ * is chosen among the words that mean what was done, which is the way round that
+ * keeps a name meaning what it says.
  */
 export function wordIn<T extends string, W extends Word>(
   translation: Translation<T, W>,
   term: T,
-  tincture: Tincture
+  tincture: Tincture,
+  modifier?: Modifier
+): W {
+  const words = wordsOf(translation, term);
+  const meaning = words.filter((word) => word.means(modifier));
+  const among = meaning.length === 0 ? words : meaning;
+  return (
+    among.find((word) => word.defaultTincture === tincture) ??
+    among.find((word) => word.accepts(tincture)) ??
+    among[0]
+  );
+}
+
+/**
+ * The word a term is written with when it is said of a given charge.
+ *
+ * The tincture's question asked of a word that qualifies rather than names, and
+ * answered the same way. A tongue may hold two words for the one term and keep
+ * each for its own charges: French voids the star with évidé and the lozenge,
+ * the roundel and the billet with vidé, exactly as English names the gold
+ * roundel a besant and the red one a torteau. The term is one, the drawing is
+ * one, and the word that comes back is the one the armorials write of that
+ * charge.
+ *
+ * The word that claims the charge, then the word that claims none and is
+ * therefore the general one, then the canonical word — which will be the wrong
+ * word for the charge but is at least the term that was asked for.
+ */
+export function wordSaidOf<T extends string, W extends Word>(
+  translation: Translation<T, W>,
+  term: T,
+  type: ChargeType
 ): W {
   const words = wordsOf(translation, term);
   return (
-    words.find((word) => word.defaultTincture === tincture) ??
-    words.find((word) => word.accepts(tincture)) ??
+    words.find((word) => word.claims(type)) ??
+    words.find((word) => word.saidOf === undefined) ??
     words[0]
   );
 }
