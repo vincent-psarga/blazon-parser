@@ -1,8 +1,7 @@
-import { Link } from 'react-router';
 import { Colouring } from '../utils/Colourings';
-import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
+import { LANGUAGES, LanguageCode } from '../utils/Languages';
 import { tally } from '../utils/Tally';
-import { Rank, VocabularyEntry, vocabularyIn, vocabularyPath } from '../utils/Vocabulary';
+import { Rank, VocabularyEntry, vocabularyIn } from '../utils/Vocabulary';
 import { Reference } from '../components/Reference';
 
 /**
@@ -57,7 +56,6 @@ export interface VocabularyPageProps {
  */
 export function VocabularyPage({ language, colourings }: VocabularyPageProps) {
   const entries = vocabularyIn(language);
-  const other = otherThan(language);
 
   return (
     <Reference
@@ -74,22 +72,6 @@ export function VocabularyPage({ language, colourings }: VocabularyPageProps) {
             figures it may bear, and the words for what it has been sown with or for its carrying
             nothing at all. A word with an accent is filed under the letter without one, which is
             where a reader looks for it.
-          </p>
-          <p className="plane__lead">
-            Each is shown in the arms that show it and nothing else: gules on argent, so that what
-            changes from one word to the next is the word. A word that means a tincture as well as a
-            shape is shown in the tincture it means — a besant is gold by being a besant — and the
-            field turns to whichever of the two keeps the rule of tincture. No fur is ever chosen
-            for that; a fur is shown, never shown in.
-          </p>
-          <p className="plane__lead">
-            The blazon under each word carries that very spelling and is a link to itself, read at
-            full size. Heraldry spells a good many of its words more than one way and the library
-            writes exactly one of them, so a word that is read and not written back says what it
-            comes back as — which is the one thing such a word has to teach. Spellings that differ
-            in nothing but a hyphen are the one word and stand together.{' '}
-            <Link to={vocabularyPath(other)}>The {LANGUAGES[other].named} vocabulary</Link> is the
-            same words said in the other tongue, and each entry here points into it.
           </p>
           <p className="plane__lead">Choose any word to read it at full size.</p>
         </>
