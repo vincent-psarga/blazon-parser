@@ -16,8 +16,31 @@ const ENGLISH = vocabularyIn('en');
 
 const ghost = (word: string) => screen.getByRole('link', { name: word });
 const showing = () => document.querySelector('.showing') as HTMLElement;
-const struck = () => showing().querySelector('.showing__word')?.textContent;
+const struck = () => showing().querySelector('.showing__spelling')?.textContent;
+/** What the other tongue says it with, said beside the word itself. */
+const abroad = () => showing().querySelector('.showing__abroad')?.textContent?.trim();
 const strike = async (word: string) => userEvent.setup().click(ghost(word));
+
+/** The questions the struck word is asked, each under a heading of its own. */
+const headings = () =>
+  Array.from(showing().querySelectorAll('.showing__variants h3')).map(
+    (heading) => heading.textContent
+  );
+
+const section = (heading: string) => {
+  const found = Array.from(showing().querySelectorAll('.showing__variants')).find(
+    (variants) => variants.querySelector('h3')?.textContent === heading
+  );
+  if (found === undefined) {
+    throw new Error(`Nothing is shown under "${heading}"`);
+  }
+  return found as HTMLElement;
+};
+
+const labels = (heading: string) =>
+  Array.from(section(heading).querySelectorAll('.showing__variant b')).map(
+    (label) => label.textContent
+  );
 
 const painting = (colouring: string) =>
   decodeURIComponent(
@@ -166,46 +189,72 @@ describe('a word read at full size', () => {
     expect(seen.querySelector('a')).toHaveAttribute('href', '/doc/vocabulary/en#roundel');
   });
 
-  test('sends the reader across to the other tongue, naming the page it is on', async () => {
+  test('says what the other tongue calls it beside the word itself', async () => {
+    // Beside the name and not filed below the rest: it is the same word said
+    // again, so a reader who came for the translation finds it where the word
+    // is.
     mount(<VocabularyPage language="en" />, '/doc/vocabulary/en');
     await strike('hurt');
-    const across = within(showing()).getByText('In French').parentElement as HTMLElement;
-    const link = across.querySelector('a') as HTMLElement;
+    expect(struck()).toBe('hurt');
+    expect(abroad()).toBe('(French: tourteau)');
+    const link = showing().querySelector('.showing__abroad a') as HTMLElement;
     expect(link).toHaveTextContent('tourteau');
     expect(link).toHaveAttribute('href', '/doc/vocabulary/fr#tourteau');
   });
 
-  test('sends the reader nowhere where the other tongue has no such word', async () => {
+  test('says nothing beside it where the other tongue has no such word', async () => {
     mount(<VocabularyPage language="fr" />);
     await strike('plain');
-    expect(within(showing()).queryByText('In English')).toBeNull();
+    expect(struck()).toBe('plain');
+    expect(abroad()).toBeUndefined();
+  });
+
+  test('sets the blazon with the arms it drew, the two being the one fact', async () => {
+    mount(<VocabularyPage language="en" />);
+    await strike('billet');
+    const arms = showing().querySelector('.showing__arms') as HTMLElement;
+    // The shields and the blazon that produced them stand in the one block, so
+    // that nobody has to be told they belong together.
+    expect(arms.querySelectorAll('.showing__field').length).toBeGreaterThan(0);
+    expect(within(arms).getByText('Argent a billet gules.')).toBeInTheDocument();
   });
 });
 
 describe('what one drawing cannot say', () => {
-  test('bears a charge in number, and sows it', async () => {
+  test('bears a charge in number, and sows it, under a heading apiece', async () => {
     mount(<VocabularyPage language="en" />);
     await strike('cross couped');
-    const borne = Array.from(showing().querySelectorAll('.showing__variant'));
-    expect(borne.map((figure) => figure.querySelector('b')?.textContent)).toEqual([
-      'Twice',
-      'Thrice',
-      'Sown',
-    ]);
+    expect(headings()).toEqual(['Borne in number', 'Sown']);
+    expect(labels('Borne in number')).toEqual(['Twice', 'Thrice']);
+    expect(labels('Sown')).toEqual(['Over the field']);
   });
 
   test('shows a charge under whatever may be said of it, where anything may', async () => {
     mount(<VocabularyPage language="en" />);
     await strike('billet');
-    const borne = Array.from(showing().querySelectorAll('.showing__variant'));
-    expect(borne.map((figure) => figure.querySelector('b')?.textContent)).toEqual([
-      'Twice',
-      'Thrice',
-      'Sown',
-      'Voided',
-      'Pierced',
-    ]);
-    expect(within(showing()).getByText('Said of it')).toBeInTheDocument();
+    expect(headings()).toEqual(['Borne in number', 'Sown', 'Modified']);
+    expect(labels('Modified')).toEqual(['Voided', 'Pierced']);
+  });
+
+  test('leads from the modified charge to the word that modified it', async () => {
+    // The pairing is written once, on the arms that show it, so there is no
+    // second list of the same words standing apart from them.
+    mount(<VocabularyPage language="en" />, '/doc/vocabulary/en');
+    await strike('billet');
+    const shown = within(section('Modified')).getByRole('link', { name: 'Voided' });
+    expect(shown).toHaveAttribute('href', '/doc/vocabulary/en#voided');
+    expect(within(showing()).queryByText('Said of it')).toBeNull();
+  });
+
+  test('shows a modifier on every charge it is said of, and leads to each', async () => {
+    mount(<VocabularyPage language="en" />, '/doc/vocabulary/en');
+    await strike('voided');
+    expect(headings()).toEqual(['Said of']);
+    expect(labels('Said of')).toEqual(['Billet', 'Lozenge', 'Roundel', 'Mullet']);
+    expect(within(section('Said of')).getByRole('link', { name: 'Lozenge' })).toHaveAttribute(
+      'href',
+      '/doc/vocabulary/en#lozenge'
+    );
   });
 
   test('says why an ordinary is borne but once, rather than bearing it twice', async () => {

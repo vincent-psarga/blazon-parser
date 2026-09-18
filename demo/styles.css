@@ -387,6 +387,17 @@ body {
   align-items: start;
 }
 
+/*
+ * The arms and the blazon that drew them, which are one thing and are set as
+ * one. What was typed stands under what came of it, close enough that nobody has
+ * to be told the two are the same fact said twice over.
+ */
+.showing__arms {
+  display: grid;
+  gap: 0.9rem;
+  justify-items: start;
+}
+
 .showing__fields {
   display: flex;
   gap: clamp(1rem, 3vw, 2rem);
@@ -437,6 +448,39 @@ body {
   letter-spacing: -0.005em;
   color: var(--strike);
   text-wrap: balance;
+}
+
+/*
+ * What the other tongue calls it, said beside the name and not filed below
+ * everything else: it is the same word again, so a reader who came for it finds
+ * it where the word is. Quiet, and at the prose's size — the name is what stands
+ * at full height, and a translation that matched it would be a second title.
+ */
+.showing__abroad {
+  /* Its own block, so the whole of it wraps together rather than breaking
+     between the tongue and the word — and spaced by margin, a leading space
+     inside an inline-block being no space at all. */
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: clamp(0.9375rem, 1.3vw, 1.0625rem);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--bone-quiet);
+  text-transform: none;
+}
+
+.showing__abroad a {
+  color: var(--bone);
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--gauze) / 0.9);
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+  transition: color 140ms linear;
+}
+
+.showing__abroad a:hover,
+.showing__abroad a:focus-visible {
+  color: var(--strike);
 }
 
 .showing__rank {
@@ -604,6 +648,22 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--strike);
+}
+
+/* Where the label names another word it is the way to it, and says so by being
+   underlined like every other way through the vocabulary. */
+.showing__variant b a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--gauze) / 0.9);
+  text-underline-offset: 0.28em;
+  text-decoration-thickness: 1px;
+  transition: text-decoration-color 140ms linear;
+}
+
+.showing__variant b a:hover,
+.showing__variant b a:focus-visible {
+  text-decoration-color: currentcolor;
 }
 
 .showing__variant [lang='fr'] {
