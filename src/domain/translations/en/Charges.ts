@@ -123,25 +123,19 @@ export const EnglishChargeType: Translation<ChargeType> = {
       },
     }
   ),
-  // The ordinary's own figure made small, so English names it by the ordinary
-  // and says where it stops. Humetty is the older word for couped and is read
-  // too; the noun is what pluralises either way.
+  // The ordinary's own figure made small, and named by the ordinary's own word:
+  // English says the whole of it in two words — a cross couped — and the second
+  // of them is the modifier rather than half a name, which is why it is not
+  // here. What is here is the noun, and it is the noun that pluralises.
   //
   // "Crosslet" is not read for it. Wiktionary has that as "a small cross with
   // crossed arms", which is another figure, and a vocabulary that answered to
   // the word would be promising to draw one.
-  [ChargeType.crossCouped]: [
-    new Word(
-      'cross couped',
-      'A cross of four equal arms, small enough to be borne as a charge and stopping short of every edge — which is what couped means. It is not the crosslet, whose arms are themselves crossed.',
-      { plural: 'crosses couped' }
-    ),
-    new Word(
-      'cross humetty',
-      'A cross of four equal arms, small enough to be borne as a charge and stopping short of every edge. Humetty is the older word for couped.',
-      { plural: 'crosses humetty' }
-    ),
-  ],
+  [ChargeType.cross]: new Word(
+    'cross',
+    'A cross of four equal arms, small enough to be borne as a charge and stopping short of every edge. It is the band made small and is written with the band’s own word, so what says this one is meant is that the blazon said something of it at all: a cross couped is the charge, a cross voided is the charge as well — a band takes nothing — and a cross with nothing said of it is the band. It is not the crosslet, whose arms are themselves crossed.',
+    { plural: 'crosses' }
+  ),
   [ChargeType.crescent]: new Word(
     'crescent',
     'A half-moon with the horns uppermost, which is where a crescent’s horns stand unless a blazon says otherwise — and no blazon can say otherwise here, the increscent and the decrescent being turnings this does not read.'

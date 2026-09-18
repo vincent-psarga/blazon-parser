@@ -28,7 +28,7 @@ export const FrenchModifiers: Translation<Modifier, FrenchWord> = {
   [Modifier.voided]: [
     new FrenchWord(
       'vidé',
-      'The middle taken out, so that the field shows through where the charge was and what is left of it is the outline. What shows through is the field itself and not a tincture of its own, which is what makes a losange vidée a losange still rather than two charges one upon the other. The heraldic dictionaries say it of the croix and the sautoir — "d’or, à la croix vidée de gueules" — and it is the word this vocabulary writes of every charge the star has not taken.'
+      'The middle taken out, so that the field shows through where the charge was and what is left of it is the outline. What shows through is the field itself and not a tincture of its own, which is what makes a losange vidée a losange still rather than two charges one upon the other. The heraldic dictionaries say it of the croix and the sautoir — "d’or, à la croix vidée de gueules" — and a croix a blazon voids is read here as the meuble rather than the band, a band taking no modifier at all. It is the word written of every charge the star has not taken.'
     ),
     new FrenchWord(
       'évidé',
@@ -40,6 +40,17 @@ export const FrenchModifiers: Translation<Modifier, FrenchWord> = {
     new FrenchWord(
       'percé',
       'A round hole punched through the middle, the rest of the charge left as it was. The dictionaries file it under Vidé — "on se sert du terme percées, pour les billettes" — but a billette percée is not a billette vidée: voiding leaves the outline of the charge and nothing else, and piercing leaves the charge with a hole in it. Two figures, so two words, and this one is not a way of writing the other.'
+    ),
+  ],
+  // Alésé says of a figure that it stops short of the edges of the shield. Said
+  // of the croix it says which cross was meant — the band reaches the edges and
+  // the meuble does not — so it is the word a blazon writes when it names the
+  // small one by the big one's word. Written back, the croisette says it in a
+  // noun and this word is never needed.
+  [Modifier.couped]: [
+    new FrenchWord(
+      'alésé',
+      'Cut short of the edges of the shield: "se dit d’un chef, d’une croix, d’un pal, d’un sautoir, en un mot de toutes les pièces honorables dont les extrémités ne touchent pas les bords de l’écu". Said of the croix it tells the meuble from the band both are named by, and the dictionaries say the croisette "est toujours alésée". Read of a croix and answered with the croisette, which says the same thing in one word.'
     ),
   ],
 };

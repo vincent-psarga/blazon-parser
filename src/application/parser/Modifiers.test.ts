@@ -1,7 +1,13 @@
 import { describe, expect, test } from 'vitest';
 import { WrongAgreement } from '../../domain/errors/parsing/WrongAgreement';
 import { WrongModifier } from '../../domain/errors/parsing/WrongModifier';
-import { ChargeType, allowsModifier, modifiersOf } from '../../domain/models/Charge';
+import {
+  ChargeType,
+  allowsModifier,
+  bornAsItself,
+  modifiersOf,
+  onlyUnder,
+} from '../../domain/models/Charge';
 import { Modifier } from '../../domain/models/Modifier';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { OrdinaryType } from '../../domain/models/Ordinary';
@@ -134,6 +140,25 @@ describe('what a charge will take', () => {
     );
   });
 
+  test('may be what makes the charge itself rather than something done to it', () => {
+    // A cross is the band both are named by until the blazon coups it, so the
+    // couping is the one thing this charge is never borne without — and the
+    // first thing in its list, the rest being things done to a figure that is
+    // already the charge.
+    expect(modifiersOf(ChargeType.cross)).toEqual([Modifier.couped, Modifier.voided]);
+    expect(onlyUnder(ChargeType.cross)).toBe(Modifier.couped);
+    expect(onlyUnder(ChargeType.lozenge)).toBeUndefined();
+    expect(bornAsItself(ChargeType.cross, Modifier.couped)).toBe(true);
+    expect(bornAsItself(ChargeType.cross)).toBe(false);
+    // Anything the charge takes says which figure was meant, the band taking
+    // nothing at all: a cross voided is the little one, couped by being it.
+    expect(bornAsItself(ChargeType.cross, Modifier.voided)).toBe(true);
+    expect(bornAsItself(ChargeType.cross, Modifier.pierced)).toBe(false);
+    // Everything else is itself the moment it is named, whatever is said of it.
+    expect(bornAsItself(ChargeType.lozenge)).toBe(true);
+    expect(bornAsItself(ChargeType.lozenge, Modifier.voided)).toBe(true);
+  });
+
   test('refuses a charge that is already what the modifier says', () => {
     // An annulet is a roundel voided, so voiding one again names no figure.
     expect(() => inEnglish.parse('Azure an annulet voided or')).toThrow(WrongModifier);
@@ -151,6 +176,23 @@ describe('what a charge will take', () => {
   test('refuses a band, whose modifiers are lines drawn otherwise and are not read', () => {
     expect(() => inFrench.parse("D'azur à la fasce évidée d'or")).toThrow(WrongModifier);
     expect(() => inEnglish.parse('Azure a fess voided or')).toThrow(WrongModifier);
+  });
+
+  test('reads the voided cross the dictionaries blazon, and reads it as the meuble', () => {
+    // "D'or, à la croix vidée de gueules" is blason-armoiries' own blazon. What
+    // it voids here is the little cross and not the band both are named by: a
+    // band takes no modifier whatever, so the voiding says which figure was
+    // meant as plainly as the couping would have, and the couping is understood
+    // along with it.
+    expect(inFrench.parse("D'or à la croix vidée de gueules").chargesOrOrdinaries).toEqual([
+      { type: ChargeType.cross, tincture: Colours.gules, modifier: Modifier.voided },
+    ]);
+    expect(inEnglish.parse('Or a cross voided gules')).toEqual(
+      inFrench.parse("D'or à la croix vidée de gueules")
+    );
+    // The band's own voiding waits on the day an ordinary takes a modifier at
+    // all, which is another vocabulary: lines drawn otherwise.
+    expect(() => inEnglish.parse('Or a fess voided gules')).toThrow(WrongModifier);
   });
 
   test.each(CHARGES)('is asked of %s before the blazon is allowed to say it', (type) => {

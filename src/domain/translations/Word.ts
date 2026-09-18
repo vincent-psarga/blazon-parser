@@ -183,8 +183,19 @@ export class Word {
    * and for a word that already says one, that one alone. "A mascle voided" says
    * the voiding twice and is understood; "a mascle pierced" says two different
    * things and is refused, exactly as "a besant argent" is.
+   *
+   * Unless what the word says is the modifier the charge is owed, which is asked
+   * for here because such a word says which figure is borne rather than what was
+   * done to it. A croisette is a cross couped by being the word it is, and a
+   * blazon voiding one is saying something further of that figure rather than
+   * something else about the same thing: "une croisette vidée" is read, and is
+   * written back the same way.
    */
-  takes(modifier: Modifier): boolean {
-    return this.defaultModifier === undefined || this.defaultModifier === modifier;
+  takes(modifier: Modifier, owed?: Modifier): boolean {
+    return (
+      this.defaultModifier === undefined ||
+      this.defaultModifier === modifier ||
+      this.defaultModifier === owed
+    );
   }
 }

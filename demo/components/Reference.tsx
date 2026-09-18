@@ -135,8 +135,16 @@ export function Reference({
                         {entry.word}
                         {/* Only where one spelling names two things: the rank is
                             what tells them apart, so it is said where it must be
-                            and nowhere else. */}
-                        {entry.qualified && <b className="ghost__rank">{entry.rank}</b>}
+                            and nowhere else. The space before it is read aloud
+                            and never seen, the rank standing on a line of its
+                            own: without it the two run together into one word
+                            nobody said. */}
+                        {entry.qualified && (
+                          <>
+                            {' '}
+                            <b className="ghost__rank">{entry.rank}</b>
+                          </>
+                        )}
                       </span>
                     </Link>
                   </li>

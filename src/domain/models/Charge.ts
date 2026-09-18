@@ -43,14 +43,18 @@ export enum ChargeType {
   fleurDeLis = 'Charge.fleurDeLis',
   /**
    * A cross small enough to be borne as a charge rather than laid across the
-   * shield, and couped: "toutes les branches ont la même longueur" and "elle est
-   * toujours alésée".
+   * shield: "toutes les branches ont la même longueur" and "elle est toujours
+   * alésée".
    *
-   * It is the ordinary's own figure made small, so English names it so — a cross
-   * couped — and it is not the crosslet, which Wiktionary has as "a small cross
-   * with crossed arms" and which this vocabulary does not hold.
+   * It is the ordinary's own figure made small, and one word names them both —
+   * the croix is the band and the croix alésée is this. So it is never borne but
+   * couped: the couping is not one of the things that may be said of it but the
+   * thing that makes it a charge at all.
+   *
+   * It is not the crosslet, which Wiktionary has as "a small cross with crossed
+   * arms" and which this vocabulary does not hold.
    */
-  crossCouped = 'Charge.crossCouped',
+  cross = 'Charge.cross',
   /** "A half-moon with the horns uppermost", which is the only way it is drawn here. */
   crescent = 'Charge.crescent',
 }
@@ -73,13 +77,30 @@ export class ChargeDefinition {
    */
   public readonly allowedModifiers: readonly Modifier[];
 
+  /**
+   * The modifier without which the charge is not this charge at all.
+   *
+   * Left unsaid by every charge that is itself the moment it is named, which is
+   * all of them but the cross. That one shares its word with a band — "a cross",
+   * "à la croix" — and what says the charge was meant is that the blazon couped
+   * it. A word is not enough to name it, so the model will not hold one that was
+   * named by a word alone.
+   *
+   * A charge that declares one takes it, and takes nothing else unless it says
+   * so: what makes the figure itself is the first thing that may be said of it.
+   */
+  public readonly onlyUnder?: Modifier;
+
   constructor(
     public readonly type: ChargeType,
     opts?: Partial<{
       allowedModifiers: readonly Modifier[];
+      onlyUnder: Modifier;
     }>
   ) {
-    this.allowedModifiers = opts?.allowedModifiers ?? [];
+    this.onlyUnder = opts?.onlyUnder;
+    this.allowedModifiers =
+      opts?.allowedModifiers ?? (opts?.onlyUnder === undefined ? [] : [opts.onlyUnder]);
   }
 }
 
@@ -101,7 +122,20 @@ export const ChargeDefinitions: Record<ChargeType, ChargeDefinition> = {
     allowedModifiers: [Modifier.voided, Modifier.pierced],
   }),
   [ChargeType.crescent]: new ChargeDefinition(ChargeType.crescent),
-  [ChargeType.crossCouped]: new ChargeDefinition(ChargeType.crossCouped),
+  // Couped, and couped always: a cross that reaches the edges of the shield is
+  // the band the same word names, so the couping is what says this charge was
+  // meant rather than something further done to it.
+  //
+  // Voided as well, which the dictionaries blazon outright — "d'or, à la croix
+  // vidée de gueules" — and which is a thing done to the figure rather than the
+  // thing that makes it one. So the cross is the charge that declares both: the
+  // couping it is never borne without, and the voiding a blazon may ask for on
+  // top of it. Pierced it is not: no armorial here punches a hole in one, and a
+  // hole in a cross is drawn by nothing.
+  [ChargeType.cross]: new ChargeDefinition(ChargeType.cross, {
+    onlyUnder: Modifier.couped,
+    allowedModifiers: [Modifier.couped, Modifier.voided],
+  }),
   [ChargeType.fleurDeLis]: new ChargeDefinition(ChargeType.fleurDeLis),
   [ChargeType.goutte]: new ChargeDefinition(ChargeType.goutte),
   // Both, and heraldry gave each of the two a name of its own: a lozenge voided
@@ -121,6 +155,37 @@ export const ChargeDefinitions: Record<ChargeType, ChargeDefinition> = {
     allowedModifiers: [Modifier.voided],
   }),
 };
+
+/**
+ * The modifier a charge is only itself under, where there is one.
+ *
+ * Asked of the term rather than of the word, as everything else about a charge
+ * is: the croisette is couped by being a croisette and the cross couped says it
+ * in two words, and the figure they name is one figure either way.
+ */
+export function onlyUnder(type: ChargeType): Modifier | undefined {
+  return ChargeDefinitions[type].onlyUnder;
+}
+
+/**
+ * Whether a charge borne under this much is that charge at all.
+ *
+ * True of every charge that needs nothing said of it, whatever was said. False
+ * only of a charge that is itself by having been modified and had nothing said
+ * of it at all: a cross borne with nothing said is the band of the same name,
+ * and a model holding it as the charge would be holding arms no blazon asked
+ * for.
+ *
+ * Anything the charge takes says it, and not the owed modifier alone. A band
+ * takes nothing whatever, so a blazon that voided a cross was naming the little
+ * one as plainly as one that couped it — and the couping is understood along
+ * with the voiding, the figure being couped by being this charge.
+ */
+export function bornAsItself(type: ChargeType, modifier?: Modifier): boolean {
+  return (
+    onlyUnder(type) === undefined || (modifier !== undefined && allowsModifier(type, modifier))
+  );
+}
 
 /** The modifiers a charge may be borne under, in the order they are declared. */
 export function modifiersOf(type: ChargeType): readonly Modifier[] {
@@ -161,7 +226,9 @@ export type Charge = {
    * a lozenge voided is a lozenge still, and is drawn with its middle out.
    *
    * Left off rather than named where nothing was said, as the count is, so that
-   * a plain lozenge reads back as the lozenge it was written as.
+   * a plain lozenge reads back as the lozenge it was written as. A charge that
+   * is itself by having been modified always carries it: the cross is couped
+   * wherever it is borne as a charge, there being no other way it is one.
    */
   modifier?: Modifier;
 };

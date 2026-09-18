@@ -170,16 +170,30 @@ export const asSeveral: Spelled = (spelling) => spelling.plural;
  * canonical one: they are the same word and lead to the same word, which is what
  * lets a grammar agree with "fleur-de-lys" exactly as it agrees with the
  * spelling that will be written back.
+ *
+ * A spelling may lead to more than one term, so what it leads to is a list. The
+ * cross is why: heraldry names the band and the charge made out of it with the
+ * one word, and which was meant is settled by what the blazon says next rather
+ * than by the word itself. Every term the spelling names is offered, and the
+ * grammar that reads the rest of the phrase keeps whichever still stands — which
+ * is how a name of several words is already read, "cross" and "cross couped"
+ * having been offered together when the second was a name.
  */
 export function bySpelling<T extends string, W extends Word>(
   translation: Translation<T, W>,
   spelled: Spelled = asOne
-): ReadonlyMap<string, TermWord<T, W>> {
-  const terms = new Map<string, TermWord<T, W>>();
+): ReadonlyMap<string, readonly TermWord<T, W>[]> {
+  const terms = new Map<string, TermWord<T, W>[]>();
   for (const term of Object.keys(translation) as T[]) {
     for (const word of wordsOf(translation, term)) {
       for (const spelling of word.spellings) {
-        terms.set(spelled(spelling).toLowerCase(), { term, word });
+        const written = spelled(spelling).toLowerCase();
+        const named = terms.get(written);
+        if (named === undefined) {
+          terms.set(written, [{ term, word }]);
+        } else {
+          named.push({ term, word });
+        }
       }
     }
   }

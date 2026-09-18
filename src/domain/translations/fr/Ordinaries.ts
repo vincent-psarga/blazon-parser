@@ -43,7 +43,7 @@ export const FrenchOrdinaryType: Translation<OrdinaryType, FrenchWord> = {
   ),
   [OrdinaryType.cross]: new FrenchWord(
     'croix',
-    'The pal and the fasce crossing — the cross of Saint George. Its four arms are one charge, not two bands. Made small enough to be borne as a meuble it is no longer the croix but the croisette.',
+    'The pal and the fasce crossing — the cross of Saint George. Its four arms are one charge, not two bands. Made small enough to be borne as a meuble it is the croisette, and the croix alésée says the same thing in the band’s own word.',
     { isFeminine: true, plural: 'croix' }
   ),
   [OrdinaryType.saltire]: new FrenchWord(

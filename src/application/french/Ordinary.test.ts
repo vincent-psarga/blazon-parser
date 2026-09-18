@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'vitest';
+import { ChargeType } from '../../domain/models/Charge';
+import { Modifier } from '../../domain/models/Modifier';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
@@ -264,8 +266,16 @@ describe('a field bearing several of one ordinary', () => {
   });
 
   describe('rejections', () => {
-    test.each(['chefs', 'croix', 'sautoirs'])('refuses several %s, borne but once', (word) => {
+    test.each(['chefs', 'sautoirs'])('refuses several %s, borne but once', (word) => {
       expect(() => parser.parse(`D'or à deux ${word} de gueules`)).toThrow(RepeatedOrdinary);
+    });
+
+    test('reads several croix as the meuble, the band being borne but once', () => {
+      // The word names the band and the little cross alike, so a count says
+      // which was meant: two crosses laid across one shield are no arms at all.
+      expect(parser.parse("D'or à deux croix de gueules").chargesOrOrdinaries).toEqual([
+        { type: ChargeType.cross, tincture: Colours.gules, count: 2, modifier: Modifier.couped },
+      ]);
     });
 
     test('says which ordinary was repeated, and how many were asked for', () => {

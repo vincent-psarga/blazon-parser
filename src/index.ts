@@ -48,9 +48,11 @@ export {
   ChargeDefinitions,
   ChargeType,
   allowsModifier,
+  bornAsItself,
   isChargeType,
   modifiersOf,
   numberBorne,
+  onlyUnder,
 } from './domain/models/Charge';
 export type { Charge } from './domain/models/Charge';
 export { Modifier } from './domain/models/Modifier';

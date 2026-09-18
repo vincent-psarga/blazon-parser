@@ -1,5 +1,5 @@
 import { Blazon, ChargeOrOrdinary, isCharge, isOrdinary } from '../../domain/models/Blazon';
-import { ChargeType, numberBorne } from '../../domain/models/Charge';
+import { Charge, ChargeType, numberBorne, onlyUnder } from '../../domain/models/Charge';
 import { Modifier } from '../../domain/models/Modifier';
 import {
   Division,
@@ -165,17 +165,47 @@ function writeBorne<W extends Word>(wording: BlazonWording<W>, one: ChargeOrOrdi
  * some of the modified figures a name outright — a lozenge voided is a mascle —
  * and an armorial that wrote the modifier after such a name would be saying the
  * same thing twice, exactly as one writing the tincture after a besant would.
+ *
+ * Nor where the count has said it. A charge that is a charge by having been
+ * modified is understood to be under that modifier wherever several are borne —
+ * the band it shares its word with is borne but once — so the word would be
+ * saying what the number already says: "two crosses" is two couped ones in
+ * anybody's reading, and "two crosses couped" says so twice. What is left
+ * unwritten here is exactly what a reader supplies, so the blazon comes back the
+ * arms it went out as.
  */
 function modifying<W extends Word>(
   wording: BlazonWording<W>,
   one: ChargeOrOrdinary,
   named: W
 ): ((several: boolean) => string) | undefined {
-  if (!isCharge(one) || one.modifier === undefined || named.means(one.modifier)) {
+  if (
+    !isCharge(one) ||
+    one.modifier === undefined ||
+    named.means(one.modifier) ||
+    saidByTheCount(one, one.modifier)
+  ) {
     return undefined;
   }
   const said = wordSaidOf(wording.modifiers, one.modifier, one.type);
   return (several) => wording.modify(named, said, several);
+}
+
+/**
+ * Whether the number has already said what was done to the charge.
+ *
+ * True only of the modifier a charge is not itself without, and only where more
+ * than one is borne: what makes the cross a charge rather than the band of the
+ * same name is the couping, and a field bearing two of them has said as much by
+ * bearing two — the band is borne but once. Heraldry says so outright: crosses
+ * more than one "are to be drawn humetty, though it be not expressed", and "il
+ * est inutile de les dire alésées, elles ne peuvent être établies autrement".
+ *
+ * Anything further done to a charge is written however many are borne: three
+ * billets voided are three of them voided, and nothing about the number says it.
+ */
+function saidByTheCount(charge: Charge, modifier: Modifier): boolean {
+  return modifier === onlyUnder(charge.type) && numberBorne(charge) >= SEVERAL;
 }
 
 /**
@@ -232,10 +262,17 @@ function writePlain<W extends Word>(wording: BlazonWording<W>, field: Plain): st
  * The tincture is written only where the word has not already said it, by the
  * same rule that governs anything borne: a besanté is gold entire, and the gold
  * written after it would be saying the one thing twice.
+ *
+ * What was done to the figure is asked for too, where the figure is what it is
+ * by having had something done to it. A field is sown with a charge and not with
+ * a charge under a modifier — the model holds no modifier here — but the cross
+ * that is sown is the couped one, there being no sowing a band over a field, so
+ * the word that means the couping is the word that says it: "semé de
+ * croisettes", where the plain name would have been the band's.
  */
 function writeSemy<W extends Word>(wording: BlazonWording<W>, semy: Semy): string {
   const named = strewnIn(wording.strewings, semy.type, semy.tincture);
-  const word = named ?? wordIn(wording.charges, semy.type, semy.tincture);
+  const word = named ?? wordIn(wording.charges, semy.type, semy.tincture, onlyUnder(semy.type));
   const sowing = named === undefined ? wording.strew(word) : word.value;
   return word.defaultTincture === semy.tincture
     ? sowing

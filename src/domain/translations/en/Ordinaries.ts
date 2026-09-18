@@ -40,7 +40,7 @@ export const EnglishOrdinaryType: Translation<OrdinaryType> = {
   ),
   [OrdinaryType.cross]: new Word(
     'cross',
-    'The pale and the fess crossing — the cross of Saint George. Its four arms are one charge, not two bands. Made small enough to be borne as a charge it is a cross couped instead.',
+    'The pale and the fess crossing — the cross of Saint George. Its four arms are one charge, not two bands. Made small enough to be borne as a charge it is the same word again, and the blazon says which by saying the small one is couped.',
     { plural: 'crosses' }
   ),
   [OrdinaryType.saltire]: new Word(

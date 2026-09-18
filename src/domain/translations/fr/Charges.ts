@@ -115,13 +115,27 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
       },
     }
   ),
-  // The little cross, where the croix is the band laid across the shield. One
-  // word where English needs two, French having made a noun of the small one.
-  [ChargeType.crossCouped]: new FrenchWord(
-    'croisette',
-    'The little cross: four equal arms of equal length, stopping short of every edge, where the croix is laid across the whole shield.',
-    { isFeminine: true }
-  ),
+  // The little cross, where the croix is the band laid across the shield. French
+  // made a noun of the small one, which English never did — so the croisette
+  // says the couping by being the word it is, and is written wherever the figure
+  // is.
+  //
+  // The croix is held beside it all the same, the armorials writing "à la croix
+  // alésée" as readily as "à la croisette": it is the band's word and the
+  // charge's, and what tells them apart is the alésée. Written back, the noun
+  // says it in one word and the participle disappears into it.
+  [ChargeType.cross]: [
+    new FrenchWord(
+      'croisette',
+      'The little cross: four equal arms of equal length, stopping short of every edge, where the croix is laid across the whole shield. Alésée by being a croisette, so the blazon writes no alésée after it — what may still stand there is something further done to the figure: une croisette vidée.',
+      { isFeminine: true, defaultModifier: Modifier.couped }
+    ),
+    new FrenchWord(
+      'croix',
+      'The croix borne as a meuble rather than laid across the shield: the same word as the band, and the same figure made small enough to be borne several times over. What says the small one is meant is that the blazon calls it alésée; written back, it comes back as the croisette.',
+      { isFeminine: true, plural: 'croix' }
+    ),
+  ],
   [ChargeType.crescent]: new FrenchWord(
     'croissant',
     'A half-moon with the horns uppermost, which is where a croissant’s horns stand unless a blazon says otherwise — and no blazon can say otherwise here, the increscent and the decrescent being turnings this does not read.'

@@ -57,6 +57,86 @@ export function guard<TKind, TResult>(
 }
 
 /**
+ * Keeps only the candidates a predicate accepts, and complains about none of
+ * them.
+ *
+ * The other half of `guard`, for a rule that is choosing between readings rather
+ * than judging one. Where a word names two terms — the cross that is a band and
+ * the cross that is a charge made small out of it — the reading the blazon did
+ * not describe is nobody's mistake: it was never meant, and a complaint about it
+ * would stand in front of whatever the blazon really got wrong. So it is dropped
+ * in silence, and what the phrase had to say for itself is left as it was.
+ */
+export function keeping<TKind, TResult>(
+  parser: Parser<TKind, TResult>,
+  accepts: (value: TResult) => boolean
+): Parser<TKind, TResult> {
+  return {
+    parse(token: Token<TKind> | undefined): ParserOutput<TKind, TResult> {
+      const output = parser.parse(token);
+      if (!output.successful) {
+        return output;
+      }
+      const kept = output.candidates.filter((candidate) => accepts(candidate.result));
+      return kept.length === output.candidates.length
+        ? output
+        : resultOrError(kept, output.error, kept.length !== 0);
+    },
+  };
+}
+
+/**
+ * Settles between the readings of one phrase, where a word named more than one
+ * term and the blazon has now said everything it is going to say about it.
+ *
+ * `keeping` asks of each reading whether it stands; this asks of the readings
+ * that stand which one was meant, which is a question no reading can answer
+ * about itself — that a cross is the band rather than the little cross is
+ * settled by the other reading being there at all.
+ *
+ * Only readings that got equally far are settled between. A word may also be the
+ * first word of a longer name, and a short reading beside a long one is two
+ * different phrases rather than two readings of one: they are left to the
+ * grammar that asked for them, which is the only thing that knows how much of
+ * the blazon it wanted.
+ */
+export function settling<TKind, TResult>(
+  parser: Parser<TKind, TResult>,
+  named: (among: readonly TResult[]) => readonly TResult[]
+): Parser<TKind, TResult> {
+  return {
+    parse(token: Token<TKind> | undefined): ParserOutput<TKind, TResult> {
+      const output = parser.parse(token);
+      if (!output.successful || output.candidates.length < 2) {
+        return output;
+      }
+
+      const ends = new Map<Token<TKind> | undefined, ParseResult<TKind, TResult>[]>();
+      for (const candidate of output.candidates) {
+        const alongside = ends.get(candidate.nextToken);
+        if (alongside === undefined) {
+          ends.set(candidate.nextToken, [candidate]);
+        } else {
+          alongside.push(candidate);
+        }
+      }
+
+      const kept = Array.from(ends.values()).flatMap((readings) => {
+        if (readings.length < 2) {
+          return readings;
+        }
+        const meant = named(readings.map(({ result }) => result));
+        return readings.filter(({ result }) => meant.includes(result));
+      });
+
+      return kept.length === output.candidates.length
+        ? output
+        : resultOrError(kept, output.error, kept.length !== 0);
+    },
+  };
+}
+
+/**
  * Matches one keyword whatever its casing: "et", "parti".
  *
  * A keyword names no term of the vocabulary — it is the grammar's own plumbing —
@@ -107,6 +187,12 @@ export function anyKeyword(expected: readonly string[]): Parser<TokenKind, Token
  * ordinary names them in the plural, and only the rule reading the number knows
  * that it does. Every spelling a word answers to is offered under both, so an
  * alternate wording is read exactly as the spelling it will be written back in.
+ *
+ * One spelling may name more than one term, and then every term it names is
+ * offered: a cross is a band and a charge, and what the blazon says of it settles
+ * which. The vocabulary cannot settle that and does not try to — it answers with
+ * everything the word could be, exactly as it answers with every prefix that
+ * names something.
  */
 export function spelledTerm<T extends string, W extends Word>(
   translation: Translation<T, W>,
@@ -126,8 +212,7 @@ export function spelledTerm<T extends string, W extends Word>(
         const word = current.text.toLowerCase();
         spelling = words === 0 ? word : `${spelling} ${word}`;
         const next = current.next;
-        const match = terms.get(spelling);
-        if (match !== undefined) {
+        for (const match of terms.get(spelling) ?? []) {
           candidates.push({ firstToken: token, nextToken: next, result: match });
         }
         current = next;

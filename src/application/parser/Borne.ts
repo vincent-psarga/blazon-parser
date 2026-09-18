@@ -9,6 +9,7 @@ import {
 } from 'typescript-parsec';
 import { BlazonParseError, TextPosition } from '../../domain/errors/parsing/BlazonParseError';
 import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
+import { ChargeOrOrdinary, isCharge } from '../../domain/models/Blazon';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { ChargeType, allowsModifier, isChargeType } from '../../domain/models/Charge';
 import { Modifier } from '../../domain/models/Modifier';
@@ -196,6 +197,42 @@ export function modifiable<T extends string, W extends Word>(
  */
 export function bornUnder(type: BorneType, modifier: Modifier): boolean {
   return isChargeType(type) && allowsModifier(type, modifier);
+}
+
+/**
+ * Which term a phrase named, where one word named more than one.
+ *
+ * Heraldry gave the band and the figure cut small out of it the one noun — a
+ * cross, une croix — so the vocabulary answers with both terms and the blazon
+ * settles which was meant. What the blazon said decides it, in three clauses:
+ *
+ * Said nothing beyond the name, the band is meant. "Argent a cross gules" is the
+ * band laid across the shield, which is what an armorial writing the noun and no
+ * more has always meant by it, and the little cross has to be asked for.
+ *
+ * Said what was done to the figure, the charge is meant. A band takes no
+ * modifier — what is done to one is done to the line it is drawn with, which is
+ * another vocabulary — so a blazon that couped anything was naming the charge.
+ *
+ * Counted several, the band is meant where a field may bear several of that
+ * band, and the charge where it may not: "three bends" are three bands, and
+ * "two crosses" are two little crosses, no shield bearing two of the band.
+ *
+ * The last two are settled before this is asked, by the band refusing what it
+ * cannot take — `bornUnder` for the modifier and `NOT_IN_NUMBER` for the count.
+ * Refusing is how they are also reported: where the word names nothing else, "a
+ * fess voided" and "three chiefs" are mistakes and are named as mistakes, and
+ * where it does the refused reading is simply one nobody meant. So what is left
+ * to settle here is the first clause, and the half of the third where both
+ * readings stand: the band, both times, a charge being reached only by a blazon
+ * that said something the band could not answer to.
+ *
+ * Two charges of one word would be another question. No vocabulary here asks it,
+ * and the readings are left as they stand rather than guessed between.
+ */
+export function whichWasNamed(among: readonly ChargeOrOrdinary[]): readonly ChargeOrOrdinary[] {
+  const bands = among.filter((one) => !isCharge(one));
+  return bands.length === 0 ? among : bands;
 }
 
 /** The two vocabularies a field's bearings are named from, as one. */

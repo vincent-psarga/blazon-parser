@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
-import { ChargeType } from '../../domain/models/Charge';
+import { ChargeType, onlyUnder } from '../../domain/models/Charge';
+import { Modifier } from '../../domain/models/Modifier';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
@@ -20,6 +21,7 @@ import {
 } from '../../domain/models/Tinctures';
 import { nameOf, wordOf } from '../../domain/translations/Translation';
 import { EnglishChargeType } from '../../domain/translations/en/Charges';
+import { EnglishModifiers } from '../../domain/translations/en/Modifiers';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { bearing } from '../english/EnglishGrammar';
 import { EnglishBlazonParser } from './EnglishBlazonParser';
@@ -244,8 +246,16 @@ describe('a field bearing several of one ordinary', () => {
   });
 
   describe('rejections', () => {
-    test.each(['chiefs', 'crosses', 'saltires'])('refuses several %s, borne but once', (word) => {
+    test.each(['chiefs', 'saltires'])('refuses several %s, borne but once', (word) => {
       expect(() => parser.parse(`Or two ${word} gules`)).toThrow(RepeatedOrdinary);
+    });
+
+    test('reads several crosses as the charge, the band being borne but once', () => {
+      // One word names the band and the charge made small out of it, so a count
+      // says which was meant: there is no laying two crosses across one shield.
+      expect(parser.parse('Or two crosses gules').chargesOrOrdinaries).toEqual([
+        { type: ChargeType.cross, tincture: Colours.gules, count: 2, modifier: Modifier.couped },
+      ]);
     });
 
     test('refuses a count of one', () => {
@@ -466,6 +476,24 @@ describe('furred fields, in English', () => {
   });
 });
 
+/**
+ * What a blazon has to say of a charge beyond naming it, which is nothing for
+ * all but one of them.
+ *
+ * A cross is the band until the blazon coups it, English naming the two with the
+ * one noun — so the charge is not named at all until the modifier is written,
+ * and the arms carry it wherever they carry the charge.
+ */
+const saying = (type: ChargeType) => {
+  const modifier = onlyUnder(type);
+  return modifier === undefined ? '' : ` ${nameOf(EnglishModifiers, modifier)}`;
+};
+
+const asBorne = (type: ChargeType, borne: object) => {
+  const modifier = onlyUnder(type);
+  return modifier === undefined ? { type, ...borne } : { type, ...borne, modifier };
+};
+
 describe('charges, in English', () => {
   test('reads "Argent three billets or" as three billets on an argent field', () => {
     expect(parser.parse('Argent three billets or')).toEqual({
@@ -493,8 +521,8 @@ describe('charges, in English', () => {
   test('names every charge with an article the parser then accepts', () => {
     for (const type of Object.values(ChargeType)) {
       const borne = bearing(wordOf(EnglishChargeType, type));
-      expect(parser.parse(`Azure ${borne} or`).chargesOrOrdinaries).toEqual([
-        { type, tincture: Metals.or },
+      expect(parser.parse(`Azure ${borne}${saying(type)} or`).chargesOrOrdinaries).toEqual([
+        asBorne(type, { tincture: Metals.or }),
       ]);
     }
   });
@@ -511,9 +539,9 @@ describe('charges, in English', () => {
   test('bears every charge in number, none of them being a place on the shield', () => {
     for (const type of Object.values(ChargeType)) {
       const word = wordOf(EnglishChargeType, type);
-      expect(parser.parse(`Azure three ${word.plural} or`).chargesOrOrdinaries).toEqual([
-        { type, tincture: Metals.or, count: 3 },
-      ]);
+      expect(
+        parser.parse(`Azure three ${word.plural}${saying(type)} or`).chargesOrOrdinaries
+      ).toEqual([asBorne(type, { tincture: Metals.or, count: 3 })]);
     }
   });
 

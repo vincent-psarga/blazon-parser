@@ -5,6 +5,7 @@ import { DivisionType } from '../models/Field';
 import { COLOURS, Colours, Furs, METALS, Metals, PELTS, TINCTURES } from '../models/Tinctures';
 import { OrdinaryType } from '../models/Ordinary';
 import {
+  TermWord,
   Translation,
   asSeveral,
   bySpelling,
@@ -209,36 +210,66 @@ describe('the roundel, which every tincture has a word of its own for', () => {
   });
 });
 
+/**
+ * The one term a spelling names, for the spellings that name one.
+ *
+ * A spelling leads to every term it names, most of them naming exactly one: the
+ * tests that ask what a word means are asking about those, and say so by taking
+ * the first and the only.
+ */
+function named<T extends string, W extends Word>(
+  index: ReadonlyMap<string, readonly TermWord<T, W>[]>,
+  spelling: string
+): TermWord<T, W> | undefined {
+  const terms = index.get(spelling);
+  expect(terms?.length ?? 1).toBe(1);
+  return terms?.[0];
+}
+
 describe('index', () => {
   const partitions = bySpelling(FrenchPartition);
 
   test('reads a term back from any of its synonyms', () => {
     for (const spelling of spellingsOf(FrenchPartition, Partition.mantledReversed)) {
-      expect(partitions.get(spelling)?.term).toBe(Partition.mantledReversed);
+      expect(named(partitions, spelling)?.term).toBe(Partition.mantledReversed);
     }
   });
 
   test('folds spellings to lower case', () => {
     const partition: Translation<Partition.mantled> = { [Partition.mantled]: new Word('Mantelé') };
-    expect(bySpelling(partition).get('mantelé')?.term).toBe(Partition.mantled);
+    expect(named(bySpelling(partition), 'mantelé')?.term).toBe(Partition.mantled);
   });
 
   test('leads to the word a spelling was written with', () => {
-    expect(partitions.get('mantelé')?.word).toBe(FrenchPartition[Partition.mantled]);
+    expect(named(partitions, 'mantelé')?.word).toBe(FrenchPartition[Partition.mantled]);
   });
 
   test('does not know a spelling no term claims', () => {
     expect(partitions.get('écartelé')).toBeUndefined();
   });
+
+  test('leads to every term a spelling names, where one names several', () => {
+    // The cross is the band and the charge made small out of it, and heraldry
+    // writes the one word for both: the index answers with the pair and leaves
+    // the choosing to whatever reads the rest of the phrase.
+    const bearings = bySpelling({ ...FrenchOrdinaryType, ...FrenchChargeType });
+    expect(bearings.get('croix')?.map(({ term }) => term)).toEqual([
+      OrdinaryType.cross,
+      ChargeType.cross,
+    ]);
+    expect(bearings.get('croisette')?.map(({ term }) => term)).toEqual([ChargeType.cross]);
+  });
 });
 
 describe('the French vocabulary', () => {
   test.each(TINCTURES)('reads %s back from its own name', (tincture) => {
-    expect(bySpelling(FrenchTinctures).get(nameOf(FrenchTinctures, tincture))?.term).toBe(tincture);
+    expect(named(bySpelling(FrenchTinctures), nameOf(FrenchTinctures, tincture))?.term).toBe(
+      tincture
+    );
   });
 
   test.each(Object.values(DivisionType))('reads %s back from its own name', (division) => {
-    expect(bySpelling(FrenchDivisionType).get(nameOf(FrenchDivisionType, division))?.term).toBe(
+    expect(named(bySpelling(FrenchDivisionType), nameOf(FrenchDivisionType, division))?.term).toBe(
       division
     );
   });
@@ -252,8 +283,8 @@ describe('the French vocabulary', () => {
 describe('a vocabulary looked up in the plural', () => {
   test('reads a term back from the spelling several of it take', () => {
     const ordinaries = bySpelling(FrenchOrdinaryType, asSeveral);
-    expect(ordinaries.get('chevrons')?.term).toBe(OrdinaryType.chevron);
-    expect(ordinaries.get('fasces')?.term).toBe(OrdinaryType.fess);
+    expect(named(ordinaries, 'chevrons')?.term).toBe(OrdinaryType.chevron);
+    expect(named(ordinaries, 'fasces')?.term).toBe(OrdinaryType.fess);
   });
 
   test('holds no singular, a blazon that counts naming what it counts in the plural', () => {
@@ -261,7 +292,9 @@ describe('a vocabulary looked up in the plural', () => {
   });
 
   test('keeps a word whose plural is its singular', () => {
-    expect(bySpelling(FrenchOrdinaryType, asSeveral).get('croix')?.term).toBe(OrdinaryType.cross);
+    expect(named(bySpelling(FrenchOrdinaryType, asSeveral), 'croix')?.term).toBe(
+      OrdinaryType.cross
+    );
   });
 
   test('names every ordinary in the plural exactly once', () => {
@@ -289,22 +322,22 @@ describe('a vocabulary whose words are written more than one way', () => {
   test('reads the term back from an alternate as readily as from the canonical', () => {
     const index = bySpelling(Lilies);
     for (const spelling of ['fleur-de-lis', 'fleur de lys']) {
-      expect(index.get(spelling)?.term).toBe(Partition.mantledReversed);
+      expect(named(index, spelling)?.term).toBe(Partition.mantledReversed);
     }
   });
 
   test('leads from an alternate to the word itself, which is what agrees', () => {
     // The grammar agrees with the word, and the word is the same word however it
     // was written: there is no second one to disagree.
-    expect(bySpelling(Lilies).get('fleur de lys')?.word).toBe(
-      bySpelling(Lilies).get('fleur-de-lis')?.word
+    expect(named(bySpelling(Lilies), 'fleur de lys')?.word).toBe(
+      named(bySpelling(Lilies), 'fleur-de-lis')?.word
     );
   });
 
   test('counts an alternate in its own plural', () => {
     const several = bySpelling(Lilies, asSeveral);
-    expect(several.get('fleurs de lys')?.term).toBe(Partition.mantledReversed);
-    expect(several.get('fleurs-de-lis')?.term).toBe(Partition.mantledReversed);
+    expect(named(several, 'fleurs de lys')?.term).toBe(Partition.mantledReversed);
+    expect(named(several, 'fleurs-de-lis')?.term).toBe(Partition.mantledReversed);
   });
 
   test('names every way the vocabulary writes anything', () => {

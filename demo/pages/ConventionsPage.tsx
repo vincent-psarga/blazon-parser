@@ -73,6 +73,24 @@ const PARKER_MULLET = (
   </a>
 );
 
+const PARKER_HUMETTY = (
+  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossh.htm">
+    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Humetty
+  </a>
+);
+
+const BLASON_ALESE = (
+  <a href="http://www.blason-armoiries.org/heraldique/a/alese.htm">
+    <cite>blason-armoiries</cite>, under Alésé
+  </a>
+);
+
+const BLASON_CROISETTE = (
+  <a href="http://www.blason-armoiries.org/heraldique/c/croisette.htm">
+    <cite>blason-armoiries</cite>, under Croisette
+  </a>
+);
+
 const BLASON = (
   <a href="http://lalanguedublason.blogspot.com/2012/08/plain-et-plein-en-langue-du-blason.html">
     <cite>La langue du blason</cite>, “plain” et “plein”
@@ -386,7 +404,9 @@ export const RULES: readonly Rule[] = [
           its middle out is a lozenge voided, and what shows through the hole is the field. Blazon
           takes its word order from French, so what qualifies the charge follows the charge, and the
           tincture comes last of all — two bars voided gules, à la croix vidée de gueules. That is
-          where it is written.
+          where it is written. Both of those are the armorials’ own blazons. Parker’s bars are bands
+          and are voided by nothing here; the croix is read as the little cross, a band taking no
+          modifier at all — which is a rule further down this page, and not this one.
         </p>
         <p className="rule__law">
           It is read after the tincture as well. The model holds which modifier and not where the
@@ -496,6 +516,78 @@ export const RULES: readonly Rule[] = [
       fr("D'argent à l'étoile vidée de gueules"),
       fr("D'or à trois billettes vidées de sable"),
       en('Azure a mullet voided or'),
+    ],
+  },
+  {
+    id: 'one-word-two-figures',
+    heading: 'A cross with nothing said of it is the band; couped, it is the charge',
+    law: (
+      <>
+        <p className="rule__law">
+          Heraldry draws the cross at two sizes and names both with the one word. Laid across the
+          shield it is the ordinary, reaching every edge and borne but once. Cut short of the edges
+          it stands free on the field and is a charge like any other — borne twice or thrice, sown
+          over the field, drawn small. Neither tongue gave the big one and the small one different
+          nouns: a croix is a croix, a cross is a cross.
+        </p>
+        <p className="rule__law">
+          So the word does not settle it and what is said of it does. A cross the blazon coups — a
+          croix it calls alésée — is the charge; a cross with nothing said of it is the band. Both
+          readings are offered as the blazon is read, and the one it did not describe is dropped
+          without a word: nobody got anything wrong, and a complaint would only stand in front of
+          whatever went wrong elsewhere.
+        </p>
+        <p className="rule__law">
+          The rule is not the cross’s own, and is written down as the rule rather than as this one
+          word’s habit. Wherever one word names a band and a charge, the band is what is meant
+          unless the blazon said something only the charge could answer to: what was done to the
+          figure, which no band takes, or a count of more than the field may bear of that band. Said
+          neither, the band is meant — and where a band may be borne in number, a count says nothing
+          either, so three of it are three bands. What was done need not be the couping: a croix the
+          blazon voids is the little cross as surely as one it coups, a band taking nothing
+          whatever.
+        </p>
+        <p className="rule__law">
+          A count says it as plainly as the word does. The band is borne but once, so two crosses
+          are two small ones and the couping need not be written — which is not this library’s
+          shortcut but the dictionaries’ own rule, in both tongues.
+        </p>
+        <p className="rule__law">
+          What comes back says it the way each tongue says it. French made a noun of the small
+          cross, so the croisette is written and the participle disappears into it exactly as the
+          voiding disappears into the mascle. English made no such noun, so the noun and the word
+          are written together, and the word is couped — Parker keeping humetty for the ordinaries
+          and couped for the charges, and what is borne here being the charge. Except where the
+          count has already said it: what the writer leaves unwritten is exactly what a reader
+          supplies, so one of them comes back a cross couped and three of them come back three
+          crosses.
+        </p>
+      </>
+    ),
+    source: (
+      <>
+        “Humetty, (fr. alésé), is a term applied to certain ordinaries instead of couped, which is
+        applied to charges”, and, of crosses and saltires, “when there is more than one of either of
+        these in the same shield they are to be drawn humetty, though it be not expressed” —{' '}
+        {PARKER_HUMETTY}. French says the same of the same figures: alésé is said “d’un chef, d’une
+        croix, d’un pal, d’un sautoir, en un mot de toutes les pièces honorables dont les extrémités
+        ne touchent pas les bords de l’écu”, and “lorsque ces pièces sont en nombre dans un écu, il
+        est inutile de les dire alésées, elles ne peuvent être établies autrement” — {BLASON_ALESE}.
+        The little cross is “une croix régulière et de petite dimension, le plus souvent employée en
+        nombre dans des armoiries”, and “elle est toujours alésée” — {BLASON_CROISETTE}.
+      </>
+    ),
+    cases: [
+      en('Argent a cross gules'),
+      en('Argent a cross couped gules'),
+      en('Argent a cross voided gules'),
+      en('Argent a cross humetty gules'),
+      en('Argent three crosses gules'),
+      en('Argent two crosses couped gules'),
+      fr("D'argent à la croix de gueules"),
+      fr("D'argent à la croix alésée de gueules"),
+      fr("D'argent à la croix vidée de gueules"),
+      fr("D'argent à deux croix de gueules"),
     ],
   },
   {

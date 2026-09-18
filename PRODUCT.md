@@ -64,10 +64,11 @@ Supported vocabulary as it stands:
 - **Ordinaries (10)** — chief, pale, fess, bar gemel, bend, bend sinister, chevron, cross, saltire,
   bordure. Laid on the field in the order the blazon names them, which is the order they are drawn.
   That order is the model's to keep: sorting what a field bears into separate lists would lose it.
-- **Modifiers (2)** — voided: the charge's middle taken out, so the field shows through the outline;
-  and pierced: a round hole punched through it, the rest of the charge left as it was. Two things
-  and not one said twice, whatever the dictionaries' filing — a billette percée is not a billette
-  vidée, and the two are drawn differently because they are different. Written between the charge
+- **Modifiers (3)** — voided: the charge's middle taken out, so the field shows through the outline;
+  pierced: a round hole punched through it, the rest of the charge left as it was; and couped: cut
+  short of the edges of the shield, so that what is left stands free on the field. Voiding and
+  piercing are two things and not one said twice, whatever the dictionaries' filing — a billette
+  percée is not a billette vidée, and the two are drawn differently because they are different. Written between the charge
   and its tincture, which is where the armorials of both tongues put it — blazon takes its word
   order from French, so what qualifies the charge follows it and the tincture comes last. Read after
   the tincture as well, and never before the charge, blazon setting no adjective there. Refused
@@ -82,8 +83,14 @@ Supported vocabulary as it stands:
   pierced a rustre, a pierced star the French molette. Such a name says the modifier by being
   written, exactly as a besant says gold, so nothing follows it — and a blazon that says the
   modifier anyway is understood where it agrees and refused where it does not. English names no
-  pierced star, molette being French, and blazons it in the ordinary way.
-- **Charges (9)** — annulet, billet, lozenge, roundel, goutte, mullet, fleur-de-lis, cross couped,
+  pierced star, molette being French, and blazons it in the ordinary way. The cross takes the
+  voiding too, which the dictionaries blazon outright — "d'or, à la croix vidée de gueules" — and
+  heraldry named the voided one nothing, so both tongues write it in the ordinary way: a cross
+  voided, une croisette vidée. Couped is the odd one of the three: it says which figure is borne
+  rather than what was done to one, and the charge that takes it is never borne without it. English reads couped and humetty and writes couped — Parker
+  keeping humetty for the ordinaries and couped for the charges — where French reads alésé and
+  writes the noun it made for the figure.
+- **Charges (9)** — annulet, billet, lozenge, roundel, goutte, mullet, fleur-de-lis, cross,
   crescent. Some are plain shapes and some are pictures of something; all are borne once or in
   number, and any of them may be sown over a plain field instead. They
   share the ordinaries' list and their order, so what is blazoned last is drawn over the rest. Where
@@ -93,9 +100,18 @@ Supported vocabulary as it stands:
   refuses any other. The mullet is the French étoile — a star of five straight rays, which both
   tongues understand where the blazon counts none — and not the estoile, which has six and draws
   them wavy. The fleur-de-lis is spelled four ways by the armorials, hyphenated or not and ending
-  in either letter, and all four are read. The cross couped is the French croisette — the ordinary's
-  own figure made small — and is not the crosslet, whose arms are themselves crossed; it shares its
-  first word with the ordinary, and which was meant is settled by what follows.
+  in either letter, and all four are read. The cross is the ordinary's own figure made small — the
+  French croisette — and is not the crosslet, whose arms are themselves crossed. It is named by the
+  ordinary's own word, so what tells the two apart is what the blazon says of it: a cross couped,
+  une croix alésée, is the charge, a cross voided is the charge as well, and a cross with nothing
+  said of it is the band. That is the rule for whatever word next names both, and not this one's
+  habit: the band is meant unless the blazon said what only a charge could answer to — what was
+  done to the figure, which no band takes, or a count of more than the field may bear of that
+  band. A count says it
+  too, the band being borne but once, so two crosses are two small ones — which is the dictionaries'
+  own rule in both tongues and not a shortcut taken here. French writes the noun it made for the
+  small one; English writes the noun and the word together, and leaves the word off where the count
+  has said it, which is exactly what a reader supplies.
 - **Sown fields** — any charge may be sown over a field of one tincture instead of borne on it:
   "semé de billettes d'or", "semy of billets or". It is the field's own state rather than something
   the field bears, so nothing is counted and a band blazoned after it covers the sowing. Where the

@@ -41,7 +41,7 @@ export const EnglishStrewings: Strewings = {
   // Crusily is not this. Parker has it as "semé of cross crosslet" — the cross
   // with crossed arms — so a field sown with plain ones is no crusily, and
   // borrowing the word would promise a figure this does not draw.
-  [ChargeType.crossCouped]: undefined,
+  [ChargeType.cross]: undefined,
   [ChargeType.crescent]: undefined,
   [ChargeType.fleurDeLis]: new Word(
     'semy-de-lis',

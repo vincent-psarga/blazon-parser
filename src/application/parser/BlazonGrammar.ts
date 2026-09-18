@@ -17,7 +17,8 @@ import { BlazonParseError } from '../../domain/errors/parsing/BlazonParseError';
 import { ChargedPlainField } from '../../domain/errors/parsing/ChargedPlainField';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { WrongModifier } from '../../domain/errors/parsing/WrongModifier';
-import { Blazon, ChargeOrOrdinary } from '../../domain/models/Blazon';
+import { Blazon, ChargeOrOrdinary, isCharge } from '../../domain/models/Blazon';
+import { bornAsItself, isChargeType, onlyUnder } from '../../domain/models/Charge';
 import {
   Division,
   DivisionType,
@@ -32,8 +33,8 @@ import {
 import { Modifier } from '../../domain/models/Modifier';
 import { Tincture } from '../../domain/models/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
-import { BorneTerm, bornUnder, carried } from './Borne';
-import { guard, optional, optionalUnlessBegun } from './Combinators';
+import { BorneTerm, BorneType, bornUnder, carried, whichWasNamed } from './Borne';
+import { guard, keeping, optional, optionalUnlessBegun, settling } from './Combinators';
 import { within } from './Failures';
 import { Treatment, isBare } from './Treatment';
 import { VariedField } from './Variations';
@@ -233,6 +234,16 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // is no part of what was said, and the writer puts it back where the armorials
   // put it.
   //
+  // What was said is also what settles which term was named, where one word
+  // names two. A cross is a band and, couped, a charge; both readings are
+  // offered by the vocabulary and carried this far, and which of them the blazon
+  // described is settled once the phrase has said everything it is going to say
+  // — by `whichWasNamed`, which holds the whole of that rule. A reading the
+  // blazon plainly ruled out is gone before it is asked: the band by refusing a
+  // modifier or a count it cannot take, which is a mistake where no other
+  // reading stands and is named as one, and a charge that owes its couping by
+  // never having been couped, which is no mistake and is dropped in silence.
+  //
   // Whichever place it stands in, it is read by the phrase that named the charge
   // rather than by this rule: the words that may stand there have to agree with
   // what the blazon called the charge, and only the phrase knows what it called
@@ -242,22 +253,29 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // The count is left off rather than set to one when a single one is borne, so
   // that a fess reads back as the fess it was before a field could bear two.
   const bearing = within(
-    combine(grammar.borne, (borne) =>
-      combine(modifying(borne), (early) =>
-        combine(carried(grammar.tincture, borne.word), (tincture) =>
-          apply(early === undefined ? modifying(borne) : nil(), (late): ChargeOrOrdinary => {
-            const one =
-              borne.count === undefined
-                ? { type: borne.type, tincture }
-                : { type: borne.type, tincture, count: borne.count };
-            // The name may have said it already: a mascle is a lozenge voided
-            // and says so by being the word it is, so where the blazon wrote no
-            // modifier the word supplies its own.
-            const modifier = early ?? late ?? borne.word.defaultModifier;
-            return modifier === undefined ? one : { ...one, modifier };
-          })
-        )
-      )
+    settling(
+      keeping(
+        combine(grammar.borne, (borne) =>
+          combine(modifying(borne), (early) =>
+            combine(carried(grammar.tincture, borne.word), (tincture) =>
+              apply(early === undefined ? modifying(borne) : nil(), (late): ChargeOrOrdinary => {
+                const one =
+                  borne.count === undefined
+                    ? { type: borne.type, tincture }
+                    : { type: borne.type, tincture, count: borne.count };
+                // The name may have said it already: a mascle is a lozenge voided
+                // and says so by being the word it is, so where the blazon wrote
+                // no modifier the word supplies its own — and so does the count, a
+                // charge borne several times over being a charge and nothing else.
+                const modifier = early ?? late ?? borne.word.defaultModifier ?? understood(borne);
+                return modifier === undefined ? one : { ...one, modifier };
+              })
+            )
+          )
+        ),
+        (one) => !isCharge(one) || bornAsItself(one.type, one.modifier)
+      ),
+      whichWasNamed
     )
   );
 
@@ -336,11 +354,41 @@ function modifying(borne: BorneTerm): Parser<TokenKind, Modifier | undefined> {
     guard(
       borne.modifier,
       (named) =>
-        named === undefined || (bornUnder(borne.type, named.term) && borne.word.takes(named.term)),
+        named === undefined ||
+        (bornUnder(borne.type, named.term) && borne.word.takes(named.term, owing(borne.type))),
       (named, position) => new WrongModifier(borne.word.value, named?.word.value ?? '', position)
     ),
     (named) => named?.term
   );
+}
+
+/**
+ * The modifier a term is only itself under, asked of a term that may as well be
+ * a band: a band is itself by being named, and owes nothing.
+ */
+function owing(type: BorneType): Modifier | undefined {
+  return isChargeType(type) ? onlyUnder(type) : undefined;
+}
+
+/**
+ * What a blazon that bore several of something said without writing it.
+ *
+ * A charge that is a charge by having been modified shares its word with a band
+ * — a cross is the ordinary until it is couped — and a band of that name is
+ * borne but once. So a blazon bearing two of them has already said which it
+ * meant: "à deux croix" is two croisettes, there being no two crosses laid
+ * across the one shield, and the couping is understood exactly as the word
+ * croisette would have said it. Both tongues' dictionaries say as much: Parker
+ * has it that "when there is more than one of either of these in the same shield
+ * they are to be drawn humetty, though it be not expressed", and
+ * blason-armoiries that "lorsque ces pièces sont en nombre dans un écu, il est
+ * inutile de les dire alésées, elles ne peuvent être établies autrement".
+ *
+ * Nothing is understood of one of a thing. That is where the two readings
+ * genuinely differ, and where the blazon has to say which it means.
+ */
+function understood(borne: BorneTerm): Modifier | undefined {
+  return borne.count === undefined || !isChargeType(borne.type) ? undefined : onlyUnder(borne.type);
 }
 
 /**

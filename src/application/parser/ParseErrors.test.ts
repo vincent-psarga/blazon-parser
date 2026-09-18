@@ -360,18 +360,26 @@ describe('every refusal', () => {
 describe('more of an ordinary than a field can bear', () => {
   test.each([
     ['a chief, which is the top of the shield', "D'or à deux chefs de gueules"],
-    ['a cross, which is one charge though it is drawn twice over', "D'or à deux croix de gueules"],
-    ['a saltire, the same', "D'or à trois sautoirs de gueules"],
+    [
+      'a saltire, which is one charge though it is drawn twice over',
+      "D'or à trois sautoirs de gueules",
+    ],
   ])('%s', (_why, blazon) => {
     expect(() => french.parse(blazon)).toThrow(RepeatedOrdinary);
   });
 
   test.each([
     ['a chief', 'Or two chiefs gules'],
-    ['a cross', 'Or two crosses gules'],
     ['a saltire', 'Or three saltires gules'],
   ])('%s, in English', (_why, blazon) => {
     expect(() => english.parse(blazon)).toThrow(RepeatedOrdinary);
+  });
+
+  test('says nothing of the sort where the word names a charge as well as a band', () => {
+    // The croix is the band and the croisette both, and a count is how a blazon
+    // says which: two of them are two little crosses rather than a mistake.
+    expect(french.parse("D'or à deux croix de gueules").chargesOrOrdinaries).toHaveLength(1);
+    expect(english.parse('Or two crosses gules').chargesOrOrdinaries).toHaveLength(1);
   });
 
   test('carries the word and the number, so no one has to read the message for them', () => {

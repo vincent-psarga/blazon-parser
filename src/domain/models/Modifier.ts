@@ -38,4 +38,23 @@ export enum Modifier {
    * blazon can say otherwise here yet, so round is all that is drawn.
    */
   pierced = 'Modifier.pierced',
+  /**
+   * Cut short of the edges of the shield, so that what is left of the figure
+   * stands free on the field: "a cross couped", "à la croix alésée".
+   *
+   * It is the one modifier that says which figure is borne rather than how that
+   * figure is drawn. An ordinary is named after a line across the field and is
+   * drawn the whole length of it; the same word names a figure small enough to
+   * be borne in number, and what tells the two apart is that the small one has
+   * been couped. So a cross with nothing said of it is the band, and a cross
+   * couped is the charge — which is a charge by having been couped at all, and
+   * is therefore never borne without it.
+   *
+   * A blazon that bears several need not say it. Both tongues' dictionaries
+   * agree: "when there is more than one of either of these in the same shield
+   * they are to be drawn humetty, though it be not expressed", and "lorsque ces
+   * pièces sont en nombre dans un écu, il est inutile de les dire alésées, elles
+   * ne peuvent être établies autrement".
+   */
+  couped = 'Modifier.couped',
 }

@@ -54,7 +54,7 @@ export const FrenchStrewings: Strewings<FrenchWord> = {
   // in as many words, as its armorials do.
   // French names no strewing of croisettes that the dictionaries settle, so this
   // one is sown in as many words like the rest.
-  [ChargeType.crossCouped]: undefined,
+  [ChargeType.cross]: undefined,
   [ChargeType.crescent]: undefined,
   [ChargeType.fleurDeLis]: undefined,
 };

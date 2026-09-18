@@ -100,10 +100,12 @@ function bearing(one: ChargeOrOrdinary): Painter {
  * The figure a charge is drawn as: its own, or the one a modifier leaves of it.
  *
  * A charge the blazon modified in a way the vocabulary has no second drawing for
- * is drawn plain rather than not at all. It cannot arrive here — the parser
- * refuses a modifier the charge does not take, and every one it does take is
- * drawn — so this says what to do about a drawing that has fallen behind the
- * model rather than about anything a blazon can say.
+ * is drawn plain rather than not at all. Which is right for the one modifier
+ * that has no second drawing on purpose: a cross is couped in every drawing of
+ * the charge — that is what the small figure is — so what the couping leaves is
+ * the figure itself and there is nothing else to draw. Anything else arriving
+ * here is a drawing that has fallen behind the model, the parser refusing every
+ * modifier a charge does not take.
  */
 function drawn(one: Charge): BorneFigure {
   const figure: ChargeFigure = CHARGES[one.type];

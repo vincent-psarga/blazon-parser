@@ -4,7 +4,7 @@ import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryArticle';
-import { ChargeType } from '../../domain/models/Charge';
+import { ChargeType, onlyUnder } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { COLOURS, Colours, Furs, METALS, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { wordOf } from '../../domain/translations/Translation';
@@ -15,6 +15,19 @@ import { bearing, everyBearing, withArticle } from './FrenchGrammar';
 
 const parser = new FrenchBlazonParser();
 const CHARGES = Object.values(ChargeType);
+
+/**
+ * What the arms hold for a charge named by its own word, which is the word and
+ * nothing else for all but one of them.
+ *
+ * A charge that is a charge by having been modified carries the modifier
+ * wherever it is borne: the croisette is alésée by being a croisette, and arms
+ * holding a plain one hold a figure no blazon can name.
+ */
+const asBorne = (type: ChargeType, borne: object) => {
+  const modifier = onlyUnder(type);
+  return modifier === undefined ? { type, ...borne } : { type, ...borne, modifier };
+};
 
 describe('a field bearing a charge', () => {
   test('reads "D\'azur à la billette d\'or" as a billet on an azure field', () => {
@@ -78,7 +91,7 @@ describe('a field bearing a charge', () => {
       for (const type of CHARGES) {
         const borne = bearing(wordOf(FrenchChargeType, type));
         expect(parser.parse(`D'azur ${borne} d'or`).chargesOrOrdinaries).toEqual([
-          { type, tincture: Metals.or },
+          asBorne(type, { tincture: Metals.or }),
         ]);
       }
     });
@@ -152,7 +165,7 @@ describe('a field bearing several of one charge', () => {
     for (const type of CHARGES) {
       const word = wordOf(FrenchChargeType, type);
       expect(parser.parse(`D'azur à trois ${word.plural} d'or`).chargesOrOrdinaries).toEqual([
-        { type, tincture: Metals.or, count: 3 },
+        asBorne(type, { tincture: Metals.or, count: 3 }),
       ]);
     }
   });

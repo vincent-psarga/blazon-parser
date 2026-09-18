@@ -5,7 +5,7 @@ import { afterEach, describe, expect, test } from 'vitest';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 import { OUTLINE } from '../utils/Colourings';
-import { vocabularyIn } from '../utils/Vocabulary';
+import { VocabularyEntry, vocabularyIn } from '../utils/Vocabulary';
 import { mount } from '../testing/Mounting';
 import { VocabularyPage } from './VocabularyPage';
 
@@ -15,6 +15,12 @@ const FRENCH = vocabularyIn('fr');
 const ENGLISH = vocabularyIn('en');
 
 const ghost = (word: string) => screen.getByRole('link', { name: word });
+/**
+ * How a word names itself in the stack: with its rank after it where one
+ * spelling names two things, and by itself where it names one.
+ */
+const named = (entry: VocabularyEntry) =>
+  entry.qualified ? `${entry.word} ${entry.rank}` : entry.word;
 const showing = () => document.querySelector('.showing') as HTMLElement;
 /** What scrolls inside the reading, where the reading is a pane of its own. */
 const leaf = () => document.querySelector('.showing__leaf') as HTMLElement;
@@ -57,12 +63,12 @@ describe('the vocabulary of one tongue', () => {
     expect(screen.getByText(new RegExp(`^${FRENCH.length} words`))).toBeInTheDocument();
   });
 
-  test.each(FRENCH.map((entry) => entry.word))('keeps %s present in the stack', (word) => {
+  test.each(FRENCH.map(named))('keeps %s present in the stack', (word) => {
     mount(<VocabularyPage language="fr" />);
     expect(ghost(word)).toBeInTheDocument();
   });
 
-  test.each(ENGLISH.map((entry) => entry.word))('keeps %s present in English too', (word) => {
+  test.each(ENGLISH.map(named))('keeps %s present in English too', (word) => {
     mount(<VocabularyPage language="en" />);
     expect(ghost(word)).toBeInTheDocument();
   });
@@ -116,8 +122,19 @@ describe('a word read at full size', () => {
 
   test('names the rank it belongs to', async () => {
     mount(<VocabularyPage language="fr" />);
-    await strike('croix');
+    await strike('croix ordinary');
     expect(showing().querySelector('.showing__rank')?.textContent).toBe('ordinary');
+  });
+
+  test('tells the two apart where one spelling names a band and a charge', async () => {
+    // The croix is both, and the stack says which is which rather than filing
+    // one of them under an address the other has always answered to.
+    mount(<VocabularyPage language="fr" />);
+    await strike('croix charge');
+    expect(showing().querySelector('.showing__rank')?.textContent).toBe('charge');
+    expect(
+      within(showing()).getByText("D'argent à la croix alésée de gueules.")
+    ).toBeInTheDocument();
   });
 
   test('shows it painted and hatched, a tincture being a convention either way', async () => {
@@ -147,7 +164,7 @@ describe('a word read at full size', () => {
 
   test('says what a word it reads and never writes comes back as', async () => {
     mount(<VocabularyPage language="en" />);
-    await strike('cross humetty');
+    await strike('humetty');
     expect(within(showing()).getByText('Written back as')).toBeInTheDocument();
     expect(within(showing()).getByText('Argent a cross couped gules.')).toBeInTheDocument();
   });
@@ -238,8 +255,8 @@ describe('a word read at full size', () => {
 describe('what one drawing cannot say', () => {
   test('bears a charge in number, and sows it, under a heading apiece', async () => {
     mount(<VocabularyPage language="en" />);
-    await strike('cross couped');
-    expect(headings()).toEqual(['Borne in number', 'Sown']);
+    await strike('cross charge');
+    expect(headings()).toEqual(['Borne in number', 'Sown', 'Modified']);
     expect(labels('Borne in number')).toEqual(['Twice', 'Thrice']);
     expect(labels('Sown')).toEqual(['Over the field']);
   });
@@ -265,10 +282,16 @@ describe('what one drawing cannot say', () => {
     mount(<VocabularyPage language="en" />, '/doc/vocabulary/en');
     await strike('voided');
     expect(headings()).toEqual(['Said of']);
-    expect(labels('Said of')).toEqual(['Billet', 'Lozenge', 'Roundel', 'Mullet']);
+    expect(labels('Said of')).toEqual(['Billet', 'Lozenge', 'Roundel', 'Mullet', 'Cross']);
     expect(within(section('Said of')).getByRole('link', { name: 'Lozenge' })).toHaveAttribute(
       'href',
       '/doc/vocabulary/en#lozenge'
+    );
+    // Cross names a band as well, and the band is voided by nothing: the link
+    // leads to the charge's own address rather than to the spelling they share.
+    expect(within(section('Said of')).getByRole('link', { name: 'Cross' })).toHaveAttribute(
+      'href',
+      '/doc/vocabulary/en#cross.charge'
     );
   });
 

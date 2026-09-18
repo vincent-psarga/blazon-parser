@@ -5,7 +5,7 @@ import { isFur } from '../../src/domain/models/Tinctures';
 import { anchorOf, folded } from './Anchors';
 import { LanguageCode } from './Languages';
 import { readBlazon } from './Reading';
-import { VocabularyEntry, lettersOf, vocabularyIn } from './Vocabulary';
+import { Rank, VocabularyEntry, lettersOf, vocabularyIn } from './Vocabulary';
 
 const TONGUES: readonly LanguageCode[] = ['fr', 'en'];
 const WRITERS = { fr: new FrenchBlazonWriter(), en: new EnglishBlazonWriter() };
@@ -13,10 +13,12 @@ const WRITERS = { fr: new FrenchBlazonWriter(), en: new EnglishBlazonWriter() };
 const french = vocabularyIn('fr');
 const english = vocabularyIn('en');
 
-const word = (entries: readonly VocabularyEntry[], spelling: string) => {
-  const found = entries.find((entry) => entry.spellings.includes(spelling));
+const word = (entries: readonly VocabularyEntry[], spelling: string, rank?: Rank) => {
+  const found = entries.find(
+    (entry) => entry.spellings.includes(spelling) && (rank === undefined || entry.rank === rank)
+  );
   if (found === undefined) {
-    throw new Error(`No entry spells "${spelling}"`);
+    throw new Error(`No entry spells "${spelling}"${rank === undefined ? '' : ` as a ${rank}`}`);
   }
   return found;
 };
@@ -47,7 +49,8 @@ describe('what the vocabulary holds', () => {
     // word the library reads and the page does not show.
     const spellings = spelled(vocabularyIn(language));
     expect(spellings).toContain(language === 'fr' ? 'gueules' : 'gules');
-    expect(spellings).toContain(language === 'fr' ? 'croisette' : 'cross couped');
+    expect(spellings).toContain(language === 'fr' ? 'croisette' : 'cross');
+    expect(spellings).toContain(language === 'fr' ? 'alésé' : 'couped');
     expect(spellings).toContain(language === 'fr' ? 'billeté' : 'billetty');
   });
 
@@ -100,7 +103,8 @@ describe('what a word means', () => {
       expect(word(english, spelling).description).toMatch(/bells of vair/);
     }
     expect(word(english, 'besant').description).toMatch(/plain disc/);
-    expect(word(english, 'cross humetty').description).toMatch(/four equal arms/);
+    expect(word(english, 'cross', 'charge').description).toMatch(/four equal arms/);
+    expect(word(english, 'humetty').description).toMatch(/Cut short of every edge/);
     expect(word(english, 'border').description).toMatch(/whole edge of the shield/);
     expect(word(english, 'pily counter pily').description).toMatch(/long triangles/);
   });
@@ -165,7 +169,7 @@ describe('a word written more than one way', () => {
     expect(word(english, 'semy').word).toBe('semy');
     expect(word(english, 'semé').word).toBe('semé');
     expect(word(english, 'border').word).toBe('border');
-    expect(word(english, 'cross humetty').word).toBe('cross humetty');
+    expect(word(english, 'humetty').word).toBe('humetty');
   });
 
   test('gathers the accent and the hyphen under the word they are a writing of', () => {
@@ -200,8 +204,13 @@ describe('the arms a word is shown in', () => {
   });
 
   test('says what a spelling read and never written comes back as', () => {
-    expect(word(english, 'cross humetty').typed).toBe('Argent a cross humetty gules.');
-    expect(word(english, 'cross humetty').written).toBe('Argent a cross couped gules.');
+    expect(word(english, 'humetty').typed).toBe('Argent a cross humetty gules.');
+    expect(word(english, 'humetty').written).toBe('Argent a cross couped gules.');
+    // The croisette says the couping in a noun, so the participle is read and
+    // written nowhere: it is shown on the word the noun stands in for.
+    expect(word(french, 'alésé').typed).toBe("D'argent à la croix alésée de gueules.");
+    expect(word(french, 'alésé').written).toBe("D'argent à la croisette de gueules.");
+    expect(word(french, 'croix', 'charge').written).toBe("D'argent à la croisette de gueules.");
     expect(word(english, 'border').written).toBe('Argent a bordure gules.');
     // Plain is read and never written at all, so what it comes back as is the
     // field without it.
@@ -211,7 +220,7 @@ describe('the arms a word is shown in', () => {
 
   test('says nothing about coming back where the blazon comes back as it went in', () => {
     expect(word(english, 'besant').written).toBeUndefined();
-    expect(word(french, 'croix').written).toBeUndefined();
+    expect(word(french, 'croix', 'ordinary').written).toBeUndefined();
   });
 
   test('bears a word that means no tincture gules on argent', () => {
@@ -268,8 +277,41 @@ describe('the same word elsewhere', () => {
     expect(word(french, 'tourtelé').otherTongue).toEqual([]);
   });
 
+  test('leads to every word it names at the address that word answers to', () => {
+    // A word is addressed by the page it stands on, so a spelling that names two
+    // things there carries its rank — whatever the page pointing at it made of
+    // the same spelling. The croix is a band and a charge in French, the cross
+    // is both in English, and either tongue might have had a word for one alone.
+    const pages: Record<LanguageCode, readonly VocabularyEntry[]> = { fr: french, en: english };
+    for (const language of TONGUES) {
+      for (const entry of vocabularyIn(language)) {
+        const sighted = [
+          ...entry.alsoHere,
+          ...entry.otherTongue,
+          ...entry.otherwise.flatMap(({ entries }) =>
+            entries.flatMap(({ sighting }) => (sighting === undefined ? [] : [sighting]))
+          ),
+        ];
+        for (const seen of sighted) {
+          const anchors = pages[seen.language].map((one) => one.anchor);
+          expect(anchors, `${entry.word} → ${seen.word}`).toContain(seen.anchor);
+        }
+      }
+    }
+  });
+
   test('names the plain counterpart where the two tongues divide the term alike', () => {
-    expect(word(french, 'croix').otherTongue.map((seen) => seen.word)).toEqual(['cross']);
+    expect(word(french, 'croix', 'ordinary').otherTongue.map((seen) => seen.word)).toEqual([
+      'cross',
+    ]);
+    // Both tongues spell the band and the charge alike, so each page says which
+    // of its own two the other is pointing at.
+    expect(word(french, 'croix', 'ordinary').otherTongue[0].anchor).toBe('cross.ordinary');
+    expect(word(french, 'croix', 'charge').otherTongue[0].anchor).toBe('cross.charge');
+    expect(word(english, 'cross', 'ordinary').otherTongue[0].anchor).toBe('croix.ordinary');
+    expect(word(english, 'cross', 'charge').otherTongue.map((seen) => seen.anchor)).toEqual([
+      'croix.charge',
+    ]);
     expect(word(english, 'per bend sinister').otherTongue.map((seen) => seen.word)).toEqual([
       'taillé',
     ]);
@@ -290,7 +332,7 @@ describe('the same word elsewhere', () => {
   });
 
   test('sends a word of the other tongue to the other tongue', () => {
-    expect(word(french, 'croix').otherTongue[0].language).toBe('en');
+    expect(word(french, 'croix', 'ordinary').otherTongue[0].language).toBe('en');
     expect(word(french, 'besant').alsoHere[0].language).toBe('fr');
   });
 });
@@ -319,7 +361,7 @@ describe('the words that say more than one drawing can', () => {
     // Borne twice, sown, and voided are three different answers about the one
     // word, and a reader after one of them should not have to pick it out of
     // the other two.
-    expect(asked(word(french, 'croisette'))).toEqual(['Borne in number', 'Sown']);
+    expect(asked(word(french, 'croisette'))).toEqual(['Borne in number', 'Sown', 'Modified']);
     expect(asked(word(french, 'billette'))).toEqual(['Borne in number', 'Sown', 'Modified']);
     expect(asked(word(english, 'chevron'))).toEqual(['Borne in number']);
     expect(asked(word(english, 'barry'))).toEqual(['Cut otherwise']);
@@ -375,18 +417,25 @@ describe('the words that say more than one drawing can', () => {
       'Lozenge',
       'Roundel',
       'Mullet',
+      'Cross',
     ]);
     expect(leadingTo(word(english, 'voided'), 'Said of')).toEqual([
       'billet',
       'lozenge',
       'roundel',
       'mullet',
+      'cross',
     ]);
     // A tongue that keeps a word for one charge shows it on that charge and on
     // no other: évidé is the star's word, so the star is the whole of its page.
     expect(word(french, 'évidé').typed).toBe("D'argent à l'étoile évidée de gueules.");
     expect(labelled(word(french, 'évidé'), 'Said of')).toEqual(['Étoile']);
-    expect(labelled(word(french, 'vidé'), 'Said of')).toEqual(['Billette', 'Losange', 'Besant']);
+    expect(labelled(word(french, 'vidé'), 'Said of')).toEqual([
+      'Billette',
+      'Losange',
+      'Besant',
+      'Croisette',
+    ]);
     // Percé is nobody's word in particular, so it stands on every charge that
     // will take the piercing.
     expect(labelled(word(english, 'pierced'), 'Said of')).toEqual(['Billet', 'Lozenge', 'Mullet']);

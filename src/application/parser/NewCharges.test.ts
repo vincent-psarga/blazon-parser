@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { ChargeType } from '../../domain/models/Charge';
+import { Modifier } from '../../domain/models/Modifier';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { SvgBlazonDrawer } from '../drawer/svg/SvgBlazonDrawer';
 import { crescent } from '../drawer/svg/shapes/crescent';
@@ -103,7 +104,7 @@ describe('the fleur-de-lis', () => {
   });
 });
 
-describe('the croisette, which English blazons as a cross couped', () => {
+describe('the cross borne as a charge, which French calls a croisette', () => {
   test('is the one term under both names', () => {
     expect(inFrench.parse("D'azur à la croisette d'or")).toEqual(
       inEnglish.parse('Azure a cross couped or')
@@ -116,34 +117,113 @@ describe('the croisette, which English blazons as a cross couped', () => {
     );
   });
 
+  test('is named in French by the band’s own word, and comes back the little cross', () => {
+    expect(inFrench.parse("D'azur à la croix alésée d'or")).toEqual(
+      inFrench.parse("D'azur à la croisette d'or")
+    );
+    expect(writeFrench.write(inFrench.parse("D'azur à la croix alésée d'or"))).toBe(
+      "D'azur à la croisette d'or."
+    );
+  });
+
+  test('agrees the participle in French as any other modifier does', () => {
+    expect(writeFrench.write(inFrench.parse("D'azur à trois croix alésées d'or"))).toBe(
+      "D'azur à trois croisettes d'or."
+    );
+    expect(() => inFrench.parse("D'azur à la croix alésé d'or")).toThrow(
+      'Wrong agreement: expected "alésée"'
+    );
+  });
+
   test('pluralises the noun rather than the word that follows it', () => {
+    // Where the word is written at all: one of them is a cross couped, and
+    // three of them are three crosses, the count having said the couping.
+    expect(writeEnglish.write(inFrench.parse("D'azur à la croisette d'or"))).toBe(
+      'Azure a cross couped or.'
+    );
     expect(writeEnglish.write(inFrench.parse("D'azur à trois croisettes d'or"))).toBe(
-      'Azure three crosses couped or.'
+      'Azure three crosses or.'
     );
   });
 
   /*
-   * The two share their first word, so both readings are offered and the tincture
-   * settles it. Nothing about the ordinary changed, which is the thing to check.
+   * One word names the band and the charge, so both readings are offered and
+   * what is said of it settles which: a cross that was couped is the charge, and
+   * a cross with nothing said of it is the band it always was.
    */
-  test('leaves the ordinary cross the band it always was', () => {
+  test('is the band where the blazon says nothing, and the charge where it says couped', () => {
     expect(inEnglish.parse('Azure a cross or').chargesOrOrdinaries).toEqual([
       { type: OrdinaryType.cross, tincture: Metals.or },
     ]);
     expect(inEnglish.parse('Azure a cross couped or').chargesOrOrdinaries).toEqual([
-      { type: ChargeType.crossCouped, tincture: Metals.or },
+      { type: ChargeType.cross, tincture: Metals.or, modifier: Modifier.couped },
     ]);
   });
 
-  test('still refuses more than one of the ordinary, which is borne but once', () => {
-    expect(() => inEnglish.parse('Azure three crosses or')).toThrow(
-      'Borne but once: crosses, not 3 of them'
+  test('bears the charge in number, the couping having made one of it', () => {
+    expect(inEnglish.parse('Azure three crosses couped or').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.cross, tincture: Metals.or, count: 3, modifier: Modifier.couped },
+    ]);
+  });
+
+  /*
+   * The band is borne but once, so a blazon that bears several has said which of
+   * the two it meant without writing the word — and is answered as briefly, the
+   * writer leaving unwritten exactly what a reader supplies.
+   */
+  test('is the charge wherever a blazon bears several, the couping understood', () => {
+    expect(inFrench.parse("D'argent à deux croix de gueules").chargesOrOrdinaries).toEqual([
+      { type: ChargeType.cross, tincture: Colours.gules, count: 2, modifier: Modifier.couped },
+    ]);
+    expect(writeFrench.write(inFrench.parse("D'argent à deux croix de gueules"))).toBe(
+      "D'argent à deux croisettes de gueules."
+    );
+    expect(writeEnglish.write(inEnglish.parse('Argent two crosses gules'))).toBe(
+      'Argent two crosses gules.'
+    );
+    // Written as briefly as it is read, and read back as the arms it named.
+    expect(inEnglish.parse('Argent two crosses gules')).toEqual(
+      inEnglish.parse('Argent two crosses couped gules')
+    );
+  });
+
+  test('is voided as readily as it is couped, and says the couping by being voided', () => {
+    // The dictionaries void the cross — "d'or, à la croix vidée de gueules" —
+    // and a band takes nothing, so a voided one is this charge. French says the
+    // couping in the noun and the voiding after it; English says both words.
+    expect(inEnglish.parse('Azure a cross voided or').chargesOrOrdinaries).toEqual([
+      { type: ChargeType.cross, tincture: Metals.or, modifier: Modifier.voided },
+    ]);
+    expect(writeFrench.write(inEnglish.parse('Azure a cross voided or'))).toBe(
+      "D'azur à la croisette vidée d'or."
+    );
+    expect(writeEnglish.write(inFrench.parse("D'azur à la croisette vidée d'or"))).toBe(
+      'Azure a cross voided or.'
+    );
+    expect(writeEnglish.write(inFrench.parse("D'azur à trois croix vidées d'or"))).toBe(
+      'Azure three crosses voided or.'
+    );
+  });
+
+  test('is drawn with its middle out, which is the one thing the couping never was', () => {
+    const drawn = (blazon: string) =>
+      new SvgBlazonDrawer(WikipediaColours).draw(inEnglish.parse(blazon));
+    expect(drawn('Azure a cross voided or')).not.toBe(drawn('Azure a cross couped or'));
+    expect(drawn('Azure a cross voided or')).toContain('fill-rule="evenodd"');
+  });
+
+  test('is pierced by nothing, no armorial here punching a hole in one', () => {
+    expect(() => inEnglish.parse('Azure a cross pierced or')).toThrow(
+      'Wrong modifier: cross is never pierced'
     );
   });
 
   test('is sown in as many words: crusily names a semy of crosses crosslet, not of these', () => {
     expect(writeEnglish.write(inFrench.parse("D'azur semé de croisettes d'or"))).toBe(
-      'Azure semy of crosses couped or.'
+      'Azure semy of crosses or.'
+    );
+    expect(writeFrench.write(inEnglish.parse('Azure semy of crosses or'))).toBe(
+      "D'azur semé de croisettes d'or."
     );
   });
 

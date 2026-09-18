@@ -51,6 +51,7 @@ const HEADINGS = [
   'A word that says nothing is read and never written',
   'A modifier stands after the charge and before its tincture',
   'A word the armorials keep for one charge is written of that charge alone',
+  'A cross with nothing said of it is the band; couped, it is the charge',
   'The smaller settlements',
 ];
 
@@ -279,6 +280,38 @@ describe('what each rule shows', () => {
     const refused = shown('Azure an annulet voided or');
     expect(refused.refused).toBe('Wrong modifier: annulet is never voided');
     expect(refused.arms).toBe(0);
+  });
+
+  test('tells the band from the charge by what the blazon says of the cross', () => {
+    mount(<ConventionsPage />);
+    // Nothing said: the band, and it comes back the band in either tongue.
+    expect(shown('Argent a cross gules').written).toEqual([
+      "D'argent à la croix de gueules.",
+      'Argent a cross gules.',
+    ]);
+    // Couped: the charge, which French has a noun for and English has not.
+    expect(shown('Argent a cross couped gules').written).toEqual([
+      "D'argent à la croisette de gueules.",
+      'Argent a cross couped gules.',
+    ]);
+    expect(shown("D'argent à la croix alésée de gueules").written).toEqual([
+      "D'argent à la croisette de gueules.",
+      'Argent a cross couped gules.',
+    ]);
+    // Humetty is read and couped is written, the figure borne being a charge.
+    expect(shown('Argent a cross humetty gules').written).toContain('Argent a cross couped gules.');
+  });
+
+  test('understands the couping where a blazon bears more than one, as the dictionaries do', () => {
+    mount(<ConventionsPage />);
+    expect(shown("D'argent à deux croix de gueules").written).toEqual([
+      "D'argent à deux croisettes de gueules.",
+      'Argent two crosses gules.',
+    ]);
+    expect(shown('Argent three crosses gules').written).toEqual([
+      "D'argent à trois croisettes de gueules.",
+      'Argent three crosses gules.',
+    ]);
   });
 
   test('parts one charge from the next, and writes the blazon as a sentence', () => {
