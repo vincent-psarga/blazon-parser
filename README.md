@@ -49,21 +49,29 @@ npm install
 
 ## Scripts
 
-| Script                 | Description                                             |
-| ---------------------- | ------------------------------------------------------- |
-| `npm run build`        | Compile `src/` to `lib/` (declarations + source maps)   |
-| `npm run dev`          | Serve the demo page at http://localhost:5173            |
-| `npm test`             | Run the Vitest suite once                               |
-| `npm run test:watch`   | Run Vitest in watch mode                                |
-| `npm run typecheck`    | Type-check everything, tests included, without emitting |
-| `npm run format`       | Format the tree with Prettier                           |
-| `npm run format:check` | Report anything Prettier would reformat                 |
-| `npm run clean`        | Remove `lib/`                                           |
+| Script                 | Description                                                 |
+| ---------------------- | ----------------------------------------------------------- |
+| `npm run build`        | Compile `src/` to `lib/` (declarations + source maps)       |
+| `npm run dev`          | Serve the demo page at http://localhost:5173                |
+| `npm test`             | Run the Vitest suite once                                   |
+| `npm run test:watch`   | Run Vitest in watch mode                                    |
+| `npm run coverage`     | Run the suite, then measure what it and the armorials cover |
+| `npm run typecheck`    | Type-check everything, tests included, without emitting     |
+| `npm run format`       | Format the tree with Prettier                               |
+| `npm run format:check` | Report anything Prettier would reformat                     |
+| `npm run clean`        | Remove `lib/`                                               |
 
 A Husky pre-commit hook formats the staged files with `pretty-quick`, then runs
 `npm run typecheck` and `npm test`. What lands is therefore always formatted,
 type-clean and green. It is installed by `npm install`, through the `prepare`
 script.
+
+Every run of the Quality workflow keeps the figures `npm run coverage` produces —
+how many tests there are, and how many of the armorials' blazons the parser can
+read — and its summary shows what moved since the last run on `main`. A pull
+request is held against `main` rather than against its own earlier pushes, so
+what it reports is what merging would change. Nothing there fails a run: the
+figures are evidence of where the parser stands, not a bar it has to clear.
 
 ## Toolchain notes
 

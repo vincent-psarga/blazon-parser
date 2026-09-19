@@ -7,6 +7,8 @@
     "build:demo": "vite build demo --outDir dist --emptyOutDir",
     "clean": "rm -rf lib",
     "test": "vitest run",
+    "test:report": "vitest run --reporter=default --reporter=json --outputFile.json=coverage/tests.json",
+    "coverage": "npm run test:report && node scripts/coverage.mjs",
     "typecheck": "tsc -p tsconfig.test.json",
     "test:watch": "vitest",
     "prepare": "husky",

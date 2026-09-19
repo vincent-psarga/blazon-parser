@@ -21,11 +21,81 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # The suite is run through test:report so that it leaves a JSON report
+      # behind: the coverage step counts the tests from it rather than running
+      # them a second time to be told the same number.
       - name: Run tests
-        run: npm test
+        run: npm run test:report
 
       - name: Check formatting
         run: npm run format:check
 
       - name: Build
         run: npm run build
+
+      - name: Measure coverage
+        run: node scripts/coverage.mjs
+
+      # Kept as an artifact so that a later run has something to compare itself
+      # against. The figures are evidence of where the parser stands, not a bar
+      # it has to clear, so nothing here fails a run.
+      - name: Store the coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/coverage.json
+
+  coverage:
+    name: Compare the coverage with the last run
+    needs: quality
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Take this run's coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage
+          path: current
+
+      # A pull request asks what merging would change, so what it is held
+      # against is main as it stands rather than the branch's own earlier push.
+      # The runs are walked newest first because the nearest one may have let
+      # its artifact expire, or predate there being one to keep.
+      - name: Find the last coverage measured on main
+        id: baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          runs=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow quality.yml \
+            --branch main --limit 20 --json databaseId,status \
+            --jq '.[] | select(.status == "completed") | .databaseId')
+          for run in $runs; do
+            if [ "$run" = "$GITHUB_RUN_ID" ]; then
+              continue
+            fi
+            rm -rf baseline
+            if gh run download "$run" --repo "$GITHUB_REPOSITORY" --name coverage --dir baseline; then
+              url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$run"
+              echo "label=[the last run on main]($url)" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          rm -rf baseline
+          echo "No coverage has been kept on main to compare against."
+
+      - name: Show the changes
+        env:
+          BASELINE_LABEL: ${{ steps.baseline.outputs.label }}
+        run: |
+          set -euo pipefail
+          node scripts/compare-coverage.mjs baseline/coverage.json current/coverage.json \
+            | tee -a "$GITHUB_STEP_SUMMARY"
