@@ -22,6 +22,8 @@ What will not be supported:
 
 - "modern" charges (no "Azure, two platypuses or"). Note: anything past 1477 and the death of Charles the Bold is considered modern
 - anything outside the shield itself (crown, supporter etc)
+- a non-opiniated parser: the blazon given should respect the blazon grammar but also the French or English grammar (using correct accentueted letters, plurals etc).
+- support for old English/French (eg: "d'or ung faulx crois de goules")
 
 For the rendering of a blazon, this is not the real focus of the app (once again, the grammar is more important). This is more a way to quickly check that the parsing is done correctly (surprisingly, a visual shield is more appealing than a JSON file). It may support complex shapes in the future (like dragons and lions certainly), although they may not be amazing to look at. Once again, there are great tools that do this better (such as [DrawShield](https://drawshield.net/)).
 
