@@ -1,6 +1,22 @@
 import { ReactNode } from 'react';
 
+/**
+ * Where what a side holds stands within its own column.
+ *
+ * A column is wider than what it usually holds — a set of arms, a figure, a
+ * short list — and where that sits across the column is a thing a slide can mean
+ * something by: arms centred under a heading read as the subject of it, and arms
+ * pushed to the outer edge read as a margin note.
+ */
+export type Align = 'left' | 'center' | 'right';
+
 export interface SideProps {
+  /** Where what it holds stands across its column. To the left unless told. */
+  readonly align?: Align;
+  readonly children: ReactNode;
+}
+
+export interface RestProps {
   readonly children: ReactNode;
 }
 
@@ -30,9 +46,15 @@ export interface SideProps {
  * whole of it whichever side the Side is on. And a Side holding markdown rather
  * than a component wants a blank line above and below what it holds, which is
  * what tells MDX to read it as markdown.
+ *
+ * Where what it holds stands across that column is the slide's to say:
+ *
+ *     <Side align="center">
+ *     <Blazon blazon={"D'argent à trois molettes de gueules"} />
+ *     </Side>
  */
-export function Side({ children }: SideProps) {
-  return <div className="deck__side">{children}</div>;
+export function Side({ children, align = 'left' }: SideProps) {
+  return <div className={`deck__side deck__side--${align}`}>{children}</div>;
 }
 
 /**
@@ -42,6 +64,6 @@ export function Side({ children }: SideProps) {
  * a deck says only what stands beside what and never has to say what the rest of
  * its own slide is.
  */
-export function Rest({ children }: SideProps) {
+export function Rest({ children }: RestProps) {
   return <div className="deck__rest">{children}</div>;
 }

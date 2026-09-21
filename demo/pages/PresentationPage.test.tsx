@@ -22,8 +22,8 @@ const DECK: Presentation = {
 /** The two the build paired off, in the order they are to be read across. */
 const pairedIn = (slide: Element | undefined) =>
   [...(slide?.querySelector('.deck__body')?.children ?? [])]
-    .filter((child) => child.className === 'deck__side' || child.className === 'deck__rest')
-    .map((child) => child.className);
+    .map((child) => ['deck__side', 'deck__rest'].find((which) => child.classList.contains(which)))
+    .filter((which) => which !== undefined);
 
 const slideSaying = (words: string) =>
   [...document.querySelectorAll('.deck__slide')].find((slide) =>

@@ -17,6 +17,26 @@ describe('what a slide sets aside', () => {
     expect(container.querySelector('.deck__rest')?.textContent).toBe('What they are about');
   });
 
+  test.each(['left', 'center', 'right'] as const)(
+    'stands what it holds to the %s when the slide says so',
+    (align) => {
+      const { container } = render(<Side align={align}>Some arms</Side>);
+      expect(container.querySelector('.deck__side')).toHaveClass(`deck__side--${align}`);
+    }
+  );
+
+  test('stands it to the left when the slide says nothing, as a column always did', () => {
+    const { container } = render(<Side>Some arms</Side>);
+    expect(container.querySelector('.deck__side')).toHaveClass('deck__side--left');
+  });
+
+  test("says nothing of where the rest of a slide stands, that being the slide's own", () => {
+    // The rest of a slide is prose and a list, read from the margin they began
+    // at: only what was set aside is placed across its column.
+    const { container } = render(<Rest>What they are about</Rest>);
+    expect(container.querySelector('.deck__rest')?.className).toBe('deck__rest');
+  });
+
   test('holds more than a line, a side being a stretch of a deck', () => {
     render(
       <Side>

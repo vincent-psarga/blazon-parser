@@ -1835,3 +1835,35 @@ body {
   gap: 0.9em;
   min-width: 0;
 }
+
+/*
+ * Where what a side holds stands across its own column. A column is wider than
+ * what it usually holds, and the slide is allowed to mean something by where
+ * that sits: centred under a heading it reads as the subject of it, pushed to an
+ * edge it reads as a margin note.
+ *
+ * Left is what a column has always done and is written out all the same, so that
+ * a slide asking for it gets it rather than getting whatever was there already.
+ */
+.deck__side--left {
+  align-items: stretch;
+  text-align: left;
+}
+
+.deck__side--center {
+  align-items: center;
+  text-align: center;
+}
+
+.deck__side--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* A marker that stayed at the left margin while its line moved away from it is
+   no longer marking anything, so it travels with the line it belongs to. */
+.deck__side--center :is(ul, ol),
+.deck__side--right :is(ul, ol) {
+  padding-left: 0;
+  list-style-position: inside;
+}
