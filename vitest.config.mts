@@ -6,7 +6,7 @@ export default defineConfig({
   // thing the browser is handed: the demo's own config is not read from here.
   plugins: [decks()],
   test: {
-    include: ['src/**/*.test.ts', 'demo/**/*.test.ts', 'demo/**/*.test.tsx'],
+    include: ['src/**/*.test.ts', 'demo/**/*.test.ts', 'demo/**/*.test.mts', 'demo/**/*.test.tsx'],
     environment: 'node',
     setupFiles: ['./vitest.setup.ts'],
   },

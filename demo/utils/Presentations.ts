@@ -17,7 +17,7 @@
  */
 
 import { ComponentType, ElementType } from 'react';
-import { Front, blockIn, frontIn, withoutBlock } from './Frontmatter';
+import { Front, blockIn, frontIn, withoutBlock } from './Frontmatter.mjs';
 
 /** The prefix that orders a deck, and the slug that is the rest of the name. */
 const NAMED = /^(\d+)\.(.+)$/;

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { blockIn, footerOf, frontIn, withoutBlock } from './Frontmatter';
+import { blockIn, footerOf, frontIn, withoutBlock } from './Frontmatter.mjs';
 
 const BLOCK = `---
 title: The Heraldry Playground

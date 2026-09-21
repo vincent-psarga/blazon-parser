@@ -1,7 +1,7 @@
 import mdx from '@mdx-js/rollup';
 import remarkFrontmatter from 'remark-frontmatter';
 import { Plugin } from 'vite';
-import { footerOf, frontIn } from './utils/Frontmatter';
+import { footerOf, frontIn } from './utils/Frontmatter.mjs';
 
 /** As much of a markdown tree as the work below needs to know about. */
 interface Node {
