@@ -21,6 +21,43 @@ function isSide(node: Node): boolean {
   return node.type === 'mdxJsxFlowElement' && node.name === 'Side';
 }
 
+/** What a deck writes around things it means to say one after another. */
+function isSteps(node: Node): boolean {
+  return node.type === 'mdxJsxFlowElement' && node.name === 'Steps';
+}
+
+/** Everything between two rules, which is one thing however many blocks it runs to. */
+function cutOn(children: Node[], name: string): Node[] {
+  const groups: Node[][] = [[]];
+  for (const node of children) {
+    if (node.type === 'thematicBreak') {
+      groups.push([]);
+    } else {
+      groups[groups.length - 1]?.push(node);
+    }
+  }
+  return groups.map((group) => elementOf(name, group));
+}
+
+/**
+ * Cuts what a slide says in turn into the steps it is said in.
+ *
+ * The same mark does the same work at both levels: between slides a rule means
+ * the next slide, and inside a `Steps` it means the next step. A rule written
+ * there never reaches the cutting of slides — it is inside an element by then,
+ * and the slides are cut from what stands at the top of the file — so the two
+ * readings cannot be confused with one another.
+ *
+ * A step is everything between two rules and not one block apiece: a line that
+ * introduces a list is saying the same thing the list says, and showing it alone
+ * says nothing at all.
+ */
+function intoSteps(children: Node[]): Node[] {
+  return children.map((node) =>
+    isSteps(node) ? elementOf('Steps', cutOn((node as Root).children, 'Step')) : node
+  );
+}
+
 /**
  * A slide's title spans the whole of it, a title being a title and not a column.
  * Only the headings it opens with: one further down belongs to whatever it heads.
@@ -52,7 +89,8 @@ function titlesOf(children: Node[]): number {
  * A Side with nothing to stand beside is not a side at all, and is left where it
  * is to take the width like anything else.
  */
-function laidOut(children: Node[]): Node[] {
+function laidOut(all: Node[]): Node[] {
+  const children = intoSteps(all);
   const side = children.findIndex(isSide);
   if (side === -1) {
     return children;
@@ -100,9 +138,9 @@ function intoSlides() {
  *
  * A deck is written in MDX — markdown that may call a component by name — and
  * what comes out is ordinary JavaScript calling React's runtime, which
- * everything downstream already knows how to read. `Slide` and `Rest` are among
- * the names it calls, the cutting above having written them in; the page that
- * shows a deck says what those names mean.
+ * everything downstream already knows how to read. `Slide`, `Rest` and `Step`
+ * are among the names it calls, the cutting above having written them in; the
+ * page that shows a deck says what those names mean.
  *
  * A deck is imported twice, though: as itself, which is what draws it, and with
  * ?raw, which is the text the index reads its name and its length from. The

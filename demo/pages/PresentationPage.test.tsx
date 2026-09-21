@@ -14,7 +14,7 @@ const DECK: Presentation = {
   order: 0,
   slug: 'a-deck',
   title: 'A deck',
-  slides: 4,
+  slides: 5,
   source: '',
   load: () => Promise.resolve({ default: Deck }),
 };
@@ -107,6 +107,31 @@ describe('a deck, shown as slides', () => {
     const slide = slideSaying('One thing');
     expect(slide?.querySelector('.deck__side')).toBeNull();
     expect(slide?.querySelector('.deck__rest')).toBeNull();
+  });
+
+  test('holds a slide said in parts together, the parts waiting their turn', async () => {
+    await opened();
+    const slide = slideSaying('A slide said in parts');
+    // One slide, not two: the heading stays put and the parts arrive on it.
+    expect(slide?.textContent).toContain('Said on arrival');
+    expect(slide?.textContent).toContain('Said next');
+    // What waits is marked as waiting, which is what the presenter steps
+    // through; what was written first is simply there.
+    expect(
+      [...(slide?.querySelectorAll('.deck__step') ?? [])].map((step) =>
+        step.classList.contains('fragment')
+      )
+    ).toEqual([false, true]);
+  });
+
+  test('cuts a step where a rule inside says to, not at every block', async () => {
+    await opened();
+    const slide = slideSaying('A slide said in parts');
+    const [first] = [...(slide?.querySelectorAll('.deck__step') ?? [])];
+    // The line and the list it introduces are one step: a rule ends a step, the
+    // way a rule ends a slide.
+    expect(first?.querySelector('p')?.textContent).toBe('Said on arrival:');
+    expect(first?.querySelector('li')?.textContent).toBe('and this comes with it');
   });
 
   test('lays every slide out the same way, whether it sets anything aside or not', async () => {

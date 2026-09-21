@@ -12,3 +12,4 @@
  */
 export { Blazon } from './Blazon';
 export { Rest, Side } from './Side';
+export { Step, Steps } from './Steps';

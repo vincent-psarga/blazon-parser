@@ -1748,6 +1748,21 @@ body {
   align-self: start;
 }
 
+/* The wrapper is there to say that what it holds comes in turn, and for nothing
+   else: it takes no room and lays nothing out, so the steps stand exactly where
+   they would have stood written plainly. */
+.deck__steps {
+  display: contents;
+}
+
+/* A step is a box of its own, whatever it holds: it is shown and hidden whole,
+   and something with no box of its own cannot be. */
+.deck__step {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
 .deck__side,
 .deck__rest {
   display: flex;
