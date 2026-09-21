@@ -5,6 +5,7 @@ import {
   inOrder,
   presentationNamed,
   presentationPath,
+  slidesIn,
 } from './Presentations';
 
 const deck = (order: number, slug: string): Presentation => ({
@@ -44,6 +45,52 @@ describe('the order the decks are shown in', () => {
   });
 });
 
+describe('how many slides a deck runs to', () => {
+  test('is the rules that stand on their own, and the slide they leave behind', () => {
+    expect(slidesIn('One\n\n---\n\nTwo\n\n---\n\nThree\n')).toBe(3);
+  });
+
+  test('does not count the pair at the head, which is the deck talking about itself', () => {
+    expect(slidesIn('---\ntitle: A talk\n---\n\nOne\n\n---\n\nTwo\n')).toBe(2);
+  });
+
+  test('does not count a rule written inside something the deck wrote', () => {
+    // The rules inside a <Steps> cut it into steps and leave the slide whole,
+    // which is what the build makes of them too.
+    const deck = `One
+
+<Steps>
+
+First
+
+---
+
+Second
+
+</Steps>
+
+---
+
+Two
+`;
+    expect(slidesIn(deck)).toBe(2);
+  });
+
+  test('is not thrown off by a tag that closes itself, which opens nothing', () => {
+    const deck = `<Blazon blazon={"de gueules"} />
+
+---
+
+Two
+`;
+    expect(slidesIn(deck)).toBe(2);
+  });
+
+  test('is one for a deck that never ends a slide at all', () => {
+    expect(slidesIn('Only this\n')).toBe(1);
+  });
+});
+
 describe('the decks kept in the directory', () => {
   test('are found without being listed anywhere', () => {
     // Nothing names them but the directory itself: a deck is added by dropping
@@ -55,22 +102,29 @@ describe('the decks kept in the directory', () => {
     expect(PRESENTATIONS.map((deck) => deck.slug)).toContain('the-herald-playground');
   });
 
-  test('are called what their first heading calls them, the file name being an address', () => {
+  test('are called what they said they were called, the file name being an address', () => {
     const deck = presentationNamed('the-herald-playground');
-    expect(deck?.title).toBe(/^#\s+(.+)$/m.exec(deck?.source ?? '')?.[1]);
+    expect(deck?.title).toBe(/^title:\s*(.+)$/m.exec(deck?.source ?? '')?.[1]);
     expect(deck?.title).not.toBe(deck?.slug);
+  });
+
+  test('carry what else they said about themselves, for whoever is choosing among them', () => {
+    const deck = presentationNamed('the-herald-playground');
+    for (const said of ['summary', 'context', 'date'] as const) {
+      expect(deck?.[said]).toBe(
+        new RegExp(`^${said}:\\s*(.+)$`, 'm').exec(deck?.source ?? '')?.[1]
+      );
+    }
   });
 
   test("keep their markdown whole, the cutting being the deck's own business", () => {
     expect(presentationNamed('the-herald-playground')?.source).toContain('## The project');
   });
 
-  test('count their slides by the rule the deck is cut on', () => {
+  test('count the slides they run to', () => {
     const deck = presentationNamed('the-herald-playground');
-    // The rules in the file, and the slide they leave behind.
-    const rules = (deck?.source.match(/^-{3,}$/gm) ?? []).length;
-    expect(deck?.slides).toBe(rules + 1);
-    expect(rules).toBeGreaterThan(0);
+    expect(deck?.slides).toBe(slidesIn(deck?.source ?? ''));
+    expect(deck?.slides).toBeGreaterThan(1);
   });
 
   test('say nothing when no file answers to the slug', () => {

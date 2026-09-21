@@ -9,12 +9,15 @@
  *   demo/presentations/0.the-herald-playground.mdx  →  /doc/presentations/the-herald-playground
  *
  * A deck is read twice over: once as the text it was written as, which is where
- * its name and its length are read from, and once as the module the build makes
+ * what it says about itself is read from, and once as the module the build makes
  * of it, which is what draws it. The build is what cuts a deck into slides, and
- * both readings go by its one rule: a line of three dashes ends a slide.
+ * both readings go by its one rule: a line of three dashes ends a slide — except
+ * the pair at the head of a file, which is a deck talking about itself rather
+ * than starting.
  */
 
 import { ComponentType, ElementType } from 'react';
+import { Front, blockIn, frontIn, withoutBlock } from './Frontmatter';
 
 /** The prefix that orders a deck, and the slug that is the rest of the name. */
 const NAMED = /^(\d+)\.(.+)$/;
@@ -30,10 +33,10 @@ export type DeckContent = ComponentType<{
   readonly components?: Readonly<Record<string, ElementType>>;
 }>;
 
-export interface Presentation {
+export interface Presentation extends Front {
   /** The address it answers to: the file name, less its number and extension. */
   readonly slug: string;
-  /** What the deck calls itself, which is its first heading. */
+  /** What the deck calls itself: what it said it was called, or its first heading. */
   readonly title: string;
   /** The number the file name begins with, by which the decks are ordered. */
   readonly order: number;
@@ -66,26 +69,55 @@ const DECKS = import.meta.glob('../presentations/*.mdx') as Record<
 >;
 
 /**
- * A deck says what it is called in its own first heading, the file name being
- * an address rather than a title. One that says nothing is called by its slug,
- * with the hyphens read back as the spaces they stand in for.
+ * What a deck is called: what it said it was called, failing that the heading it
+ * opens with, and failing that its own slug, with the hyphens read back as the
+ * spaces they stand in for. The file name is an address and the last resort.
  */
-function titleOf(source: string, slug: string): string {
+function titleOf(front: Front, source: string, slug: string): string {
   const heading = /^#\s+(.+)$/m.exec(source);
-  return heading?.[1].trim() ?? slug.replace(/-/g, ' ');
+  return front.title ?? heading?.[1].trim() ?? slug.replace(/-/g, ' ');
 }
 
 /** A line of three dashes and nothing else, which is where a slide ends. */
 const BREAK = /^-{3,}$/;
 
 /**
- * The same rule the deck is cut on, so the count and the cutting cannot drift
- * apart: a line that is a rule and nothing else ends the slide before it, and a
- * line that merely starts with dashes is not one. So the count is the rules plus
- * the slide they leave behind.
+ * A line that opens something a deck wrote, and one that closes it again. A tag
+ * that closes itself opens nothing, however much it looks like the first.
  */
-function slidesIn(source: string): number {
-  return source.split('\n').filter((line) => BREAK.test(line.trim())).length + 1;
+const OPENS = /^<[A-Z]\w*(\s[^>]*)?>$/;
+const SHUTS_ITSELF = /\/>$/;
+const CLOSES = /^<\/[A-Z]\w*>$/;
+
+/**
+ * The same rule the deck is cut on, so the count and the cutting cannot drift
+ * apart.
+ *
+ * A rule ends the slide before it — but only where it stands on its own in the
+ * file. One written inside something the deck wrote is that thing's rule and
+ * means whatever that thing means by it: the rules inside a `<Steps>` cut it
+ * into steps and leave the slide whole. The build reads that off the tree, where
+ * such a rule is plainly nested; here there is no tree, so the nesting is
+ * followed as the lines go by — which the convention of writing a tag alone on
+ * its line is what makes possible.
+ *
+ * So the count is the rules that stood on their own, plus the slide they leave
+ * behind.
+ */
+export function slidesIn(source: string): number {
+  let depth = 0;
+  let rules = 0;
+  for (const line of withoutBlock(source).split('\n')) {
+    const written = line.trim();
+    if (OPENS.test(written) && !SHUTS_ITSELF.test(written)) {
+      depth += 1;
+    } else if (CLOSES.test(written)) {
+      depth = Math.max(0, depth - 1);
+    } else if (depth === 0 && BREAK.test(written)) {
+      rules += 1;
+    }
+  }
+  return rules + 1;
 }
 
 function read(path: string, source: string): Presentation {
@@ -101,10 +133,12 @@ function read(path: string, source: string): Presentation {
     // out loud is cheaper than a deck that lists but will not open.
     throw new Error(`The deck at ${path} was listed but cannot be fetched`);
   }
+  const front = frontIn(blockIn(source));
   return {
+    ...front,
     slug: named?.[2] ?? name,
     order: named === null ? UNNUMBERED : Number(named[1]),
-    title: titleOf(source, named?.[2] ?? name),
+    title: titleOf(front, source, named?.[2] ?? name),
     slides: slidesIn(source),
     source,
     load,

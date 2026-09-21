@@ -264,14 +264,14 @@ describe('the presentations', () => {
     // The presenter and the deck are both fetched when a deck is opened, so the
     // deck's own first heading is waited for: it is drawn on the slide it opens
     // with, and again as the page's title.
-    // Waited for the second of them: the first is the page's own title, which
-    // is there before the deck is.
-    await waitFor(() => expect(screen.getAllByText(deck.title)).toHaveLength(2));
-    // Twice over as a heading, too: the page says which deck is open whatever
-    // slide the reader has reached, and the deck opens on its own name.
-    expect(screen.getAllByRole('heading', { level: 1 }).map((one) => one.textContent)).toContain(
-      deck.title
+    // The presenter and the deck are both fetched when a deck is opened, so the
+    // slides themselves are what the test waits for.
+    await waitFor(() =>
+      expect(document.querySelectorAll('.deck__slide')).toHaveLength(deck.slides)
     );
+    // The page says which deck is open whatever slide the reader has reached,
+    // and calls it what the deck said it was called.
+    expect(document.querySelector('.deck__head h1')).toHaveTextContent(deck.title);
   });
 
   test('say so rather than showing nothing when no file answers to the slug', () => {

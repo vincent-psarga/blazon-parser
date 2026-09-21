@@ -45,6 +45,31 @@ describe('the index of the decks', () => {
     ]);
   });
 
+  test('shows what a deck said it was about, for a reader choosing among them', () => {
+    mount(
+      <PresentationsPage
+        presentations={[{ ...deck(0, 'one', 'One'), summary: 'What it is about' }]}
+      />,
+      '/doc/presentations'
+    );
+    expect(screen.getByText('What it is about')).toBeInTheDocument();
+  });
+
+  test('says where and when a talk was given, where the deck said so', () => {
+    mount(
+      <PresentationsPage
+        presentations={[{ ...deck(0, 'one', 'One'), context: 'Somewhere', date: 'Some day' }]}
+      />,
+      '/doc/presentations'
+    );
+    expect(screen.getByText('Somewhere · Some day · 2 slides')).toBeInTheDocument();
+  });
+
+  test('announces no occasion for a deck that named none, and still says its length', () => {
+    mount(<PresentationsPage presentations={[deck(0, 'one', 'One')]} />, '/doc/presentations');
+    expect(screen.getByText('2 slides')).toBeInTheDocument();
+  });
+
   test('counts the slides the decks run to, a reader choosing one by its length', () => {
     mount(
       <PresentationsPage presentations={[deck(0, 'one', 'One'), deck(1, 'other', 'Other')]} />,

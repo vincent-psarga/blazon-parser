@@ -1,10 +1,14 @@
 import mdx from '@mdx-js/rollup';
+import remarkFrontmatter from 'remark-frontmatter';
 import { Plugin } from 'vite';
+import { footerOf, frontIn } from './utils/Frontmatter';
 
 /** As much of a markdown tree as the work below needs to know about. */
 interface Node {
   readonly type: string;
   readonly name?: string;
+  /** What a deck said about itself, on the one node that carries it. */
+  readonly value?: string;
 }
 
 interface Root extends Node {
@@ -19,11 +23,6 @@ function elementOf(name: string, children: Node[]): Node {
 /** What a deck writes to set something beside the rest of its slide. */
 function isSide(node: Node): boolean {
   return node.type === 'mdxJsxFlowElement' && node.name === 'Side';
-}
-
-/** What a deck writes around what it wants said under every slide. */
-function isFooter(node: Node): boolean {
-  return node.type === 'mdxJsxFlowElement' && node.name === 'Footer';
 }
 
 /** What a deck writes around things it means to say one after another. */
@@ -133,23 +132,37 @@ function paired(below: Node[]): Node[] {
  */
 function intoSlides() {
   return (tree: Root) => {
+    // What a deck said about itself is not a slide and is not cut into one: it
+    // is read, taken out, and answered for in the footer below.
+    const said = tree.children.find((node) => node.type === 'yaml');
+    const footer = footerIn(said);
+
     const slides: Node[][] = [[]];
     for (const node of tree.children) {
+      if (node.type === 'yaml') {
+        continue;
+      }
       if (node.type === 'thematicBreak') {
         slides.push([]);
       } else {
         slides[slides.length - 1]?.push(node);
       }
     }
-    // A footer says what the talk is rather than what a slide says, so it is
-    // written once, wherever it falls, and stands under every slide. Lifted out
-    // before a slide is set out, or the slide it was written in would take it
-    // for something it had to say.
-    const footer = slides.flat().filter(isFooter).slice(0, 1);
-    tree.children = slides
-      .map((slide) => slide.filter((node) => !isFooter(node)))
-      .map((slide) => elementOf('Slide', [...laidOut(slide), ...footer]));
+    tree.children = slides.map((slide) => elementOf('Slide', [...laidOut(slide), ...footer]));
   };
+}
+
+/**
+ * What stands under every slide, made of what the deck said about itself: where
+ * the talk was given and when.
+ *
+ * It is written here rather than by the deck because it is the same under every
+ * slide and true of none of them in particular — a deck that had to write it on
+ * each would be saying five times over what it means once.
+ */
+function footerIn(said: Node | undefined): Node[] {
+  const footer = footerOf(frontIn(said?.value));
+  return footer === undefined ? [] : [elementOf('Footer', [{ type: 'text', value: footer }])];
 }
 
 /**
@@ -157,10 +170,9 @@ function intoSlides() {
  *
  * A deck is written in MDX — markdown that may call a component by name — and
  * what comes out is ordinary JavaScript calling React's runtime, which
- * everything downstream already knows how to read. `Slide`, `Body`, `Rest` and
- * `Step` are among the names it calls, the cutting above having written them in,
- * and `Footer` is written once by a deck and called on every slide; the page
- * that shows a deck says what those names mean.
+ * everything downstream already knows how to read. `Slide`, `Body`, `Rest`,
+ * `Step` and `Footer` are among the names it calls, the cutting above having
+ * written them in; the page that shows a deck says what those names mean.
  *
  * A deck is imported twice, though: as itself, which is what draws it, and with
  * ?raw, which is the text the index reads its name and its length from. The
@@ -171,7 +183,9 @@ function intoSlides() {
  * test that opens a deck must be handed what the browser is handed.
  */
 export function decks(): Plugin {
-  const compiling = mdx({ remarkPlugins: [intoSlides] });
+  // Frontmatter first, so that the pair of rules a deck opens with is read as a
+  // deck talking about itself and never as an empty slide.
+  const compiling = mdx({ remarkPlugins: [remarkFrontmatter, intoSlides] });
 
   return {
     ...compiling,

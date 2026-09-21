@@ -40,6 +40,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router": "^7.18.3",
+    "remark-frontmatter": "^5.0.0",
     "reveal.js": "^6.0.2",
     "typescript": "^7.0.2",
     "vite": "^8.3.0",

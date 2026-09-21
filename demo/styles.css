@@ -949,6 +949,16 @@ body {
   color: var(--bone-quiet);
 }
 
+/* What a deck is about, in its own words. Prose rather than a tally, so it is
+   read at the strength prose is read at, and stands above the quieter line that
+   says where and when the talk was given. */
+.index__summary {
+  margin: 0;
+  max-width: var(--measure);
+  color: var(--bone);
+  text-wrap: pretty;
+}
+
 /* What the index turns to after the vocabulary. It is a step down from the page's
    own title and a step above the name it introduces, and says so by its size
    alone: there is no rule under it and no box around it. */

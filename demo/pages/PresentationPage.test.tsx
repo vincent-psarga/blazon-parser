@@ -149,21 +149,25 @@ describe('a deck, shown as slides', () => {
     expect(first?.querySelector('li')?.textContent).toBe('and this comes with it');
   });
 
-  test('says what the talk is under every slide, though a deck writes it once', async () => {
+  test('says under every slide where the talk was given and when', async () => {
     await opened();
+    // Said once, at the head of the file, and true of the talk rather than of
+    // any slide of it.
     const slides = [...document.querySelectorAll('.deck__slide')];
     expect(slides.map((slide) => slide.querySelector('.deck__footer')?.textContent)).toEqual(
-      slides.map(() => 'What the talk is')
+      slides.map(() => 'Somewhere · Some day')
     );
   });
 
-  test('keeps the footer out of what the slide it was written on says', async () => {
+  test('keeps what a deck said about itself out of the slides', async () => {
     await opened();
-    // Written on the last slide of the fixture and belonging to none of them:
-    // it is lifted out before a slide is set out, so no body swallows it.
-    const slide = slideSaying('What the talk is');
-    expect(slide?.querySelector('.deck__body')?.textContent).not.toContain('What the talk is');
-    expect(slide?.lastElementChild).toHaveClass('deck__footer');
+    // The block a deck opens with is the deck talking about itself: it is read,
+    // taken out, and never cut into a slide of its own.
+    const slides = [...document.querySelectorAll('.deck__slide')];
+    expect(slides).toHaveLength(DECK.slides);
+    for (const slide of slides) {
+      expect(slide.querySelector('.deck__body')?.textContent).not.toContain('Somewhere');
+    }
   });
 
   test('lays every slide out the same way, whether it sets anything aside or not', async () => {
