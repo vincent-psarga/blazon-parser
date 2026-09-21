@@ -27,23 +27,22 @@ const CONFIG: DeckProps['config'] = {
   controls: true,
   progress: true,
   slideNumber: 'c/t',
-  // What a slide holds sits in the middle of the room it has. A slide carries
-  // little and is read from a distance, and content pinned to the top edge of a
-  // wide frame reads as crowded against it. The two columns of a slide still
-  // begin at one height — they are compared line against line — but the block
-  // they make together is centred.
-  center: true,
+  // The presenter centres a slide whole, title and all, and a title that drifts
+  // down the frame with its content has stopped being where a title is looked
+  // for. The stylesheet sets the title at the top and the body in the middle of
+  // what is left, so the presenter is asked to leave the slide where it is.
+  center: false,
   transition: 'slide',
 };
 
 /**
  * One slide.
  *
- * What a slide holds is laid out in two columns when the build found something
- * set beside the rest of it, and spans them both when it did not — so a slide
- * that asked for nothing reads as it always did. The build has already paired
- * the two off and put them in the order they are to be read across, which leaves
- * nothing to decide here.
+ * A slide is a title and a body: the title stays at the top, where a title is
+ * looked for, and the body is set in the middle of the room the title leaves it.
+ * The build has already gathered the one and the other — and, within the body,
+ * paired off whatever was set aside with the rest of it, in the order the two
+ * are to be read across — which leaves nothing to decide here.
  */
 function DeckSlide({ children }: { readonly children?: ReactNode }) {
   return (

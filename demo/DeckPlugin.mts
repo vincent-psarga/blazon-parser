@@ -71,40 +71,47 @@ function titlesOf(children: Node[]): number {
 }
 
 /**
- * Sets a slide out, if it asked to be set out.
+ * Sets a slide out.
  *
- * A deck says what stands beside what by writing one of the two — the smaller,
- * usually, a set of arms or a figure — inside `<Side>`, and leaves the rest of
- * the slide as it would have written it anyway. Where it puts that `Side` is the
- * whole of the instruction:
+ * A slide is a title and a body, and they are wanted apart: a title is read
+ * where a title is looked for, at the top, while the body is set in the middle
+ * of whatever room the title leaves it. So the headings a slide opens with are
+ * left standing where they are and everything under them is gathered into one
+ * body, which is the thing the stylesheet then has to place.
  *
- *   - no Side at all, and the slide is one column as it always was;
+ * Within that body, a deck says what stands beside what by writing one of the
+ * two — the smaller, usually, a set of arms or a figure — inside `<Side>`, and
+ * leaves the rest as it would have written it anyway. Where it puts that `Side`
+ * is the whole of the instruction:
+ *
+ *   - no Side at all, and the body is one column as it always was;
  *   - a Side before anything else, and it stands to the left of the rest;
  *   - a Side after something, and it stands to the right of it.
  *
- * So the two are paired off here, into the side and the rest of the slide, and
- * written down in the order they are to be read across. The page that shows a
- * deck then has two things to lay out and no question to answer about them.
+ * So the two are paired off here and written down in the order they are to be
+ * read across. The page that shows a deck then has a title and a body to place,
+ * and no question to answer about either.
  *
  * A Side with nothing to stand beside is not a side at all, and is left where it
  * is to take the width like anything else.
  */
 function laidOut(all: Node[]): Node[] {
   const children = intoSteps(all);
-  const side = children.findIndex(isSide);
-  if (side === -1) {
-    return children;
-  }
   const titles = titlesOf(children);
-  const rest = children.filter((_, at) => at >= titles && at !== side);
-  if (rest.length === 0) {
-    return children;
+  const below = children.slice(titles);
+  return [...children.slice(0, titles), elementOf('Body', paired(below))];
+}
+
+/** The body of a slide, as one column or as a side and the rest of it. */
+function paired(below: Node[]): Node[] {
+  const side = below.findIndex(isSide);
+  const rest = below.filter((_, at) => at !== side);
+  if (side === -1 || rest.length === 0) {
+    return below;
   }
-  const paired =
-    side === titles
-      ? [children[side]!, elementOf('Rest', rest)]
-      : [elementOf('Rest', rest), children[side]!];
-  return [...children.slice(0, titles), ...paired];
+  return side === 0
+    ? [below[side]!, elementOf('Rest', rest)]
+    : [elementOf('Rest', rest), below[side]!];
 }
 
 /**
@@ -138,9 +145,9 @@ function intoSlides() {
  *
  * A deck is written in MDX — markdown that may call a component by name — and
  * what comes out is ordinary JavaScript calling React's runtime, which
- * everything downstream already knows how to read. `Slide`, `Rest` and `Step`
- * are among the names it calls, the cutting above having written them in; the
- * page that shows a deck says what those names mean.
+ * everything downstream already knows how to read. `Slide`, `Body`, `Rest` and
+ * `Step` are among the names it calls, the cutting above having written them in;
+ * the page that shows a deck says what those names mean.
  *
  * A deck is imported twice, though: as itself, which is what draws it, and with
  * ?raw, which is the text the index reads its name and its length from. The

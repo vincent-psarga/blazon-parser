@@ -21,7 +21,7 @@ const DECK: Presentation = {
 
 /** The two the build paired off, in the order they are to be read across. */
 const pairedIn = (slide: Element | undefined) =>
-  [...(slide?.children ?? [])]
+  [...(slide?.querySelector('.deck__body')?.children ?? [])]
     .filter((child) => child.className === 'deck__side' || child.className === 'deck__rest')
     .map((child) => child.className);
 
@@ -96,17 +96,24 @@ describe('a deck, shown as slides', () => {
   test('spans a slide with its title, whichever side the side is on', async () => {
     await opened();
     const slide = slideSaying('written before it');
-    // The title is neither of the two that were paired off: it stands above
-    // them, and a rule of the stylesheet gives it the width of both.
+    // The title is neither of the two that were paired off: it stands above the
+    // body they are in, and takes the width of the slide.
     expect(slide?.firstElementChild?.textContent).toBe('A side written before it');
     expect(slide?.firstElementChild?.className).not.toContain('deck__');
   });
 
-  test('sets what a slide holds in the middle of the room it has', async () => {
+  test('leaves a slide its title at the top and gathers the rest into a body', async () => {
     await opened();
-    // A slide carries little and is read from a distance: pinned to the top edge
-    // of a wide frame it reads as crowded against it.
-    expect(document.querySelector('.reveal')).toHaveClass('center');
+    const slide = slideSaying('written before it');
+    // The two are placed differently — the title where a title is looked for,
+    // the body in the middle of what the title leaves — so the build hands the
+    // stylesheet the two of them apart.
+    expect([...(slide?.children ?? [])].map((child) => child.tagName.toLowerCase())).toEqual([
+      'h2',
+      'div',
+    ]);
+    expect(slide?.lastElementChild).toHaveClass('deck__body');
+    expect(slide?.querySelector('.deck__body h2')).toBeNull();
   });
 
   test('leaves a slide that set nothing aside in one piece', async () => {

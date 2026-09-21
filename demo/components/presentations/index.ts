@@ -11,5 +11,6 @@
  * shared with the pages would end up serving neither.
  */
 export { Blazon } from './Blazon';
+export { Body } from './Body';
 export { Rest, Side } from './Side';
 export { Step, Steps } from './Steps';

@@ -1587,6 +1587,12 @@ body {
   text-align: left;
 }
 
+/* A slide takes the whole of the frame rather than only as much as it holds,
+   there being nothing to divide between a title and a body otherwise. */
+.deck .reveal .slides > section {
+  height: 100%;
+}
+
 /* Said again in full, because a slide stands inside a page of the demo and the
    page's own rule for a title would otherwise reach it: a slide's heading is
    read across a room and is not the page's. */
@@ -1729,15 +1735,33 @@ body {
  * everything else on a slide, so these are proportions of a slide and not pixels
  * on a screen.
  */
+/* A slide is a title and a body, and they are placed differently: the title sits
+   at the top, where a title is looked for, and the body takes everything below
+   it. A slide with no title is all body. */
 .deck__slide {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+  width: 100%;
+  /* A margin from the frame, so that nothing is read off the edge of it. Given
+     against the canvas the slides are drawn on, like every other length here. */
+  padding: 44px 56px;
+}
+
+/* The body is set in the middle of the room the title left it: a slide carries
+   little and is read from a distance, and content pinned to an edge of a wide
+   frame reads as crowded against it. */
+.deck__body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 64px;
+  align-content: center;
   width: 100%;
+  min-height: 0;
 }
 
-/* What was written plainly spans the slide, a title among it. */
-.deck__slide > * {
+/* What was written plainly spans the slide. */
+.deck__body > * {
   grid-column: 1 / -1;
   min-width: 0;
 }
@@ -1745,8 +1769,8 @@ body {
 /* The two that were paired off take a column apiece, in the order they stand in,
    and read from the same top edge: they are compared line against line, which
    they cannot be if one is set against the other's height. */
-.deck__slide > .deck__side,
-.deck__slide > .deck__rest {
+.deck__body > .deck__side,
+.deck__body > .deck__rest {
   grid-column: auto;
   align-self: start;
 }
