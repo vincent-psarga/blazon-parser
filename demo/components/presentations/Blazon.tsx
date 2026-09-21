@@ -50,6 +50,12 @@ export interface BlazonProps {
    * ladder has no rung for. It answers before the ladder does.
    */
   readonly width?: number;
+  /**
+   * Whether the words are said under the arms. They are unless the slide says
+   * not to: a slide showing what a bend is wants the shape and not a reading of
+   * it, and the blazon under every one of a row of arms is a wall of words
+   * nobody was asked to read.
+   */
   readonly showBlazon?: boolean;
 }
 
@@ -68,9 +74,23 @@ export interface BlazonProps {
  *
  * The words under the arms keep their own size whatever the arms do. They are
  * the evidence and not the claim, and a slide that enlarged them along with the
- * shield would be shouting its footnotes.
+ * shield would be shouting its footnotes. A slide that wants the shape alone
+ * leaves them off altogether:
+ *
+ *     <Blazon blazon={"d'argent à la bande de gueules"} size="xs" showBlazon={false} />
+ *
+ * The arms still answer to the blazon for anyone who cannot see them, a thing
+ * left unsaid on the screen being no reason to leave it unsaid to a reader; and
+ * a refusal is said whatever the slide asked for, there being nothing else to
+ * show when the parser could read nothing.
  */
-export function Blazon({ blazon, language = 'french', size = 'm', width }: BlazonProps) {
+export function Blazon({
+  blazon,
+  language = 'french',
+  size = 'm',
+  width,
+  showBlazon = true,
+}: BlazonProps) {
   const spoken = SPOKEN[language.toLowerCase()] ?? 'fr';
   const other = otherThan(spoken);
   const read = useMemo(() => readBlazon(blazon, spoken), [blazon, spoken]);
@@ -85,14 +105,16 @@ export function Blazon({ blazon, language = 'french', size = 'm', width }: Blazo
       ) : (
         <p className="slide-blazon__refused">Refused: {read.refused}</p>
       )}
-      <figcaption>
-        <p lang={spoken}>{blazon}</p>
-        {'blazon' in read && (
-          <p className="slide-blazon__abroad" lang={other}>
-            {LANGUAGES[other].writer.write(read.blazon)}
-          </p>
-        )}
-      </figcaption>
+      {showBlazon && (
+        <figcaption>
+          <p lang={spoken}>{blazon}</p>
+          {'blazon' in read && (
+            <p className="slide-blazon__abroad" lang={other}>
+              {LANGUAGES[other].writer.write(read.blazon)}
+            </p>
+          )}
+        </figcaption>
+      )}
     </figure>
   );
 }

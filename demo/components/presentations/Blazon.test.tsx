@@ -73,6 +73,31 @@ describe('a blazon on a slide', () => {
     expect(screen.getByRole('img', { name: 'de gueules' })).toHaveAttribute('width', '260');
   });
 
+  test('leaves the words off when the slide asked for the shape alone', () => {
+    render(<Blazon blazon="d'or au sautoir de gueules" language="french" showBlazon={false} />);
+    expect(screen.queryByText("d'or au sautoir de gueules")).toBeNull();
+    expect(screen.queryByText('Or a saltire gules.')).toBeNull();
+    expect(screen.getByRole('img')).toBeInTheDocument();
+  });
+
+  test('still answers to the blazon for whoever cannot see the arms', () => {
+    render(<Blazon blazon="d'or au sautoir de gueules" language="french" showBlazon={false} />);
+    // Left off the screen is not left unsaid: the arms carry the words for a
+    // reader who is not looking at them.
+    expect(screen.getByRole('img', { name: "d'or au sautoir de gueules" })).toBeInTheDocument();
+  });
+
+  test('says the words unless the slide says not to', () => {
+    render(<Blazon blazon="d'or au sautoir de gueules" language="french" />);
+    expect(screen.getByText("d'or au sautoir de gueules")).toBeInTheDocument();
+    expect(screen.getByText('Or a saltire gules.')).toBeInTheDocument();
+  });
+
+  test('says a refusal whatever the slide asked for, there being nothing else to show', () => {
+    render(<Blazon blazon="d'azur à la licorne" language="french" showBlazon={false} />);
+    expect(screen.getByText(/Refused:/)).toBeInTheDocument();
+  });
+
   test('says a refusal on the slide rather than drawing nothing', () => {
     render(<Blazon blazon="d'azur à la licorne" language="french" />);
     expect(screen.getByText(/Refused:/)).toBeInTheDocument();
