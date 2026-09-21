@@ -27,10 +27,12 @@ const CONFIG: DeckProps['config'] = {
   controls: true,
   progress: true,
   slideNumber: 'c/t',
-  // Read from the top, as the pages of the demo are: a slide set out in two
-  // columns is read across, and centring it would set one against the other's
-  // height.
-  center: false,
+  // What a slide holds sits in the middle of the room it has. A slide carries
+  // little and is read from a distance, and content pinned to the top edge of a
+  // wide frame reads as crowded against it. The two columns of a slide still
+  // begin at one height — they are compared line against line — but the block
+  // they make together is centred.
+  center: true,
   transition: 'slide',
 };
 

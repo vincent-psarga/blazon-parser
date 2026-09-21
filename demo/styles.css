@@ -1627,7 +1627,11 @@ body {
 }
 
 .deck .reveal li {
-  margin-bottom: 0.4em;
+  margin-bottom: 0.5em;
+}
+
+.deck .reveal li:last-child {
+  margin-bottom: 0;
 }
 
 .deck .reveal li::marker {
@@ -1729,7 +1733,6 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 64px;
-  align-content: start;
   width: 100%;
 }
 
@@ -1756,17 +1759,21 @@ body {
 }
 
 /* A step is a box of its own, whatever it holds: it is shown and hidden whole,
-   and something with no box of its own cannot be. */
+   and something with no box of its own cannot be. What it holds is one thing
+   said in several blocks, so those keep the closer spacing. */
 .deck__step {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: 0.4em;
 }
 
+/* The gap here falls between one thing and the next thing — between the steps of
+   a slide said in parts, or between what a column holds — so it is the wider of
+   the two: what is written apart is read apart. */
 .deck__side,
 .deck__rest {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: 0.9em;
   min-width: 0;
 }

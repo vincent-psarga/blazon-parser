@@ -102,6 +102,13 @@ describe('a deck, shown as slides', () => {
     expect(slide?.firstElementChild?.className).not.toContain('deck__');
   });
 
+  test('sets what a slide holds in the middle of the room it has', async () => {
+    await opened();
+    // A slide carries little and is read from a distance: pinned to the top edge
+    // of a wide frame it reads as crowded against it.
+    expect(document.querySelector('.reveal')).toHaveClass('center');
+  });
+
   test('leaves a slide that set nothing aside in one piece', async () => {
     await opened();
     const slide = slideSaying('One thing');
