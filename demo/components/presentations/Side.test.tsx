@@ -13,8 +13,8 @@ describe('what a slide sets aside', () => {
         <Rest>What they are about</Rest>
       </>
     );
-    expect(container.querySelector('.slide__side')?.textContent).toBe('Some arms');
-    expect(container.querySelector('.slide__rest')?.textContent).toBe('What they are about');
+    expect(container.querySelector('.deck__side')?.textContent).toBe('Some arms');
+    expect(container.querySelector('.deck__rest')?.textContent).toBe('What they are about');
   });
 
   test('holds more than a line, a side being a stretch of a deck', () => {

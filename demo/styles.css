@@ -1550,17 +1550,134 @@ body {
  * sixteen by nine — and never grows past the room the window has left.
  */
 .deck {
-  /* Exactly sixteen by nine, and never taller than the room the window has
-     left: a box of any other shape is filled with bars the deck draws itself. */
+  /* Exactly sixteen by nine, which is the shape of the canvas the slides are
+     drawn against, and never taller than the room the window has left. */
   width: min(100%, (100vh - 12rem) * 16 / 9);
   aspect-ratio: 16 / 9;
   margin-inline: auto;
   border: 1px solid rgb(var(--gauze) / 0.35);
+  background: var(--void-lift);
   /* A slide is turned by sliding the next one in over the last, which is a wide
      gesture: the box is told to keep its paint to itself so that none of it is
      seen crossing the page outside the frame. */
   overflow: hidden;
   contain: paint;
+}
+
+/*
+ * The presenter draws the slides and lays them out; everything they are made of
+ * is dressed here, where the rest of the demo's look also lives. The sizes are
+ * given against the canvas the slides are drawn on — 1366 by 768, scaled into
+ * whatever room the box above leaves — so they are proportions of a slide and
+ * not pixels on a screen.
+ */
+.deck .reveal {
+  width: 100%;
+  height: 100%;
+  font-family: var(--prose);
+  font-size: 32px;
+  line-height: 1.4;
+  color: var(--bone);
+  /* The presenter paints its own ground white, having no theme of ours loaded.
+     The box above is the ground. */
+  background-color: transparent;
+}
+
+.deck .reveal .slides {
+  text-align: left;
+}
+
+/* Said again in full, because a slide stands inside a page of the demo and the
+   page's own rule for a title would otherwise reach it: a slide's heading is
+   read across a room and is not the page's. */
+.deck .reveal h1,
+.deck .reveal h2,
+.deck .reveal h3 {
+  margin: 0 0 0.6em;
+  font-family: var(--display);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  text-align: center;
+  text-wrap: balance;
+  color: rgb(var(--gauze));
+}
+
+.deck .reveal h1 {
+  font-size: 64px;
+}
+
+.deck .reveal h2 {
+  font-size: 48px;
+}
+
+.deck .reveal h3 {
+  font-size: 40px;
+}
+
+.deck .reveal p {
+  margin: 0 0 0.5em;
+}
+
+.deck .reveal ul,
+.deck .reveal ol {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.deck .reveal li {
+  margin-bottom: 0.4em;
+}
+
+.deck .reveal li::marker {
+  color: rgb(var(--gauze) / 0.9);
+}
+
+/* A quoted authority is set apart by a rule down its side rather than by a box:
+   this world frames nothing. */
+.deck .reveal blockquote {
+  margin: 0;
+  padding-left: 0.8em;
+  border-left: 3px solid rgb(var(--gauze) / 0.6);
+  font-size: 30px;
+  font-style: normal;
+  color: var(--bone);
+}
+
+.deck .reveal blockquote p:last-child {
+  margin-bottom: 0;
+  color: var(--bone-quiet);
+}
+
+.deck .reveal a {
+  color: rgb(var(--gauze));
+  text-decoration: none;
+  border-bottom: 1px solid rgb(var(--gauze) / 0.5);
+}
+
+.deck .reveal code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+}
+
+/* The presenter's own furniture: kept quiet, a deck being read and not driven. */
+.deck .reveal .controls {
+  color: rgb(var(--gauze) / 0.8);
+}
+
+.deck .reveal .progress {
+  height: 3px;
+  color: rgb(var(--gauze));
+  background: rgb(var(--gauze) / 0.15);
+}
+
+.deck .reveal .slide-number {
+  padding: 0.3em 0.6em;
+  font-family: var(--display);
+  font-size: 16px;
+  color: var(--bone-quiet);
+  background: transparent;
 }
 
 /*
@@ -1608,7 +1725,7 @@ body {
  * everything else on a slide, so these are proportions of a slide and not pixels
  * on a screen.
  */
-.slide {
+.deck__slide {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 64px;
@@ -1617,7 +1734,7 @@ body {
 }
 
 /* What was written plainly spans the slide, a title among it. */
-.slide > * {
+.deck__slide > * {
   grid-column: 1 / -1;
   min-width: 0;
 }
@@ -1625,14 +1742,14 @@ body {
 /* The two that were paired off take a column apiece, in the order they stand in,
    and read from the same top edge: they are compared line against line, which
    they cannot be if one is set against the other's height. */
-.slide > .slide__side,
-.slide > .slide__rest {
+.deck__slide > .deck__side,
+.deck__slide > .deck__rest {
   grid-column: auto;
   align-self: start;
 }
 
-.slide__side,
-.slide__rest {
+.deck__side,
+.deck__rest {
   display: flex;
   flex-direction: column;
   gap: 0.5em;

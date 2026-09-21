@@ -22,11 +22,13 @@ const DECK: Presentation = {
 /** The two the build paired off, in the order they are to be read across. */
 const pairedIn = (slide: Element | undefined) =>
   [...(slide?.children ?? [])]
-    .filter((child) => child.className === 'slide__side' || child.className === 'slide__rest')
+    .filter((child) => child.className === 'deck__side' || child.className === 'deck__rest')
     .map((child) => child.className);
 
 const slideSaying = (words: string) =>
-  [...document.querySelectorAll('.slide')].find((slide) => slide.textContent?.includes(words));
+  [...document.querySelectorAll('.deck__slide')].find((slide) =>
+    slide.textContent?.includes(words)
+  );
 
 const opened = async () => {
   mount(<PresentationPage presentation={DECK} />, '/doc/presentations/a-deck');
@@ -35,9 +37,9 @@ const opened = async () => {
 };
 
 describe('a deck, shown as slides', () => {
-  test('says which deck is open, the first slide being a slide like any other', async () => {
+  test('says which deck is open, whatever slide the reader has reached', async () => {
     await opened();
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('A deck');
+    expect(document.querySelector('.deck__head h1')).toHaveTextContent('A deck');
   });
 
   test('leads back to the whole list, a deck being a page a reader arrives at', async () => {
@@ -70,8 +72,8 @@ describe('a deck, shown as slides', () => {
 
   test('sets what a slide put aside beside the rest of it, markdown and all', async () => {
     await opened();
-    const side = document.querySelector('.slide__side');
-    const rest = side?.parentElement?.querySelector('.slide__rest');
+    const side = document.querySelector('.deck__side');
+    const rest = side?.parentElement?.querySelector('.deck__rest');
     expect(side?.textContent).toContain('Beside what was written first');
     expect(rest?.textContent).toContain('a list, which begins two spaces in');
   });
@@ -81,14 +83,14 @@ describe('a deck, shown as slides', () => {
     // The two are read across in the order they are written down, so which side
     // a side is on is which of the two the build put first.
     expect(pairedIn(slideSaying('written after what it stands beside'))).toEqual([
-      'slide__rest',
-      'slide__side',
+      'deck__rest',
+      'deck__side',
     ]);
   });
 
   test('puts a side written before what it stands beside on the left of it', async () => {
     await opened();
-    expect(pairedIn(slideSaying('written before it'))).toEqual(['slide__side', 'slide__rest']);
+    expect(pairedIn(slideSaying('written before it'))).toEqual(['deck__side', 'deck__rest']);
   });
 
   test('spans a slide with its title, whichever side the side is on', async () => {
@@ -97,18 +99,18 @@ describe('a deck, shown as slides', () => {
     // The title is neither of the two that were paired off: it stands above
     // them, and a rule of the stylesheet gives it the width of both.
     expect(slide?.firstElementChild?.textContent).toBe('A side written before it');
-    expect(slide?.firstElementChild?.className).not.toContain('slide__');
+    expect(slide?.firstElementChild?.className).not.toContain('deck__');
   });
 
   test('leaves a slide that set nothing aside in one piece', async () => {
     await opened();
     const slide = slideSaying('One thing');
-    expect(slide?.querySelector('.slide__side')).toBeNull();
-    expect(slide?.querySelector('.slide__rest')).toBeNull();
+    expect(slide?.querySelector('.deck__side')).toBeNull();
+    expect(slide?.querySelector('.deck__rest')).toBeNull();
   });
 
   test('lays every slide out the same way, whether it sets anything aside or not', async () => {
     await opened();
-    expect(document.querySelectorAll('.slide')).toHaveLength(DECK.slides);
+    expect(document.querySelectorAll('.deck__slide')).toHaveLength(DECK.slides);
   });
 });

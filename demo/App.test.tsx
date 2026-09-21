@@ -267,7 +267,11 @@ describe('the presentations', () => {
     // Waited for the second of them: the first is the page's own title, which
     // is there before the deck is.
     await waitFor(() => expect(screen.getAllByText(deck.title)).toHaveLength(2));
-    expect(heading()).toBe(deck.title);
+    // Twice over as a heading, too: the page says which deck is open whatever
+    // slide the reader has reached, and the deck opens on its own name.
+    expect(screen.getAllByRole('heading', { level: 1 }).map((one) => one.textContent)).toContain(
+      deck.title
+    );
   });
 
   test('say so rather than showing nothing when no file answers to the slug', () => {

@@ -32,7 +32,7 @@ export interface SideProps {
  * what tells MDX to read it as markdown.
  */
 export function Side({ children }: SideProps) {
-  return <div className="slide__side">{children}</div>;
+  return <div className="deck__side">{children}</div>;
 }
 
 /**
@@ -43,5 +43,5 @@ export function Side({ children }: SideProps) {
  * its own slide is.
  */
 export function Rest({ children }: SideProps) {
-  return <div className="slide__rest">{children}</div>;
+  return <div className="deck__rest">{children}</div>;
 }
