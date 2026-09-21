@@ -1498,3 +1498,143 @@ body {
 .showing__fields img {
   animation: strike 460ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* ─ a deck, shown as slides ──────────────────────────────────────────────── */
+
+/*
+ * The deck is a page of the demo and not a takeover of the window: the rail
+ * stays where it is, the title says which deck is open, and the slides get the
+ * room left over. The page itself does not scroll — slides are turned, not
+ * scrolled past — so it is held to the height of the window.
+ */
+.plane--deck {
+  padding-bottom: clamp(1.5rem, 4vw, 2.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: calc(100vh - 4.5rem);
+}
+
+.deck__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem 2rem;
+}
+
+/* A step down from a page's own title: the deck's first slide says the name
+   again, in full, and two full-sized titles above one another is one too many. */
+.plane--deck h1 {
+  font-size: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.deck__head a {
+  font-family: var(--display);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+  text-decoration: none;
+  transition: color 140ms linear;
+}
+
+.deck__head a:hover,
+.deck__head a:focus-visible {
+  color: var(--strike);
+}
+
+/*
+ * The slides are drawn on a fixed canvas and scaled into whatever box they are
+ * given, so the box is what decides their size. It keeps the deck's own shape —
+ * sixteen by nine — and never grows past the room the window has left.
+ */
+.deck {
+  /* Exactly sixteen by nine, and never taller than the room the window has
+     left: a box of any other shape is filled with bars the deck draws itself. */
+  width: min(100%, (100vh - 12rem) * 16 / 9);
+  aspect-ratio: 16 / 9;
+  margin-inline: auto;
+  border: 1px solid rgb(var(--gauze) / 0.35);
+  /* A slide is turned by sliding the next one in over the last, which is a wide
+     gesture: the box is told to keep its paint to itself so that none of it is
+     seen crossing the page outside the frame. */
+  overflow: hidden;
+  contain: paint;
+}
+
+/*
+ * A blazon on a slide: the arms, the words that named them, and the same words
+ * in the other tongue. Sized against Spectacle's own canvas, which is scaled
+ * into the deck's box, so these are proportions of a slide and not pixels on a
+ * screen.
+ */
+.slide-blazon {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.slide-blazon figcaption {
+  text-align: center;
+}
+
+.slide-blazon figcaption p {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.3;
+}
+
+/* The translation is the answer to the blazon above it, and reads as an answer:
+   a step quieter, and in the gold the deck says its headings in. */
+.slide-blazon__abroad {
+  color: #c79a4e;
+}
+
+.slide-blazon__refused {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 24px;
+  color: #97a3b3;
+}
+
+/*
+ * A slide is one column until something is set beside the rest of it, and two
+ * when something is: the build pairs the side off with the rest and writes them
+ * down in the order they are to be read across, so the laying out is only ever
+ * a matter of giving each a column. Sized against Spectacle's canvas like
+ * everything else on a slide, so these are proportions of a slide and not pixels
+ * on a screen.
+ */
+.slide {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 64px;
+  align-content: start;
+  width: 100%;
+}
+
+/* What was written plainly spans the slide, a title among it. */
+.slide > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* The two that were paired off take a column apiece, in the order they stand in,
+   and read from the same top edge: they are compared line against line, which
+   they cannot be if one is set against the other's height. */
+.slide > .slide__side,
+.slide > .slide__rest {
+  grid-column: auto;
+  align-self: start;
+}
+
+.slide__side,
+.slide__rest {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  min-width: 0;
+}

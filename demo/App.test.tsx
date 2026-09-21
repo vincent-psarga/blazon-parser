@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { App } from './App';
+import { PRESENTATIONS } from './utils/Presentations';
 
 beforeEach(() => window.history.pushState(null, '', '/'));
 afterEach(cleanup);
@@ -37,7 +38,13 @@ describe('the rail', () => {
   test('offers the index alongside every page when opened', async () => {
     render(<App />);
     await openDoc();
-    for (const name of ['Everything', 'French vocabulary', 'English vocabulary', 'Conventions']) {
+    for (const name of [
+      'Everything',
+      'French vocabulary',
+      'English vocabulary',
+      'Conventions',
+      'Presentations',
+    ]) {
       expect(inMenu(name)).toBeInTheDocument();
     }
   });
@@ -47,6 +54,7 @@ describe('the rail', () => {
     ['French vocabulary', 'The French vocabulary', '/doc/vocabulary/fr'],
     ['English vocabulary', 'The English vocabulary', '/doc/vocabulary/en'],
     ['Conventions', 'Conventions', '/doc/conventions'],
+    ['Presentations', 'Presentations', '/doc/presentations'],
   ])('goes to %s', async (link, title, path) => {
     render(<App />);
     await openDoc();
@@ -229,6 +237,41 @@ describe('the armorials', () => {
 
   test('say so rather than showing nothing when no armorial answers to the slug', () => {
     window.history.pushState(null, '', '/armorial/nowhere');
+    render(<App />);
+    expect(heading()).toBe('Nothing here');
+  });
+});
+
+describe('the presentations', () => {
+  // Taken from the directory rather than written out: the decks are content, and
+  // a test that spells one out goes red when somebody rewrites a slide.
+  const deck = PRESENTATIONS[0]!;
+
+  test('list the decks kept beside the demo', () => {
+    window.history.pushState(null, '', '/doc/presentations');
+    render(<App />);
+    expect(heading()).toBe('Presentations');
+    const index = screen.getByRole('navigation', { name: 'Presentations' });
+    expect(within(index).getByRole('link', { name: new RegExp(deck.title) })).toHaveAttribute(
+      'href',
+      `/doc/presentations/${deck.slug}`
+    );
+  });
+
+  test('show the deck named in the address as slides', async () => {
+    window.history.pushState(null, '', `/doc/presentations/${deck.slug}`);
+    render(<App />);
+    // The presenter and the deck are both fetched when a deck is opened, so the
+    // deck's own first heading is waited for: it is drawn on the slide it opens
+    // with, and again as the page's title.
+    // Waited for the second of them: the first is the page's own title, which
+    // is there before the deck is.
+    await waitFor(() => expect(screen.getAllByText(deck.title)).toHaveLength(2));
+    expect(heading()).toBe(deck.title);
+  });
+
+  test('say so rather than showing nothing when no file answers to the slug', () => {
+    window.history.pushState(null, '', '/doc/presentations/a-deck-nobody-wrote');
     render(<App />);
     expect(heading()).toBe('Nothing here');
   });
