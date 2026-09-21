@@ -12,5 +12,6 @@
  */
 export { Blazon } from './Blazon';
 export { Body } from './Body';
+export { Footer } from './Footer';
 export { Rest, Side } from './Side';
 export { Step, Steps } from './Steps';

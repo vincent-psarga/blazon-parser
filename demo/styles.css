@@ -1735,17 +1735,31 @@ body {
  * everything else on a slide, so these are proportions of a slide and not pixels
  * on a screen.
  */
-/* A slide is a title and a body, and they are placed differently: the title sits
-   at the top, where a title is looked for, and the body takes everything below
-   it. A slide with no title is all body. */
+/* A slide is a title, a body and whatever the talk says under every slide, and
+   the three are placed differently: the title sits at the top, where a title is
+   looked for, the footer at the foot, and the body takes all the room between
+   them. A slide with no title is all body, and one with no footer gives the row
+   no height. */
 .deck__slide {
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto 1fr auto;
   height: 100%;
   width: 100%;
   /* A margin from the frame, so that nothing is read off the edge of it. Given
      against the canvas the slides are drawn on, like every other length here. */
   padding: 44px 56px;
+}
+
+/* What the talk is rather than what the slide says, so it is set apart from both
+   and kept quiet: the reader who wants it knows where to look, and nobody else
+   is made to read it twice. It stands clear of the presenter's own furniture,
+   which keeps to the other corner. */
+.deck__footer {
+  align-self: end;
+  font-family: var(--display);
+  font-size: 18px;
+  letter-spacing: 0.06em;
+  color: var(--bone-quiet);
 }
 
 /* The body is set in the middle of the room the title left it: a slide carries

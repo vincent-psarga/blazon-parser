@@ -21,6 +21,11 @@ function isSide(node: Node): boolean {
   return node.type === 'mdxJsxFlowElement' && node.name === 'Side';
 }
 
+/** What a deck writes around what it wants said under every slide. */
+function isFooter(node: Node): boolean {
+  return node.type === 'mdxJsxFlowElement' && node.name === 'Footer';
+}
+
 /** What a deck writes around things it means to say one after another. */
 function isSteps(node: Node): boolean {
   return node.type === 'mdxJsxFlowElement' && node.name === 'Steps';
@@ -136,7 +141,14 @@ function intoSlides() {
         slides[slides.length - 1]?.push(node);
       }
     }
-    tree.children = slides.map((slide) => elementOf('Slide', laidOut(slide)));
+    // A footer says what the talk is rather than what a slide says, so it is
+    // written once, wherever it falls, and stands under every slide. Lifted out
+    // before a slide is set out, or the slide it was written in would take it
+    // for something it had to say.
+    const footer = slides.flat().filter(isFooter).slice(0, 1);
+    tree.children = slides
+      .map((slide) => slide.filter((node) => !isFooter(node)))
+      .map((slide) => elementOf('Slide', [...laidOut(slide), ...footer]));
   };
 }
 
@@ -146,8 +158,9 @@ function intoSlides() {
  * A deck is written in MDX — markdown that may call a component by name — and
  * what comes out is ordinary JavaScript calling React's runtime, which
  * everything downstream already knows how to read. `Slide`, `Body`, `Rest` and
- * `Step` are among the names it calls, the cutting above having written them in;
- * the page that shows a deck says what those names mean.
+ * `Step` are among the names it calls, the cutting above having written them in,
+ * and `Footer` is written once by a deck and called on every slide; the page
+ * that shows a deck says what those names mean.
  *
  * A deck is imported twice, though: as itself, which is what draws it, and with
  * ?raw, which is the text the index reads its name and its length from. The

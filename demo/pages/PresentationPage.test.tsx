@@ -105,14 +105,15 @@ describe('a deck, shown as slides', () => {
   test('leaves a slide its title at the top and gathers the rest into a body', async () => {
     await opened();
     const slide = slideSaying('written before it');
-    // The two are placed differently — the title where a title is looked for,
-    // the body in the middle of what the title leaves — so the build hands the
-    // stylesheet the two of them apart.
+    // The parts of a slide are placed differently — the title where a title is
+    // looked for, the body in the middle of what the title leaves, the footer at
+    // the foot — so the build hands the stylesheet each of them apart.
     expect([...(slide?.children ?? [])].map((child) => child.tagName.toLowerCase())).toEqual([
       'h2',
       'div',
+      'footer',
     ]);
-    expect(slide?.lastElementChild).toHaveClass('deck__body');
+    expect(slide?.querySelector('.deck__body')).toBe(slide?.children[1]);
     expect(slide?.querySelector('.deck__body h2')).toBeNull();
   });
 
@@ -146,6 +147,23 @@ describe('a deck, shown as slides', () => {
     // way a rule ends a slide.
     expect(first?.querySelector('p')?.textContent).toBe('Said on arrival:');
     expect(first?.querySelector('li')?.textContent).toBe('and this comes with it');
+  });
+
+  test('says what the talk is under every slide, though a deck writes it once', async () => {
+    await opened();
+    const slides = [...document.querySelectorAll('.deck__slide')];
+    expect(slides.map((slide) => slide.querySelector('.deck__footer')?.textContent)).toEqual(
+      slides.map(() => 'What the talk is')
+    );
+  });
+
+  test('keeps the footer out of what the slide it was written on says', async () => {
+    await opened();
+    // Written on the last slide of the fixture and belonging to none of them:
+    // it is lifted out before a slide is set out, so no body swallows it.
+    const slide = slideSaying('What the talk is');
+    expect(slide?.querySelector('.deck__body')?.textContent).not.toContain('What the talk is');
+    expect(slide?.lastElementChild).toHaveClass('deck__footer');
   });
 
   test('lays every slide out the same way, whether it sets anything aside or not', async () => {
