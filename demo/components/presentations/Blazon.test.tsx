@@ -39,6 +39,40 @@ describe('a blazon on a slide', () => {
     expect(screen.getByText('Gules.')).toBeInTheDocument();
   });
 
+  test('draws the arms middling when the slide asks for no size', () => {
+    render(<Blazon blazon="de gueules" />);
+    expect(screen.getByRole('img', { name: 'de gueules' })).toHaveAttribute('width', '260');
+  });
+
+  test.each([
+    ['xs', '120'],
+    ['sm', '180'],
+    ['m', '260'],
+    ['lg', '340'],
+    ['xl', '420'],
+  ] as const)('draws them at the %s the slide asked for', (size, width) => {
+    render(<Blazon blazon="de gueules" size={size} />);
+    expect(screen.getByRole('img', { name: 'de gueules' })).toHaveAttribute('width', width);
+  });
+
+  test('keeps the arms in shape whatever size they are drawn at', () => {
+    render(<Blazon blazon="de gueules" size="xl" />);
+    const arms = screen.getByRole('img', { name: 'de gueules' });
+    // A shield is taller than it is wide, by the same reckoning at every size.
+    expect(Number(arms.getAttribute('height'))).toBe(Math.round(420 * (240 / 200)));
+  });
+
+  test('answers an exact width before the ladder does, for the slide that wants one', () => {
+    render(<Blazon blazon="de gueules" size="xs" width={500} />);
+    expect(screen.getByRole('img', { name: 'de gueules' })).toHaveAttribute('width', '500');
+  });
+
+  test('draws them middling when asked for a size the ladder has no rung for', () => {
+    // A mistyped size should cost a slide its emphasis and not its arms.
+    render(<Blazon blazon="de gueules" size={'enormous' as 'xl'} />);
+    expect(screen.getByRole('img', { name: 'de gueules' })).toHaveAttribute('width', '260');
+  });
+
   test('says a refusal on the slide rather than drawing nothing', () => {
     render(<Blazon blazon="d'azur à la licorne" language="french" />);
     expect(screen.getByText(/Refused:/)).toBeInTheDocument();
