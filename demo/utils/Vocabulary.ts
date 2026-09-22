@@ -2,10 +2,10 @@ import { EnglishBlazonWording } from '../../src/application/english/EnglishBlazo
 import { FrenchBlazonWording } from '../../src/application/french/FrenchBlazonWording';
 import { sownIn } from '../../src/application/french/FrenchGrammar';
 import { BlazonWording, writeBlazon } from '../../src/application/writer/BlazonWording';
-import { Blazon } from '../../src/domain/models/Blazon';
+import { Blazon, ChargeOrOrdinary } from '../../src/domain/models/Blazon';
 import { ChargeType, allowsModifier, modifiersOf } from '../../src/domain/models/Charge';
 import { Modifier } from '../../src/domain/models/Modifier';
-import { VariationType, usualPieces } from '../../src/domain/models/Field';
+import { DivisionType, FurType, VariationType, usualPieces } from '../../src/domain/models/Field';
 import { OrdinaryDefinitions, OrdinaryType } from '../../src/domain/models/Ordinary';
 import { COLOURS, Colours, Metals, Tincture, isFur } from '../../src/domain/models/Tinctures';
 import { counted } from '../../src/domain/translations/Numbers';
@@ -27,20 +27,44 @@ import { LanguageCode } from './Languages';
 import { readBlazon } from './Reading';
 
 /**
- * The rank a word belongs to, which is the only thing that can tell two
- * identical spellings apart: a word is a charge or a band or a tincture, and
- * nothing about the spelling says which.
+ * A term, under the rank it is a term of.
+ *
+ * The rank is the only thing that can tell two identical spellings apart — a
+ * word is a charge or a band or a tincture, and nothing about the spelling says
+ * which — and it is the only thing that can say what the term is, the model
+ * keeping a vocabulary of its own for each rank. So the two are paired here
+ * rather than a rank being carried beside a term that could have come from any
+ * of them: say the rank and the term is known, which is what lets a page ask
+ * the model about a word without first swearing to what it is.
+ *
+ * Two ranks share a vocabulary and neither is the other: a charge is strewn over
+ * a field, so a strewing is named after a ChargeType, but the word that sows it
+ * is not the word that bears it and the two are shown differently.
+ *
+ * The field's own two are not terms of the model at all — a plain field and a
+ * sown one are things a tongue has a word for rather than figures — so they are
+ * named here and nowhere else.
  */
-export type Rank =
-  | 'tincture'
-  | 'division'
-  | 'variation'
-  | 'furred field'
-  | 'ordinary'
-  | 'charge'
-  | 'modifier'
-  | 'strewing'
-  | 'field';
+export type Ranked =
+  | { readonly rank: 'tincture'; readonly term: Tincture }
+  | { readonly rank: 'division'; readonly term: DivisionType }
+  | { readonly rank: 'variation'; readonly term: VariationType }
+  | { readonly rank: 'furred field'; readonly term: FurType }
+  | { readonly rank: 'ordinary'; readonly term: OrdinaryType }
+  | { readonly rank: 'charge'; readonly term: ChargeType }
+  | { readonly rank: 'modifier'; readonly term: Modifier }
+  | { readonly rank: 'strewing'; readonly term: ChargeType }
+  | { readonly rank: 'field'; readonly term: typeof PLAIN_TERM | typeof SOWN_TERM };
+
+/**
+ * The rank a word belongs to, read off the pairing rather than written down
+ * twice: a rank with no term to go with it would be a rank the page can show
+ * and the model cannot be asked about.
+ */
+export type Rank = Ranked['rank'];
+
+/** What a term is, under a given rank. */
+type TermOf<R extends Rank> = Extract<Ranked, { rank: R }>['term'];
 
 /** A word elsewhere in the vocabulary, and the way to it. */
 export interface Sighting {
@@ -172,12 +196,16 @@ function saidBy<W extends Word>(
   return won.length === 0 ? borne : won;
 }
 
-/** One term as one tongue spells it, which may be several words. */
-interface Sense<W extends Word = Word> {
-  readonly rank: Rank;
-  readonly term: string;
+/**
+ * One term as one tongue spells it, which may be several words.
+ *
+ * The rank and the term travel together, so asking the rank says what the term
+ * is: a sense of rank 'ordinary' carries an OrdinaryType, and the page can hand
+ * it to the model's own record of the ordinaries without asserting anything.
+ */
+type Sense<W extends Word = Word> = Ranked & {
   readonly words: readonly W[];
-}
+};
 
 /**
  * What one tongue contributes to the page.
@@ -228,20 +256,29 @@ function sensesOf<W extends Word>(tongue: Tongue<W>): readonly Sense<W>[] {
     ...strewn(wording.strewings),
     ...(tongue.plain === undefined
       ? []
-      : [{ rank: 'field' as const, term: PLAIN_TERM, words: [tongue.plain] }]),
-    { rank: 'field', term: SOWN_TERM, words: tongue.sown },
+      : [{ rank: 'field', term: PLAIN_TERM, words: [tongue.plain] } satisfies Sense<W>]),
+    { rank: 'field', term: SOWN_TERM, words: tongue.sown } satisfies Sense<W>,
   ];
 }
 
-function spelled<T extends string, W extends Word>(
-  rank: Rank,
-  translation: Translation<T, W>
+/**
+ * The senses of one rank, read off the vocabulary that rank is kept in.
+ *
+ * The rank names which vocabulary is owed — 'ordinary' takes the ordinaries and
+ * nothing else — so a rank paired with the wrong vocabulary is a compiler error
+ * rather than a page quietly showing a charge where a band belongs.
+ *
+ * Both casts are the compiler's blind spot rather than a claim: Object.keys
+ * forgets what it was given, and a rank still generic here cannot be matched to
+ * its arm of the union until it is known. Each caller below has it known.
+ */
+function spelled<R extends Rank, W extends Word>(
+  rank: R,
+  translation: Translation<TermOf<R>, W>
 ): readonly Sense<W>[] {
-  return (Object.keys(translation) as T[]).map((term) => ({
-    rank,
-    term,
-    words: wordsOf(translation, term),
-  }));
+  return (Object.keys(translation) as TermOf<R>[]).map(
+    (term) => ({ rank, term, words: wordsOf(translation, term) }) as Sense<W>
+  );
 }
 
 /** The strewings a tongue names, which is never all of them. */
@@ -295,41 +332,50 @@ function armsOf<W extends Word>(tongue: Tongue<W>, sense: Sense<W>, word: W): Bl
   const borne = borneIn(word);
   switch (sense.rank) {
     case 'tincture':
-      return { field: { tincture: sense.term as Tincture } };
+      return { field: { tincture: sense.term } };
+    // A division and a furred field are cut the same way and are written apart
+    // because they are cut from different vocabularies: the model asks which of
+    // the two a field is by the term it carries, and answering with either would
+    // be answering with neither.
     case 'division':
+      return {
+        field: { type: sense.term, firstTincture: METAL, secondTincture: COLOUR },
+      };
     case 'furred field':
       return {
-        field: {
-          type: sense.term as never,
-          firstTincture: METAL,
-          secondTincture: COLOUR,
-        },
+        field: { type: sense.term, firstTincture: METAL, secondTincture: COLOUR },
       };
     case 'variation':
       return {
         field: {
-          type: sense.term as VariationType,
+          type: sense.term,
           firstTincture: METAL,
           secondTincture: COLOUR,
-          pieces: usualPieces(sense.term as VariationType) ?? PIECES,
+          pieces: usualPieces(sense.term) ?? PIECES,
         },
       };
+    // A band is the plain figure and nothing else: the model holds nothing that
+    // may be said of one, so there is nothing for a word to mean beyond it.
     case 'ordinary':
-    case 'charge':
-      // What the word already says was done to the figure is part of the arms,
-      // as the tincture it already means is: a mascle is a lozenge voided, and a
-      // page showing the word over a plain lozenge would be showing a reader the
-      // wrong drawing under the right word.
       return {
         field: { tincture: against(borne) },
-        chargesOrOrdinaries: [{ type: sense.term as never, tincture: borne, ...modified(word) }],
+        chargesOrOrdinaries: [{ type: sense.term, tincture: borne }],
+      };
+    // What the word already says was done to the figure is part of the arms, as
+    // the tincture it already means is: a mascle is a lozenge voided, and a page
+    // showing the word over a plain lozenge would be showing a reader the wrong
+    // drawing under the right word.
+    case 'charge':
+      return {
+        field: { tincture: against(borne) },
+        chargesOrOrdinaries: [{ type: sense.term, tincture: borne, ...modified(word) }],
       };
     case 'modifier': {
       // Shown on the first charge that will take it, and in whatever tincture
       // that charge's own word allows — a modifier means no tincture and names
       // no figure, so everything about the arms but the modifier comes from the
       // charge it is shown doing its work on.
-      const modifier = sense.term as Modifier;
+      const modifier = sense.term;
       const type = saidBy(tongue.wording, modifier, word)[0] ?? CHARGE_TYPES[0];
       const shown = borneIn(wordOf(tongue.wording.charges, type));
       return {
@@ -341,7 +387,7 @@ function armsOf<W extends Word>(tongue: Tongue<W>, sense: Sense<W>, word: W): Bl
       return {
         field: {
           tincture: against(borne),
-          semy: { type: sense.term as ChargeType, tincture: borne },
+          semy: { type: sense.term, tincture: borne },
         },
       };
     case 'field':
@@ -490,9 +536,9 @@ function noteOn<W extends Word>(
 ): string | undefined {
   switch (sense.rank) {
     case 'ordinary':
-      return BUT_ONCE[sense.term as OrdinaryType];
+      return BUT_ONCE[sense.term];
     case 'variation':
-      return counting(sense.term as VariationType, language);
+      return counting(sense.term, language);
     case 'furred field':
       return FURRED_NOTE;
     case 'modifier':
@@ -538,28 +584,21 @@ function otherwise<W extends Word>(
   const borne = borneIn(word);
   const field = { tincture: against(borne) };
 
-  const inNumber = (extra: object = {}): Variants => ({
+  // Handed the figure rather than reading it off the sense, a closure being
+  // where what the rank told us about the term is forgotten again.
+  const inNumber = (one: ChargeOrOrdinary): Variants => ({
     heading: 'Borne in number',
     entries: COUNTS.map(([label, count]) =>
-      say(
-        {
-          field,
-          chargesOrOrdinaries: [{ type: sense.term as never, tincture: borne, count, ...extra }],
-        },
-        label
-      )
+      say({ field, chargesOrOrdinaries: [{ ...one, count }] }, label)
     ),
   });
 
-  if (
-    sense.rank === 'ordinary' &&
-    OrdinaryDefinitions[sense.term as OrdinaryType].canBeBorneInNumbers
-  ) {
-    return [inNumber()];
+  if (sense.rank === 'ordinary' && OrdinaryDefinitions[sense.term].canBeBorneInNumbers) {
+    return [inNumber({ type: sense.term, tincture: borne })];
   }
 
   if (sense.rank === 'charge') {
-    const type = sense.term as ChargeType;
+    const type = sense.term;
     // What may be said of it is shown as it is drawn rather than only named: a
     // reader who has never met the word learns more from the hole in the figure
     // than from being told there is one. Which modifiers those are is the word's
@@ -572,7 +611,7 @@ function otherwise<W extends Word>(
     // drawing plain lozenges under the word for the voided one.
     const said = modified(word).modifier;
     return [
-      inNumber(modified(word)),
+      inNumber({ type, tincture: borne, ...modified(word) }),
       ...(said === undefined
         ? [
             {
@@ -611,7 +650,7 @@ function otherwise<W extends Word>(
     // to be drawn on its own, so what it does is the whole of what a page can
     // show. The first of them is the arms above as well, the word having to be
     // shown doing its work somewhere before the reader reaches this.
-    const modifier = sense.term as Modifier;
+    const modifier = sense.term;
     const charges = saidBy(tongue.wording, modifier, word);
     if (charges.length === 0) {
       return [];
@@ -636,7 +675,7 @@ function otherwise<W extends Word>(
   }
 
   if (sense.rank === 'variation') {
-    const type = sense.term as VariationType;
+    const type = sense.term;
     return [
       {
         heading: 'Cut otherwise',
