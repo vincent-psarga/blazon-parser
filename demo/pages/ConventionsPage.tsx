@@ -378,7 +378,7 @@ export const RULES: readonly Rule[] = [
   },
   {
     id: 'a-modifier-is-written-last',
-    heading: 'A modifier stands after the charge and before its tincture',
+    heading: 'A modifier stands after what it qualifies and before its tincture',
     law: (
       <>
         <p className="rule__law">
@@ -387,6 +387,14 @@ export const RULES: readonly Rule[] = [
           takes its word order from French, so what qualifies the charge follows the charge, and the
           tincture comes last of all — two bars voided gules, à la croix vidée de gueules. That is
           where it is written.
+        </p>
+        <p className="rule__law">
+          A band is said of in the same place and by the same rule. What is done to it is done to
+          the line it is named after rather than to its middle — a fess indented is a fess whose
+          edges are cut into teeth — so the two take different words, and neither takes the other’s:
+          a fess is never voided and a lozenge is never indented. Which band takes which line is
+          declared with the band, as which charge takes which modifier is declared with the charge,
+          so the answer is the same in either tongue and a band that takes none refuses one by name.
         </p>
         <p className="rule__law">
           It is read after the tincture as well. The model holds which modifier and not where the
@@ -403,10 +411,9 @@ export const RULES: readonly Rule[] = [
           both read, and a blazon that chose one gender and then said the other is refused rather
           than quietly mended. What is written back agrees with the gender the charge is written
           back in, which is the word’s own and not the blazon’s. English agrees with nothing and
-          writes the one word after one charge or three. None of this reaches the ordinaries, whose
-          modifiers are lines drawn otherwise rather than middles taken out; and a charge that is
-          already what the modifier says refuses it by name, an annulet being a roundel voided
-          already.
+          writes the one word after one charge or three. A band agrees as a charge does — au chef
+          dentelé, à la fasce dentelée — and a charge that is already what the modifier says refuses
+          it by name, an annulet being a roundel voided already.
         </p>
         <p className="rule__law">
           What is said is not always the voiding. A billette percée is not a billette vidée however
@@ -448,6 +455,11 @@ export const RULES: readonly Rule[] = [
       fr("D'azur à la billette vidé d'or"),
       en('Azure a voided lozenge or'),
       en('Azure an annulet voided or'),
+      en('Azure a fess indented or'),
+      fr("D'azur au chef dentelé d'or"),
+      fr("D'or à trois bandes dentelées de sable"),
+      en('Azure a fess voided or'),
+      en('Azure a lozenge indented or'),
     ],
   },
   {

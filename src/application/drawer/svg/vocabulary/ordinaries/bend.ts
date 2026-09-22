@@ -1,6 +1,7 @@
+import { Modifier } from '../../../../../domain/models/Modifier';
 import { spaced } from '../../painting/arrange';
-import { inBend } from '../../shapes/bands';
-import { BorneFigure } from '../Figures';
+import { inBend, inBendIndented } from '../../shapes/bands';
+import { OrdinaryFigure } from '../Figures';
 
 /**
  * The room the diagonals share, measured across the top edge of the field. It is
@@ -10,6 +11,14 @@ import { BorneFigure } from '../Figures';
 export const DIAGONALS = 240;
 
 /** A band from dexter chief to sinister base. */
-export const bend: BorneFigure = {
+export const bend: OrdinaryFigure = {
   shapes: (frame, count) => spaced(count, -DIAGONALS / 2, DIAGONALS).map(inBend(frame)),
+  // The teeth are cut sideways, as the band's own width is measured sideways: a
+  // bend is drawn by sliding its edges across the field rather than square to
+  // itself, and a tooth reckoned otherwise would leave it wider in places.
+  modified: {
+    [Modifier.indented]: {
+      shapes: (frame, count) => spaced(count, -DIAGONALS / 2, DIAGONALS).map(inBendIndented(frame)),
+    },
+  },
 };

@@ -15,7 +15,7 @@ export { EnglishBlazonWriter } from './application/writer/EnglishBlazonWriter';
 export { FrenchBlazonWriter } from './application/writer/FrenchBlazonWriter';
 
 export { isCharge, isOrdinary } from './domain/models/Blazon';
-export type { Blazon, ChargeOrOrdinary } from './domain/models/Blazon';
+export type { Blazon, BorneType, ChargeOrOrdinary } from './domain/models/Blazon';
 export type { Armorial, ArmorialEntry, ArmorialSource } from './domain/models/Armorial';
 export { readArmorial } from './application/armorial/ArmorialReading';
 export type {
@@ -41,8 +41,10 @@ export {
   OrdinaryDefinitions,
   OrdinaryType,
   SEVERAL,
+  admitsModifier,
   borne,
   isOrdinaryType,
+  modifiersOn,
 } from './domain/models/Ordinary';
 export {
   ChargeDefinition,

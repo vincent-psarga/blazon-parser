@@ -64,8 +64,12 @@ Supported vocabulary as it stands:
 - **Ordinaries (10)** — chief, pale, fess, bar gemel, bend, bend sinister, chevron, cross, saltire,
   bordure. Laid on the field in the order the blazon names them, which is the order they are drawn.
   That order is the model's to keep: sorting what a field bears into separate lists would lose it.
-- **Modifiers (2)** — voided: the charge's middle taken out, so the field shows through the outline;
-  and pierced: a round hole punched through it, the rest of the charge left as it was. Two things
+  Six of them may be drawn along a modified line — chief, pale, fess, bend, bend sinister, chevron —
+  and which those are is declared with the ordinary, as which modifier a charge takes is declared
+  with the charge.
+- **Modifiers (3)** — voided: the charge's middle taken out, so the field shows through the outline;
+  pierced: a round hole punched through it, the rest of the charge left as it was; and indented: the
+  edges of a band cut into teeth rather than run straight. Two things
   and not one said twice, whatever the dictionaries' filing — a billette percée is not a billette
   vidée, and the two are drawn differently because they are different. Written between the charge
   and its tincture, which is where the armorials of both tongues put it — blazon takes its word
@@ -83,6 +87,19 @@ Supported vocabulary as it stands:
   written, exactly as a besant says gold, so nothing follows it — and a blazon that says the
   modifier anyway is understood where it agrees and refused where it does not. English names no
   pierced star, molette being French, and blazons it in the ordinary way.
+
+  A band is said of by the same rule and in the same place, and takes modifiers of its own: what is
+  done to a charge is done to its middle and what is done to a band is done to the line it is named
+  after, so no band is voided and no charge is indented, and either refuses the other's word by
+  name. Indented is the first of the modified lines — "notched after the manner of dancetty, but
+  with smaller teeth" — and the six bands that take it are the four Parker names it of, the mirror
+  of the bend, and the chief, whose one free edge is a line like any other. The bar gemel, the
+  cross, the saltire and the bordure take it in no blazon here: the first three because teeth
+  cannot yet be cut in a bar that narrow or where two limbs meet, the bordure because it follows
+  the curve of the shield rather than any straight line. French says it dentelé, not denché:
+  denché is the same line cut with great teeth, which is what English calls dancetty, and neither
+  tongue holds that one yet.
+
 - **Charges (9)** — annulet, billet, lozenge, roundel, goutte, mullet, fleur-de-lis, cross couped,
   crescent. Some are plain shapes and some are pictures of something; all are borne once or in
   number, and any of them may be sown over a plain field instead. They

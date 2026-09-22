@@ -1,9 +1,11 @@
 # Parsing
 
-- Handle line modifications (indented, embattled etc)
+- Grow the line modifications past "indented": embattled, engrailed, wavy, and the dancetty, which
+  is the indented line cut larger (French denché)
+- Indent the four bands that cannot be yet: the bar gemel, the cross, the saltire, the bordure
+- Let a division or a varied field take a modified line too ("per fess indented", "coupé denché")
 - Handle the disposition of charges (en chef, en orle, mal ordonnées)
 - Grow the modifiers past "voided" and "pierced": alésé, and the rest
-- Let an ordinary take a modifier, its own being lines drawn otherwise
 - Allow complex partition (eg: "per fess azur a bend or and argent")
 - Handle a semy of more than one figure ("semé alterné de tours et de fleurs de lys")
 - Sow a divided field, once the blazon can say which half was sown
