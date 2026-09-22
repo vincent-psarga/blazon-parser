@@ -86,6 +86,26 @@ describe('EnglishBlazonParser', () => {
     });
   });
 
+  // A half is a field in English as in French, so it takes what English says of
+  // a field of one tincture: what it is sown with. English has no word for a
+  // field being plain, so there is nothing of that sort to read here.
+  test('reads a sown half, and sows the half whose tincture it follows', () => {
+    expect(parser.parse('Per pale azure semy of billets or and argent').field).toMatchObject({
+      first: { field: { semy: { type: ChargeType.billet, tincture: Metals.or } } },
+      second: { field: { tincture: Metals.argent } },
+    });
+    expect(parser.parse('Per pale azure and or semy of billets argent').field).toMatchObject({
+      first: { field: { tincture: Colours.azure } },
+      second: { field: { semy: { type: ChargeType.billet, tincture: Metals.argent } } },
+    });
+  });
+
+  test('reads the mark a blazon sets before the conjunction', () => {
+    expect(parser.parse('Per pale azure three fleurs-de-lis or, and ermine')).toEqual(
+      parser.parse('Per pale azure three fleurs-de-lis or and ermine')
+    );
+  });
+
   test('survives the round trip, the charged half and all', () => {
     const blazon = 'Per pale azure three fleurs-de-lis or and ermine.';
     expect(writer.write(parser.parse(blazon))).toBe(blazon);

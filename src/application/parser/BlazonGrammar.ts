@@ -29,7 +29,6 @@ import {
   PIECES,
   Variation,
   cutInPieces,
-  half,
   usualPieces,
 } from '../../domain/models/Field';
 import { Modifier } from '../../domain/models/Modifier';
@@ -197,40 +196,87 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   const borneOn = (field: Field, laid: readonly ChargeOrOrdinary[]): Blazon =>
     laid.length === 0 ? { field } : { field, chargesOrOrdinaries: laid };
 
-  // The second of the two tinctures a cut field is cut between, the conjunction
-  // and all: every one of the three reads it, and every one of them owes it once
-  // the first has been read. A blazon that stops there has named one tincture
-  // where the field it named takes two, and saying so is more use than pointing
-  // at the conjunction — which is the grammar's own plumbing, and names nothing
-  // a reader was trying to write.
+  /**
+   * A field, and what the blazon laid on it, which is arms: the whole shield's,
+   * or the first half of a divided field's. One rule reads both, a half being
+   * arms and there being nothing else it could be read by.
+   *
+   * A field the blazon called plain is held to it here, where what followed is
+   * known: "plain" promises a field that bears nothing, and the promise is kept
+   * or the blazon is refused. The bearings are read first and judged after, so
+   * the complaint lands on what was laid rather than on the word that forbade it.
+   */
+  const laidOn = (reading: Parser<TokenKind, ReadField>): Parser<TokenKind, Blazon> =>
+    combine(reading, ({ field, bare }) =>
+      apply(
+        bare
+          ? guard(
+              borne,
+              (laid) => laid.length === 0,
+              (laid, position) => new ChargedPlainField(laid.length, position)
+            )
+          : borne,
+        (laid): Blazon => borneOn(field, laid)
+      )
+    );
+
+  // The second of the two tinctures a varied or furred field is cut between, the
+  // conjunction and all: both read it, and both owe it once the first has been
+  // read. A blazon that stops there has named one tincture where the field it
+  // named takes two, and saying so is more use than pointing at the conjunction
+  // — which is the grammar's own plumbing, and names nothing a reader was trying
+  // to write.
   const secondOfThePair = owedAtEnd(kright(grammar.and, grammar.tincture), asTincture);
+
+  // The other half of a divided field, which is a field and not a tincture: it
+  // carries whatever the tongue says of a field of one tincture, which is what
+  // the armorials write there — "et d'hermine plain", "et de sinople semé de
+  // larmes d'or". Being owed is the tincture's affair all the same, a half that
+  // never arrives having failed to name one.
+  //
+  // A blazon may set its own mark before the conjunction — "à six macles
+  // d'argent, et d'hermine" — which says no more than the conjunction does, so it
+  // is read and discarded rather than required.
+  //
+  // It bears nothing: what follows it belongs to the shield.
+  const otherHalf = owedAtEnd(
+    kright(
+      seq(optional(SEPARATOR), grammar.and),
+      apply(plainField, ({ field }): Blazon => ({ field }))
+    ),
+    asTincture
+  );
 
   // Wrapped as a phrase so that a tincture which never arrives is reported as
   // missing from the division that owed it, rather than from the blazon at large.
   //
-  // The first half may bear what a shield bears: "Parti d'azur à trois fleurs de
-  // lys d'or et d'hermine" sets three lilies on the half at dexter, and "Per
-  // fess azure a bend or and argent" lays a bend on the half in chief. What it
-  // bears stands between its tincture and the conjunction, which is where the
-  // armorials of both tongues write it, and is read by the very rule that reads
-  // what the whole shield bears — a half being arms, there is nothing else it
-  // could be read by.
+  // Each half is a field, and the first of them may bear what a shield bears:
+  // "Parti d'azur à six macles d'argent, et d'hermine plain" charges the half at
+  // dexter and calls the other plain, which is how the armorial of the Round
+  // Table writes it. What a half bears stands between its tincture and the
+  // conjunction, and is read by the very rule that reads what the whole shield
+  // bears — a half being arms, there is nothing else it could be read by.
+  //
+  // This is the form the armorials write and not the one the handbooks
+  // prescribe. Where a half carries anything, the handbooks rank the halves
+  // instead — "parti, au premier ..., au second ..." — and Greaves has the
+  // tinctures follow the partition's name with nothing between: "If the field is
+  // parted, this is mentioned at the beginning, starting with the word Per
+  // followed by the name of the ordinary that goes the same way as the parting
+  // line, followed by the tinctures of the parts". So the English reading of this
+  // form is the French one lent to it, on no authority but the symmetry, and the
+  // ranked form — which is what will charge the second half — is not read yet.
   //
   // The second half bears nothing, and what follows it belongs to the shield:
   // "Parti d'azur et d'or à la bordure de gueules" surrounds the whole shield
-  // with the bordure, which is what an armorial means by writing it there. Let
-  // the second half bear it instead and the blazon would have two readings and
-  // no way to choose between them, so the one heraldry means is the one read.
-  // A charge on the second half alone is blazoned another way — "au premier ...,
-  // au second ..." — which is a phrase neither tongue reads here yet.
+  // with the bordure, which is what an armorial means by writing it there, and
+  // what both tongues mark outright where they mean it — "brochant sur le tout",
+  // "over all". Let the second half bear it instead and the blazon would have two
+  // readings and no way to choose between them.
   const dividedField = within(
     apply(
-      seq(grammar.division, grammar.tincture, borne, secondOfThePair),
-      ([type, first, laid, second]): Division => ({
-        type,
-        first: borneOn({ type: FieldType.plain, tincture: first }, laid),
-        second: half(second),
-      })
+      seq(grammar.division, laidOn(plainField), otherHalf),
+      ([type, first, second]): Division => ({ type, first, second })
     )
   );
 
@@ -298,7 +344,7 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
   // unknown first word is told apart from a word that was never meant to be a
   // partition at all — so it has to recognise as much of a division as the
   // division rule does, or a charged half would hide the partition from it.
-  const restOfDivision = seq(grammar.tincture, borne, secondOfThePair);
+  const restOfDivision = seq(laidOn(plainField), otherHalf);
 
   // The varied reading is tried first of the three, because all three open on a
   // word of their own vocabulary and all three complain about the same word when
@@ -317,26 +363,7 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
     restOfDivision
   );
 
-  // The key is left off rather than set to an empty list when nothing is borne,
-  // so a plain field reads back as the blazon it was before anything could be
-  // laid on one.
-  //
-  // A field the blazon called plain is held to it here, where what followed is
-  // known: "plain" promises a bare field, and the promise is kept or the blazon
-  // is refused. The bearings are read first and judged after, so the complaint
-  // lands on what was laid rather than on the word that forbade it.
-  const arms = combine(field, ({ field, bare }) =>
-    apply(
-      bare
-        ? guard(
-            borne,
-            (laid) => laid.length === 0,
-            (laid, position) => new ChargedPlainField(laid.length, position)
-          )
-        : borne,
-      (laid): Blazon => borneOn(field, laid)
-    )
-  );
+  const arms = laidOn(field);
 
   // A blazon is written as a sentence and closed with a full stop, but the stop
   // carries no meaning, so it is accepted and discarded rather than required. A

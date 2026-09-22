@@ -294,9 +294,12 @@ export type Plain = {
  * One charge, for now. A field sown with two of them alternately — "semé alterné
  * de tours et de fleurs de lys" — is a second list and is not read.
  *
- * Only a plain field carries one. Heraldry sows a divided field as readily, but
- * which half is sown is a thing the blazon says in words this does not yet read,
- * and a model able to hold the answer would be claiming to have read it.
+ * Only a plain field carries one, which is no bar to sowing a divided field: a
+ * half is arms with a plain field of its own, and the sowing belongs to that
+ * field. Both tongues say which half — "Parti de gueules semé de larmes
+ * d'argent, et de sinople semé de larmes d'or" sows each with its own — and both
+ * are read. What no tongue says here is a sowing laid over a divided field
+ * entire, and nothing holds one.
  */
 export type Semy = {
   type: ChargeType;

@@ -4,12 +4,20 @@
 - Handle the disposition of charges (en chef, en orle, mal ordonnées)
 - Grow the modifiers past "voided" and "pierced": alésé, and the rest
 - Let an ordinary take a modifier, its own being lines drawn otherwise
-- Read a charge on the second half of a division, which wants the "au premier
-  ..., au second ..." phrase: what follows the second half is the shield's, so
-  the simple form cannot say it
+- Read the ranked form of a partition — "parti, au premier ..., au second ..." —
+  which is what the handbooks prescribe where a half carries anything: «la
+  partition s'énonce simplement sur le modèle de « parti, [au premier] de […],
+  [au second] de […] »» (Wikipédia, Partition héraldique), and «on énonce d'abord
+  la partition, puis les armoiries élémentaires se blasonnent les unes après les
+  autres, dans l'ordre de la partition, en les faisant précéder de leur rang»
+  (Wikipédia, Armes composées). It is the only form that can charge the second
+  half, what follows an unranked second half being the shield's, and it needs no
+  guess about where a half ends
 - Handle a semy of more than one figure ("semé alterné de tours et de fleurs de lys")
-- Read a sown half, the model and the writers already saying which half was sown
-- Read a half that is itself cut ("parti, au premier coupé d'or et d'azur")
+- Read a half that is itself cut ("parti vairé d'or et de pourpre, et de gueules
+  plain", which the armorial of the Round Table writes)
+- Quarter a field: the model holds a division of two halves, and écartelé takes
+  four. The sample armorial aspires to it
 - Support for "shortcuts" (eg: "du même", "l'un dans l'autre", "brochant sur le tout")
 
 # Display

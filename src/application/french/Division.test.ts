@@ -2,9 +2,11 @@ import { describe, expect, test } from 'vitest';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { FrenchBlazonWriter } from '../writer/FrenchBlazonWriter';
 import { ChargeType } from '../../domain/models/Charge';
+import { Modifier } from '../../domain/models/Modifier';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { FieldType, half } from '../../domain/models/Field';
 import { Colours, Furs, Metals } from '../../domain/models/Tinctures';
+import { ChargedPlainField } from '../../domain/errors/parsing/ChargedPlainField';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
@@ -137,6 +139,67 @@ describe('divided fields', () => {
     });
   });
 
+  describe('a half that says more than its tincture', () => {
+    // A half is a field, so it takes whatever the tongue says of a field of one
+    // tincture: that it is plain, or what it is sown with. This entry is
+    // transcribed from the armorial of the Round Table, and says both at once —
+    // the half at dexter charged with six mascles, the other called plain to say
+    // it carries nothing.
+    test('reads a half called plain beside a charged one', () => {
+      expect(parser.parse("Parti d'azur à six macles d'argent, et d'hermine plain")).toEqual({
+        field: {
+          type: FieldType.pale,
+          first: {
+            field: { type: FieldType.plain, tincture: Colours.azure },
+            chargesOrOrdinaries: [
+              {
+                type: ChargeType.lozenge,
+                tincture: Metals.argent,
+                count: 6,
+                modifier: Modifier.voided,
+              },
+            ],
+          },
+          second: half(Furs.ermine),
+        },
+      });
+    });
+
+    // The word promises what it always promises, and it promises it of the half
+    // it was said of: the half that bears something after being called plain is
+    // refused, and the other half is no business of the word's.
+    test('holds a half called plain to bearing nothing', () => {
+      expect(parser.parse('Parti de vair plain, et de gueules').field).toEqual({
+        type: FieldType.pale,
+        first: half(Furs.vair),
+        second: half(Colours.gules),
+      });
+      expect(() => parser.parse("Parti de vair plain à la fasce d'or, et de gueules")).toThrow(
+        ChargedPlainField
+      );
+    });
+
+    // Which the armorials write before the conjunction as readily as not: it
+    // says no more than the conjunction does, so it is read and dropped, exactly
+    // as the mark between two charges is.
+    test('reads the mark a blazon sets before the conjunction, and writes none', () => {
+      const marked = parser.parse("Parti d'azur à la fasce d'or, et de gueules");
+      expect(marked).toEqual(parser.parse("Parti d'azur à la fasce d'or et de gueules"));
+      expect(writer.write(marked)).toBe("Parti d'azur à la fasce d'or et de gueules.");
+    });
+
+    test('sows each half with its own, as the armorials write it', () => {
+      expect(
+        parser.parse(
+          "Parti de gueules semé de billettes d'argent, et de sinople semé de billettes d'or"
+        ).field
+      ).toMatchObject({
+        first: { field: { semy: { type: ChargeType.billet, tincture: Metals.argent } } },
+        second: { field: { semy: { type: ChargeType.billet, tincture: Metals.or } } },
+      });
+    });
+  });
+
   describe('rejections', () => {
     test('rejects a division naming only one tincture', () => {
       expect(() => parser.parse("Parti d'azur")).toThrow();
@@ -158,13 +221,6 @@ describe('divided fields', () => {
     test('still reports an unknown tincture rather than an unknown division', () => {
       expect(() => parser.parse('de fuchsia')).toThrow(UnknownTincture);
       expect(() => parser.parse('de fuchsia')).toThrow(/Unknown tincture: fuchsia/);
-    });
-
-    // Which half was sown is a thing the model says and the writer writes, the
-    // sowing belonging to the half's own field. The word for it is not read
-    // inside a half yet, so the blazon is refused rather than half-read.
-    test('does not yet read a sown half', () => {
-      expect(() => parser.parse("Parti d'azur semé de billettes d'or et d'argent")).toThrow();
     });
 
     test('reports a division whose other half never arrives as missing a tincture', () => {

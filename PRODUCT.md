@@ -58,13 +58,16 @@ Supported vocabulary as it stands:
 - **Tinctures (8)** in three ranks — metals (or, argent), colours (azure, gules, sable, vert),
   furs (ermine, vair).
 - **Divisions (4)** — per pale, per fess, per bend, per bend sinister. Either half is arms of its
-  own, so heraldry charges one: "Parti d'azur à trois fleurs de lys d'or et d'hermine", "Per fess
-  azure a bend or and argent". What a half bears stands between its tincture and the conjunction,
-  which is where both tongues write it and where both read it; what follows the second half belongs
-  to the shield, a bordure blazoned after a division surrounding the whole of it. A charge on the
-  second half alone is blazoned another way — "au premier ..., au second ..." — which is not read.
-  The drawing has yet to follow: a charged half is painted the tincture it is laid on, and what it
-  bears is not drawn.
+  own, so a half is a field with whatever a tongue says of a field — that it is plain, or what it is
+  sown with — and the first half may bear what a shield bears: "Parti d'azur à six macles d'argent,
+  et d'hermine plain", "Parti de gueules semé de billettes d'argent, et de sinople semé de billettes
+  d'or". A mark set before the conjunction says no more than the conjunction does and is read and
+  dropped. What a half bears stands between its tincture and the conjunction; what follows the
+  second half belongs to the shield, a bordure blazoned after a division surrounding the whole of
+  it. That much is the unranked form the armorials write, and it can charge the first half only: the
+  ranked form the handbooks prescribe — "parti, au premier ..., au second ..." — is what charges
+  either, and is not read. The drawing has yet to follow either way: a charged half is painted the
+  tincture it is laid on, and what it bears is not drawn.
 - **Varied fields (5)** — barry, paly, bendy, pily, chevronny, cut into a counted number of pieces.
 - **Furred fields (1)** — vairy: the bells of vair cut from two tinctures the blazon names, rather
   than from the argent and azure vair itself is always drawn in. Nothing about it is counted.
@@ -108,9 +111,10 @@ Supported vocabulary as it stands:
   the field bears, so nothing is counted and a band blazoned after it covers the sowing. Where the
   language names the strewing it is written by that name — billeté, billetty, besanté, bezanty —
   and the name carries its tincture exactly as a charge's does. One figure only: a field sown with
-  two alternately is a second list and is not read. A plain field only: a half of a divided field
-  can be sown — its field is a field like any other — but the word for it is not read inside a half
-  yet, though both tongues write it.
+  two alternately is a second list and is not read. A plain field only — which is no bar to sowing
+  half of a divided field, a half being arms with a plain field of its own: both tongues say which
+  half is sown and both are read. A sowing laid over a divided field entire is what no tongue says
+  here, and nothing holds one.
 - **Plain** — French may call a bare field plain, and the parser holds it to it: a field called
   plain that then bears something is refused. The word adds nothing to the model and is never
   written back. English is given no equivalent — Parker's "plain" is a band with a straight line —
