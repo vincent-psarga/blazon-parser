@@ -145,10 +145,13 @@ export const OrdinaryDefinitions: Record<OrdinaryType, OrdinaryDefinition> = {
   // where they meet.
   [OrdinaryType.cross]: new OrdinaryDefinition(OrdinaryType.cross),
   [OrdinaryType.saltire]: new OrdinaryDefinition(OrdinaryType.saltire),
-  // The edge of the shield, and a shield has one of those too. The armorials
-  // indent it readily, but it follows the curve of the base rather than any
-  // straight line, and teeth cut along a curve are a drawing this does not have.
-  [OrdinaryType.bordure]: new OrdinaryDefinition(OrdinaryType.bordure),
+  // The edge of the shield, and a shield has one of those too. Indented it is the
+  // one band whose teeth are all on the one side: its outer edge is the outline
+  // of the shield and no blazon may cut that, so what the line modifies is where
+  // the band ends rather than where it begins.
+  [OrdinaryType.bordure]: new OrdinaryDefinition(OrdinaryType.bordure, {
+    allowedModifiers: [Modifier.indented],
+  }),
 };
 
 /** The fewest of an ordinary that is more than one of it. */

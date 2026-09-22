@@ -2,7 +2,7 @@
 
 - Grow the line modifications past "indented": embattled, engrailed, wavy, and the dancetty, which
   is the indented line cut larger (French denché)
-- Indent the four bands that cannot be yet: the bar gemel, the cross, the saltire, the bordure
+- Indent the three bands that cannot be yet: the bar gemel, the cross, the saltire
 - Let a division or a varied field take a modified line too ("per fess indented", "coupé denché")
 - Handle the disposition of charges (en chef, en orle, mal ordonnées)
 - Grow the modifiers past "voided" and "pierced": alésé, and the rest

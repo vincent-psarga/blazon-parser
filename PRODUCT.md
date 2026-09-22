@@ -64,9 +64,9 @@ Supported vocabulary as it stands:
 - **Ordinaries (10)** — chief, pale, fess, bar gemel, bend, bend sinister, chevron, cross, saltire,
   bordure. Laid on the field in the order the blazon names them, which is the order they are drawn.
   That order is the model's to keep: sorting what a field bears into separate lists would lose it.
-  Six of them may be drawn along a modified line — chief, pale, fess, bend, bend sinister, chevron —
-  and which those are is declared with the ordinary, as which modifier a charge takes is declared
-  with the charge.
+  Seven of them may be drawn along a modified line — chief, pale, fess, bend, bend sinister,
+  chevron, bordure — and which those are is declared with the ordinary, as which modifier a charge
+  takes is declared with the charge.
 - **Modifiers (3)** — voided: the charge's middle taken out, so the field shows through the outline;
   pierced: a round hole punched through it, the rest of the charge left as it was; and indented: the
   edges of a band cut into teeth rather than run straight. Two things
@@ -92,11 +92,14 @@ Supported vocabulary as it stands:
   done to a charge is done to its middle and what is done to a band is done to the line it is named
   after, so no band is voided and no charge is indented, and either refuses the other's word by
   name. Indented is the first of the modified lines — "notched after the manner of dancetty, but
-  with smaller teeth" — and the six bands that take it are the four Parker names it of, the mirror
-  of the bend, and the chief, whose one free edge is a line like any other. The bar gemel, the
-  cross, the saltire and the bordure take it in no blazon here: the first three because teeth
-  cannot yet be cut in a bar that narrow or where two limbs meet, the bordure because it follows
-  the curve of the shield rather than any straight line. French says it dentelé, not denché:
+  with smaller teeth" — and the seven bands that take it are the four Parker names it of, the
+  mirror of the bend, the chief, and the bordure. The last two are the ones with a single free
+  edge: a chief's upper edge and a bordure's outer one are the shield's own outline, which no
+  blazon modifies, so their teeth are all on the one side and the band is deeper where a tooth
+  reaches and shallower where a notch does. Every other indented band keeps its width, both its
+  edges being cut alike. The bar gemel, the cross and the saltire take it in no blazon here: teeth
+  cannot yet be cut in a bar that narrow, nor where two limbs meet. French says it dentelé, not
+  denché:
   denché is the same line cut with great teeth, which is what English calls dancetty, and neither
   tongue holds that one yet.
 

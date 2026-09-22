@@ -406,10 +406,27 @@ describe('a band drawn along a modified line', () => {
   });
 
   test('is refused by a band the model gives no such line', () => {
-    expect(() => inEnglish.parse('Azure a bordure indented or')).toThrow(
-      'Wrong modifier: bordure is never indented'
+    expect(() => inEnglish.parse('Azure a cross indented or')).toThrow(
+      'Wrong modifier: cross is never indented'
     );
-    expect(() => inFrench.parse("D'azur à la bordure dentelée d'or")).toThrow(WrongModifier);
+    expect(() => inFrench.parse("D'azur à la jumelle dentelée d'or")).toThrow(WrongModifier);
+  });
+
+  test('cuts the teeth inside a bordure, whose outer edge is the shield’s own', () => {
+    // Every other band has two free edges and keeps its width between them. A
+    // bordure has one: the shield's outline is not a line a blazon may modify,
+    // so the band is deeper where a tooth reaches and shallower where a notch
+    // does, and what is drawn is the plain band with teeth standing on it.
+    const arms = (modifier?: Modifier) =>
+      drawer.draw({
+        field: { tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Metals.or, modifier }],
+      });
+    expect(arms(Modifier.indented)).not.toBe(arms());
+    // The stroke that follows the shield's curve is still there, and is what
+    // keeps the outer edge the outline's own.
+    expect(arms(Modifier.indented)).toContain('stroke-width');
+    expect(arms(Modifier.indented)).toContain('<polygon');
   });
 
   test.each(ORDINARIES)('is asked of %s before the blazon is allowed to say it', (type) => {
@@ -478,7 +495,7 @@ describe('a band drawn along a modified line', () => {
     const drawn = (modifier?: Modifier) =>
       drawer.draw({
         field: { tincture: Colours.azure },
-        chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Metals.or, modifier }],
+        chargesOrOrdinaries: [{ type: OrdinaryType.cross, tincture: Metals.or, modifier }],
       });
     expect(drawn(Modifier.indented)).toBe(drawn());
   });

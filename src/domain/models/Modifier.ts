@@ -51,8 +51,12 @@ export enum Modifier {
    * "notched after the manner of dancetty, but with smaller teeth", and says it
    * "is applied most frequently to the fesse, though the bend, the pale, and the
    * chevron are sometimes thus treated" — which is the list the ordinaries
-   * declare, the mirror of the bend answering as the bend does and the chief
-   * being the one band whose free edge is a line like any other.
+   * declare, along with the mirror of the bend, and the chief and the bordure,
+   * whose single free edge is a line like any other.
+   *
+   * A band with two free edges keeps its width, both being cut alike; a band
+   * with one is deeper where a tooth reaches and shallower where a notch does,
+   * the shield's own outline being no line a blazon may modify.
    *
    * The teeth are what parts it from the dancetty, which is the same line drawn
    * larger and fewer — "differing from indented only in the indentations, being

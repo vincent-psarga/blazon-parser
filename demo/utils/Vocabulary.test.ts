@@ -308,7 +308,7 @@ describe('the words that say more than one drawing can', () => {
     // still asked what line it may be drawn along, which is another question.
     expect(asked(word(english, 'chief'))).toEqual(['Modified']);
     expect(word(english, 'chief').note).toMatch(/shield has one top/);
-    expect(asked(word(english, 'bordure'))).toEqual([]);
+    expect(asked(word(english, 'cross'))).toEqual([]);
   });
 
   test("says why without naming the band, the reason being the shield's", () => {
@@ -337,7 +337,7 @@ describe('the words that say more than one drawing can', () => {
       "D'argent à la fasce dentelée de gueules.",
     ]);
     // A band the model gives no modified line is asked nothing about one.
-    expect(asked(word(english, 'bordure'))).toEqual([]);
+    expect(asked(word(english, 'cross'))).toEqual([]);
   });
 
   test('shows a modifier on the bands as readily as on the charges', () => {
@@ -350,6 +350,7 @@ describe('the words that say more than one drawing can', () => {
       'Bend',
       'Bend sinister',
       'Chevron',
+      'Bordure',
     ]);
     expect(blazoned(word(french, 'dentelé'), 'Said of')[0]).toBe(
       "D'argent au chef dentelé de gueules."
