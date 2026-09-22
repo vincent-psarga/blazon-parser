@@ -71,8 +71,13 @@ Supported vocabulary as it stands:
   order the partition takes them or the blazon refused. It is read in French, which has the form;
   English ranks quarters rather than halves and marshals two coats with "impaled with", so it
   contributes no rank and cannot blazon a charge on its second half. The rank is written back only
-  where the unranked form could not have said it. The drawing has yet to follow either form: a
-  charged part is painted the tincture it is laid on, and what it bears is not drawn.
+  where the unranked form could not have said it. A part is drawn as well as read: what it bears is
+  drawn in the room the part gives it — the part's own corner and its own reaches, so three lilies
+  in the half at dexter stand in that half and are drawn small enough for it — and cut off at the
+  line. Its sowing is laid in the lattice the whole field is sown in and cut off there too, which
+  keeps it in step with whatever is sown beyond the line. What is not drawn: a part cut again, and
+  a band that follows an outline rather than measuring itself, a bordure borne on a part following
+  the part's box rather than the field's edge.
 - **Varied fields (5)** — barry, paly, bendy, pily, chevronny, cut into a counted number of pieces.
 - **Furred fields (1)** — vairy: the bells of vair cut from two tinctures the blazon names, rather
   than from the argent and azure vair itself is always drawn in. Nothing about it is counted.

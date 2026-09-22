@@ -23,10 +23,14 @@
 
 # Display
 
-- Draw a half that carries more than a tincture. Both tongues read one now, so
-  an armorial entry with a charged half is drawn with the charge left off: what
-  it wants is a frame for the half, so the figures laid in it measure themselves
-  against the half rather than against the whole shield
+- Draw a band that follows an outline inside a part of a divided field: a part's
+  outline is its box, so a bordure borne on a part runs down the line the part
+  was cut along — where heraldry ends it there, "hold-overs from the days of
+  dimidiation ... which do not surround the shield but end at the line of
+  partition" (Greaves) — and loses the curve at the base. Everything else laid in
+  a part is measured against the part and drawn where it belongs
+- Draw a part that is itself cut: its second tincture is nowhere and neither is
+  the line between them, the part being painted the tincture its field is laid on
 - Cross display seems too low
 - Bends and saltire have a "weird" rendering - angles seem wrong.
 
