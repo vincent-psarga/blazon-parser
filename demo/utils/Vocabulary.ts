@@ -5,7 +5,14 @@ import { BlazonWording, writeBlazon } from '../../src/application/writer/BlazonW
 import { Blazon, ChargeOrOrdinary } from '../../src/domain/models/Blazon';
 import { ChargeType, allowsModifier, modifiersOf } from '../../src/domain/models/Charge';
 import { Modifier } from '../../src/domain/models/Modifier';
-import { DivisionType, FurType, VariationType, usualPieces } from '../../src/domain/models/Field';
+import {
+  DivisionType,
+  FieldType,
+  FurType,
+  Plain,
+  VariationType,
+  usualPieces,
+} from '../../src/domain/models/Field';
 import { OrdinaryDefinitions, OrdinaryType } from '../../src/domain/models/Ordinary';
 import { COLOURS, Colours, Metals, Tincture, isFur } from '../../src/domain/models/Tinctures';
 import { counted } from '../../src/domain/translations/Numbers';
@@ -41,9 +48,11 @@ import { readBlazon } from './Reading';
  * a field, so a strewing is named after a ChargeType, but the word that sows it
  * is not the word that bears it and the two are shown differently.
  *
- * The field's own two are not terms of the model at all — a plain field and a
- * sown one are things a tongue has a word for rather than figures — so they are
- * named here and nowhere else.
+ * The field's own two name no term of the model. The model holds a term for the
+ * plain field, but no word of either tongue is that term's name — a plain field
+ * is written as its tincture and nothing else — and "plain" and "semé" say what
+ * a field carries rather than how it is cut. So the two are named here and
+ * nowhere else.
  */
 export type Ranked =
   | { readonly rank: 'tincture'; readonly term: Tincture }
@@ -332,11 +341,11 @@ function armsOf<W extends Word>(tongue: Tongue<W>, sense: Sense<W>, word: W): Bl
   const borne = borneIn(word);
   switch (sense.rank) {
     case 'tincture':
-      return { field: { tincture: sense.term } };
-    // A division and a furred field are cut the same way and are written apart
-    // because they are cut from different vocabularies: the model asks which of
-    // the two a field is by the term it carries, and answering with either would
-    // be answering with neither.
+      return { field: { type: FieldType.plain, tincture: sense.term } };
+    // A division and a furred field are written the same way and are kept apart
+    // because the model declares their terms under different kinds: it asks
+    // which of the two a field is by the term it carries, and answering with
+    // either would be answering with neither.
     case 'division':
       return {
         field: { type: sense.term, firstTincture: METAL, secondTincture: COLOUR },
@@ -358,7 +367,7 @@ function armsOf<W extends Word>(tongue: Tongue<W>, sense: Sense<W>, word: W): Bl
     // may be said of one, so there is nothing for a word to mean beyond it.
     case 'ordinary':
       return {
-        field: { tincture: against(borne) },
+        field: { type: FieldType.plain, tincture: against(borne) },
         chargesOrOrdinaries: [{ type: sense.term, tincture: borne }],
       };
     // What the word already says was done to the figure is part of the arms, as
@@ -367,7 +376,7 @@ function armsOf<W extends Word>(tongue: Tongue<W>, sense: Sense<W>, word: W): Bl
     // drawing under the right word.
     case 'charge':
       return {
-        field: { tincture: against(borne) },
+        field: { type: FieldType.plain, tincture: against(borne) },
         chargesOrOrdinaries: [{ type: sense.term, tincture: borne, ...modified(word) }],
       };
     case 'modifier': {
@@ -379,21 +388,28 @@ function armsOf<W extends Word>(tongue: Tongue<W>, sense: Sense<W>, word: W): Bl
       const type = saidBy(tongue.wording, modifier, word)[0] ?? CHARGE_TYPES[0];
       const shown = borneIn(wordOf(tongue.wording.charges, type));
       return {
-        field: { tincture: against(shown) },
+        field: { type: FieldType.plain, tincture: against(shown) },
         chargesOrOrdinaries: [{ type, tincture: shown, modifier }],
       };
     }
     case 'strewing':
       return {
         field: {
+          type: FieldType.plain,
           tincture: against(borne),
           semy: { type: sense.term, tincture: borne },
         },
       };
     case 'field':
       return sense.term === PLAIN_TERM
-        ? { field: { tincture: COLOUR } }
-        : { field: { tincture: METAL, semy: { type: SOWN_FIGURE, tincture: COLOUR } } };
+        ? { field: { type: FieldType.plain, tincture: COLOUR } }
+        : {
+            field: {
+              type: FieldType.plain,
+              tincture: METAL,
+              semy: { type: SOWN_FIGURE, tincture: COLOUR },
+            },
+          };
   }
 }
 
@@ -582,7 +598,7 @@ function otherwise<W extends Word>(
     ...(sighting === undefined ? {} : { sighting }),
   });
   const borne = borneIn(word);
-  const field = { tincture: against(borne) };
+  const field: Plain = { type: FieldType.plain, tincture: against(borne) };
 
   // Handed the figure rather than reading it off the sense, a closure being
   // where what the rank told us about the term is forgotten again.
@@ -663,7 +679,7 @@ function otherwise<W extends Word>(
           const shown = borneIn(named);
           return say(
             {
-              field: { tincture: against(shown) },
+              field: { type: FieldType.plain, tincture: against(shown) },
               chargesOrOrdinaries: [{ type, tincture: shown, modifier }],
             },
             capitalise(named.value),

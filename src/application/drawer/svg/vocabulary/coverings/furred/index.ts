@@ -1,4 +1,4 @@
-import { FurType, Furred } from '../../../../../../domain/models/Field';
+import { FieldType, FurType, Furred } from '../../../../../../domain/models/Field';
 import { Pattern } from '../../../../../../domain/services/IBlazonDrawer';
 import { Ground } from '../../../Ground';
 import { FurredFigure } from '../../Figures';
@@ -10,7 +10,7 @@ import { vairy } from './vairy';
  * added to the vocabulary breaks this until it is given one.
  */
 export const FURRED: Record<FurType, FurredFigure> = {
-  [FurType.vairy]: vairy,
+  [FieldType.vairy]: vairy,
 };
 
 /**

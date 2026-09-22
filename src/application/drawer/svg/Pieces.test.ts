@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { VariationType } from '../../../domain/models/Field';
+import { FieldType, VARIATIONS, VariationType } from '../../../domain/models/Field';
 import { OrdinaryType } from '../../../domain/models/Ordinary';
 import { Colours, Metals } from '../../../domain/models/Tinctures';
 import { WikipediaColours } from '../../../infra/colours/WikipediaColours';
@@ -146,7 +146,7 @@ function covering(svg: string): { readonly pieces: readonly number[]; readonly f
 const COUNTS = [2, 4, 6, 8, 10];
 
 describe('every piece a blazon counts is drawn on the shield', () => {
-  test.each(Object.values(VariationType).flatMap((type) => COUNTS.map((pieces) => [type, pieces])))(
+  test.each(VARIATIONS.flatMap((type) => COUNTS.map((pieces) => [type, pieces])))(
     'a %s of %i shows every piece',
     (type, pieces) => {
       const covered = covering(drawn(type as VariationType, pieces as number));
@@ -162,7 +162,7 @@ describe('every piece a blazon counts is drawn on the shield', () => {
     // The piece that used to go missing: measured across the drawing rather than
     // across the shield, the lowest diagonal fell where a square shield would
     // have its corner and a heater has only its point, and six read as five.
-    const covered = covering(drawn(VariationType.bendy, 6));
+    const covered = covering(drawn(FieldType.bendy, 6));
     expect(covered.pieces).toHaveLength(3);
     for (const points of covered.pieces) {
       expect(points).toBeGreaterThan(100);
@@ -175,7 +175,7 @@ describe('every piece a blazon counts is drawn on the shield', () => {
     // not leave is a thread: the piece has to be read as a piece.
     const svg = drawer.draw({
       field: {
-        type: VariationType.paly,
+        type: FieldType.paly,
         firstTincture: Metals.or,
         secondTincture: Colours.azure,
         pieces: 6,

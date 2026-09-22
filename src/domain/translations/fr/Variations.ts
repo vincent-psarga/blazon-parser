@@ -1,4 +1,4 @@
-import { VariationType } from '../../models/Field';
+import { FieldType, VariationType } from '../../models/Field';
 import { Translation } from '../Translation';
 import { FrenchWord } from './FrenchWord';
 
@@ -13,23 +13,23 @@ import { FrenchWord } from './FrenchWord';
 // Nothing here agrees with an article: a varied field opens the blazon, and the
 // name stands alone before the tinctures it alternates.
 export const FrenchVariationType: Translation<VariationType, FrenchWord> = {
-  [VariationType.barry]: new FrenchWord(
+  [FieldType.barry]: new FrenchWord(
     'fascé',
     'The line of a fasce taken over and over: the field cut across into equal bars of two tinctures laid alternately.'
   ),
-  [VariationType.paly]: new FrenchWord(
+  [FieldType.paly]: new FrenchWord(
     'palé',
     'The line of a pal taken over and over: the field cut down into equal upright pieces of two tinctures laid alternately. The first tincture takes the piece at dexter, the viewer’s left.'
   ),
-  [VariationType.bendy]: new FrenchWord(
+  [FieldType.bendy]: new FrenchWord(
     'bandé',
     'The line of a bande repeated, corner to corner. The first tincture takes the piece against the dexter chief corner, which is how the armorials draw it.'
   ),
-  [VariationType.pily]: new FrenchWord(
+  [FieldType.pily]: new FrenchWord(
     'émanché',
     'Not a line repeated but a rank of long triangles driven into each other point first: émanches from the chief, and émanches from the base between them, each driven into the gaps the others leave.'
   ),
-  [VariationType.chevronny]: new FrenchWord(
+  [FieldType.chevronny]: new FrenchWord(
     'chevronné',
     'The chevron repeated down the field, each piece bent to the same point.'
   ),

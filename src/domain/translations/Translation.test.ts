@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { ChargeType } from '../models/Charge';
 import { Modifier } from '../models/Modifier';
-import { DivisionType } from '../models/Field';
+import { DIVISIONS } from '../models/Field';
 import { COLOURS, Colours, Furs, METALS, Metals, PELTS, TINCTURES } from '../models/Tinctures';
 import { OrdinaryType } from '../models/Ordinary';
 import {
@@ -237,7 +237,7 @@ describe('the French vocabulary', () => {
     expect(bySpelling(FrenchTinctures).get(nameOf(FrenchTinctures, tincture))?.term).toBe(tincture);
   });
 
-  test.each(Object.values(DivisionType))('reads %s back from its own name', (division) => {
+  test.each(DIVISIONS)('reads %s back from its own name', (division) => {
     expect(bySpelling(FrenchDivisionType).get(nameOf(FrenchDivisionType, division))?.term).toBe(
       division
     );

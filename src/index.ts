@@ -24,18 +24,33 @@ export type {
   UnknownWords,
 } from './application/armorial/ArmorialReading';
 export {
-  DivisionType,
-  FurType,
+  DIVISIONS,
+  FURS,
+  FieldDefinition,
+  FieldDefinitions,
+  FieldKind,
+  FieldType,
   PIECES,
-  VariationType,
+  VARIATIONS,
   cutInPieces,
   isDivision,
   isFurred,
   isPlain,
   isVariation,
+  kindOf,
   usualPieces,
 } from './domain/models/Field';
-export type { Division, Field, Furred, Plain, Semy, Variation } from './domain/models/Field';
+export type {
+  Division,
+  DivisionType,
+  Field,
+  FurType,
+  Furred,
+  Plain,
+  Semy,
+  Variation,
+  VariationType,
+} from './domain/models/Field';
 export {
   OrdinaryDefinition,
   OrdinaryDefinitions,

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
-import { FurType } from '../../domain/models/Field';
+import { FieldType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Furs, Metals } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
@@ -12,7 +12,7 @@ describe('furred fields', () => {
   test('reads "Vairé d\'or et de gueules" as the bells of vair cut from that pair', () => {
     expect(parser.parse("Vairé d'or et de gueules")).toEqual({
       field: {
-        type: FurType.vairy,
+        type: FieldType.vairy,
         firstTincture: Metals.or,
         secondTincture: Colours.gules,
       },
@@ -45,7 +45,7 @@ describe('furred fields', () => {
 
   test('bears an ordinary over the pelt, as any other field does', () => {
     expect(parser.parse("Vairé d'or et de gueules à la fasce d'azur")).toEqual({
-      field: { type: FurType.vairy, firstTincture: Metals.or, secondTincture: Colours.gules },
+      field: { type: FieldType.vairy, firstTincture: Metals.or, secondTincture: Colours.gules },
       chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
     });
   });
@@ -57,14 +57,14 @@ describe('furred fields', () => {
    */
   test('leaves "de vair" the plain field of the tincture it is', () => {
     expect(parser.parse("De vair à la fasce d'or")).toEqual({
-      field: { tincture: Furs.vair },
+      field: { type: FieldType.plain, tincture: Furs.vair },
       chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
     });
   });
 
   test('a vairé may itself be cut from a fur, absurd as that would be to draw', () => {
     expect(parser.parse("Vairé d'hermine et de vair").field).toMatchObject({
-      type: FurType.vairy,
+      type: FieldType.vairy,
       firstTincture: Furs.ermine,
       secondTincture: Furs.vair,
     });
