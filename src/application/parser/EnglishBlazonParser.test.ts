@@ -106,6 +106,20 @@ describe('EnglishBlazonParser', () => {
     );
   });
 
+  // English does not rank the parts of a partition. It sets two whole coats side
+  // by side another way — "It is necessary always to mention the dexter shield
+  // first and to say impaled with" — which is a phrase of its own and no rank at
+  // all, and where English does rank it ranks quarters, which are not read yet.
+  // So the French form is not lent to it: a tongue contributes the ranks it has,
+  // and English contributes none.
+  test.each([
+    'Per pale, in the first azure, in the second or',
+    'Per pale, 1 azure, 2 or',
+    'Per pale, au premier azure, au second or',
+  ])('does not rank the parts of a partition: %s', (blazon) => {
+    expect(() => parser.parse(blazon)).toThrow();
+  });
+
   test('survives the round trip, the charged half and all', () => {
     const blazon = 'Per pale azure three fleurs-de-lis or and ermine.';
     expect(writer.write(parser.parse(blazon))).toBe(blazon);

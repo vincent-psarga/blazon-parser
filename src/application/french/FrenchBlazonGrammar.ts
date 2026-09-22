@@ -12,13 +12,14 @@ import { WrongOrdinaryArticle } from '../../domain/errors/parsing/WrongOrdinaryA
 import { WrongTinctureArticle } from '../../domain/errors/parsing/WrongTinctureArticle';
 import { FrenchModifiers } from '../../domain/translations/fr/Modifiers';
 import { FrenchNumbers } from '../../domain/translations/fr/Numbers';
+import { FrenchRanks } from '../../domain/translations/fr/Ranks';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { Modifier } from '../../domain/models/Modifier';
 import { asSeveral, wordsOf, writtenAs } from '../../domain/translations/Translation';
 import { TokenKind } from '../lexer/Lexer';
 import { BlazonGrammar } from '../parser/BlazonGrammar';
 import { anyKeyword, guard, keyword, optional, spelledTerm, term } from '../parser/Combinators';
-import { asOrdinary, asDivision, asTincture } from '../parser/Failures';
+import { asOrdinary, asDivision, asRank, asTincture } from '../parser/Failures';
 import { NOT_IN_NUMBER, alone, bearings, modifiable, several } from '../parser/Borne';
 import { ModifierForm, modifying } from '../parser/Modifiers';
 import { number } from '../parser/Numbers';
@@ -193,6 +194,16 @@ const SOWN_CHARGE = kright(
 
 // A field of one tincture may be called bare, or be said to have been sown, and
 // is never both: what "plain" promises is that nothing was sown on it either.
+/**
+ * The rank of one part of a divided field: "au premier", "au second", and the
+ * same ranks in figures or in Roman numerals — "au 1", "au II" — which the
+ * armorials write as readily.
+ *
+ * The article is the one that stands before a charge, so a list of what a part
+ * bears has to be told that a rank may stand where it is looking for one.
+ */
+const RANK = kright(AU, number(FrenchRanks, asRank));
+
 const TREATMENT = alt(
   apply(PLAIN, () => BARE),
   strewing(alt(NAMED_STREWING, SOWN_CHARGE), TINCTURE)
@@ -211,4 +222,5 @@ export const FrenchBlazonGrammar: BlazonGrammar = {
   treatment: TREATMENT,
   borne: BORNE,
   and: AND,
+  rank: RANK,
 };

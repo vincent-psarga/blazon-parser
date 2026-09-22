@@ -19,6 +19,7 @@ import {
 import { OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords, counted } from '../../domain/translations/Numbers';
+import { FIRST, SECOND } from '../../domain/translations/Ranks';
 import { Strewings, strewnIn } from '../../domain/translations/Strewings';
 import {
   Translation,
@@ -86,6 +87,17 @@ export interface BlazonWording<W extends Word = Word> {
   readonly strew: (word: W) => string;
   /** The conjunction joining the halves of a divided field. */
   readonly conjunction: string;
+  /**
+   * How the language names the rank of one part of a divided field: "au
+   * premier", "au second". The rank arrives as the number it is, counting from
+   * one, the language having said how it spells its ranks.
+   *
+   * A language that does not rank the parts leaves this off — English sets two
+   * whole coats side by side another way, naming the dexter first and saying
+   * "impaled with" between them — and writes the unranked form, which can say
+   * only what the first part bears.
+   */
+  readonly rank?: (rank: number) => string;
 }
 
 /**
@@ -291,12 +303,26 @@ function writeVariation<W extends Word>(wording: BlazonWording<W>, variation: Va
  * them.
  */
 function writeDivision<W extends Word>(wording: BlazonWording<W>, division: Division): string {
+  const name = nameOf(wording.divisions, division.type);
+  const ranked = wording.rank;
+  if (ranked === undefined || !bearsAnything(division.second)) {
+    return [
+      name,
+      writeArms(wording, division.first),
+      wording.conjunction,
+      writeArms(wording, division.second),
+    ].join(' ');
+  }
   return [
-    nameOf(wording.divisions, division.type),
-    writeArms(wording, division.first),
-    wording.conjunction,
-    writeArms(wording, division.second),
+    `${name}${SEPARATOR}`,
+    `${ranked(FIRST)} ${writeArms(wording, division.first)}${SEPARATOR}`,
+    `${ranked(SECOND)} ${writeArms(wording, division.second)}`,
   ].join(' ');
+}
+
+/** Whether a part of a divided field bears anything at all. */
+function bearsAnything(part: Blazon): boolean {
+  return (part.chargesOrOrdinaries ?? []).length !== 0;
 }
 
 /**

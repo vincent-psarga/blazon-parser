@@ -116,6 +116,8 @@ export {
 export type { Spelled, TermWord, Translation } from './domain/translations/Translation';
 export { counted, numberWord } from './domain/translations/Numbers';
 export type { NumberWords } from './domain/translations/Numbers';
+export { FIRST, SECOND } from './domain/translations/Ranks';
+export type { RankWords } from './domain/translations/Ranks';
 export { strewnIn, strewnTerms } from './domain/translations/Strewings';
 export type { Strewings } from './domain/translations/Strewings';
 export { Word } from './domain/translations/Word';
@@ -139,6 +141,7 @@ export { FrenchDivisionType } from './domain/translations/fr/Divisions';
 export { FrenchFurType } from './domain/translations/fr/Furs';
 export { FrenchVariationType } from './domain/translations/fr/Variations';
 export { FrenchNumbers } from './domain/translations/fr/Numbers';
+export { FrenchRanks } from './domain/translations/fr/Ranks';
 export { FrenchOrdinaryType } from './domain/translations/fr/Ordinaries';
 export { FrenchChargeType } from './domain/translations/fr/Charges';
 export { FrenchModifiers } from './domain/translations/fr/Modifiers';

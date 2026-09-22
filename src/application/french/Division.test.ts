@@ -200,6 +200,104 @@ describe('divided fields', () => {
     });
   });
 
+  describe('the ranked form, which the handbooks prescribe', () => {
+    const LILIES = {
+      type: FieldType.pale,
+      first: {
+        field: { type: FieldType.plain, tincture: Colours.azure },
+        chargesOrOrdinaries: [{ type: ChargeType.fleurDeLis, tincture: Metals.or, count: 3 }],
+      },
+      second: half(Furs.ermine),
+    };
+
+    // The same arms either way: the rank says which part the arms after it are
+    // laid in, where the unranked form says it by where the phrase stands. So
+    // the two forms are two ways of writing one blazon, and the model holds no
+    // trace of which was written.
+    test('reads the ranked form as the same arms the unranked form gives', () => {
+      expect(
+        parser.parse("Parti, au premier d'azur à trois fleurs de lys d'or, au second d'hermine")
+          .field
+      ).toEqual(LILIES);
+      expect(parser.parse("Parti d'azur à trois fleurs de lys d'or et d'hermine").field).toEqual(
+        LILIES
+      );
+    });
+
+    // The armorials write the rank three ways, and the armorial of the
+    // Plantagenets writes it in Roman numerals.
+    test.each([
+      ['in words', "Parti, au premier d'azur, au second de gueules"],
+      ['the second part the longer way', "Parti, au premier d'azur, au deuxième de gueules"],
+      ['in figures', "Parti, au 1 d'azur, au 2 de gueules"],
+      ['in Roman numerals', "Parti, au I d'azur, au II de gueules"],
+    ])('reads the rank written %s', (_how, blazon) => {
+      expect(parser.parse(blazon).field).toEqual({
+        type: FieldType.pale,
+        first: half(Colours.azure),
+        second: half(Colours.gules),
+      });
+    });
+
+    // Whatever the tongue sets between the parts is read and dropped: the mark,
+    // the conjunction, or both — "mi-parti : au premier d'or [...], et au second
+    // de gueules [...]" writes all of them.
+    test.each([
+      "Parti, au premier d'or, au second de gueules",
+      "Parti : au premier d'or, et au second de gueules",
+      "Parti au premier d'or au second de gueules",
+      "Parti ; au premier d'or ; et au second de gueules",
+    ])('reads the marks a blazon sets between the parts: %s', (blazon) => {
+      expect(parser.parse(blazon).field).toEqual({
+        type: FieldType.pale,
+        first: half(Metals.or),
+        second: half(Colours.gules),
+      });
+    });
+
+    // Which is what the ranked form is for: the unranked one can charge the
+    // first part alone, everything after the second part belonging to the shield.
+    test('charges the second part, which the unranked form cannot', () => {
+      expect(
+        parser.parse("Parti, au premier de vair plain, au second de gueules à la bordure d'or")
+      ).toEqual({
+        field: {
+          type: FieldType.pale,
+          first: half(Furs.vair),
+          second: {
+            field: { type: FieldType.plain, tincture: Colours.gules },
+            chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Metals.or }],
+          },
+        },
+      });
+    });
+
+    test('writes the ranked form only where the unranked one could not say it', () => {
+      const charged = "Parti, au premier de vair, au second de gueules à la bordure d'or.";
+      expect(writer.write(parser.parse(charged))).toBe(charged);
+      // The first part charged and the other bare: the armorials write that
+      // unranked, so the rank is dropped and the arms are the same arms.
+      expect(
+        writer.write(
+          parser.parse("Parti, au premier d'azur à trois fleurs de lys d'or, au second d'hermine")
+        )
+      ).toBe("Parti d'azur à trois fleurs de lys d'or et d'hermine.");
+    });
+
+    test('names the parts in the order the partition takes them, or is refused', () => {
+      expect(() => parser.parse("Parti, au second d'or, au premier de gueules")).toThrow(
+        /names its parts in the order the partition takes them/
+      );
+      expect(() => parser.parse("Parti, au premier d'or, au premier de gueules")).toThrow();
+    });
+
+    test('reports a ranked division whose other part never arrives', () => {
+      expect(() => parser.parse("Parti, au premier d'azur")).toThrow(
+        /Missing the other part in: Parti, au premier d'azur/
+      );
+    });
+  });
+
   describe('rejections', () => {
     test('rejects a division naming only one tincture', () => {
       expect(() => parser.parse("Parti d'azur")).toThrow();

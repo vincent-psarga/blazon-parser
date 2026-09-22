@@ -64,10 +64,15 @@ Supported vocabulary as it stands:
   d'or". A mark set before the conjunction says no more than the conjunction does and is read and
   dropped. What a half bears stands between its tincture and the conjunction; what follows the
   second half belongs to the shield, a bordure blazoned after a division surrounding the whole of
-  it. That much is the unranked form the armorials write, and it can charge the first half only: the
-  ranked form the handbooks prescribe — "parti, au premier ..., au second ..." — is what charges
-  either, and is not read. The drawing has yet to follow either way: a charged half is painted the
-  tincture it is laid on, and what it bears is not drawn.
+  it. That is the unranked form the armorials write, and it can charge the first half only. The
+  ranked form the handbooks prescribe charges either — "Parti, au premier de vair, au second de
+  gueules à la bordure d'or" — the rank saying which part the arms after it are laid in, written in
+  words, in figures or in Roman numerals ("au premier", "au 1", "au I"), and the parts named in the
+  order the partition takes them or the blazon refused. It is read in French, which has the form;
+  English ranks quarters rather than halves and marshals two coats with "impaled with", so it
+  contributes no rank and cannot blazon a charge on its second half. The rank is written back only
+  where the unranked form could not have said it. The drawing has yet to follow either form: a
+  charged part is painted the tincture it is laid on, and what it bears is not drawn.
 - **Varied fields (5)** — barry, paly, bendy, pily, chevronny, cut into a counted number of pieces.
 - **Furred fields (1)** — vairy: the bells of vair cut from two tinctures the blazon names, rather
   than from the argent and azure vair itself is always drawn in. Nothing about it is counted.

@@ -68,6 +68,16 @@ export const asCount: Vocabulary = {
   unknown: (word, position) => new BlazonParseError(`Not a number: ${word}`, position),
 };
 
+/**
+ * A rank names no heraldic term either — it says which part of a divided field
+ * the arms after it are laid in — so a word standing where one is expected has
+ * simply failed to be a rank, and the complaint names no kind of its own.
+ */
+export const asRank: Vocabulary = {
+  unknown: (word, position) => new BlazonParseError(`Not a rank: ${word}`, position),
+  owed: (context) => new BlazonParseError(`Missing the other part in: ${context}`),
+};
+
 export const asOrdinary: Vocabulary = {
   unknown: (word, position) => new UnknownOrdinary(word, position),
   owed: (context) => new MissingOrdinary(context),
@@ -151,12 +161,15 @@ export function within<TResult>(parser: Parser<TokenKind, TResult>): Parser<Toke
  * where nothing says otherwise.
  *
  * The lexer drops the spaces, so they are put back between every pair of tokens
- * but those an elision binds: "d'" and "azur" were one word and stay one.
+ * but those an elision binds: "d'" and "azur" were one word and stay one. A mark
+ * binds the other way round, leaning on the word before it: "au premier d'azur,
+ * au second" is how a blazon writes it and how a complaint quoting it should
+ * read.
  */
 export function textBetween(token: Token<TokenKind> | undefined, until?: Token<TokenKind>): string {
   let text = '';
   for (let current = token; current !== undefined && current !== until; current = current.next) {
-    if (text !== '' && !/['’]$/.test(text)) {
+    if (text !== '' && !/['’]$/.test(text) && current.kind !== TokenKind.Separator) {
       text += ' ';
     }
     text += current.text;

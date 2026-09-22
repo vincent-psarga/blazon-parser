@@ -3,7 +3,8 @@ import { FrenchWord } from '../../domain/translations/fr/FrenchWord';
 import { FrenchPlain } from '../../domain/translations/fr/Plain';
 import { PIECES } from '../../domain/translations/fr/Variations';
 import { TokenKind } from '../lexer/Lexer';
-import { writtenAs } from '../../domain/translations/Translation';
+import { nameOf, writtenAs } from '../../domain/translations/Translation';
+import { FrenchRanks } from '../../domain/translations/fr/Ranks';
 import { anyKeyword, keyword } from '../parser/Combinators';
 
 // French plumbing, not heraldry: the articles and conjunctions that hold a
@@ -56,6 +57,19 @@ export function everyBearing(word: FrenchWord): readonly string[] {
  */
 export function bearing(word: FrenchWord, count?: string): string {
   return count === undefined ? everyBearing(word)[0] : `à ${count} ${word.plural}`;
+}
+
+/**
+ * How French names the rank of one part of a divided field: "au premier", "au
+ * second".
+ *
+ * The article is the one that stands before a charge, the armorials ranking a
+ * part exactly as they bear a thing on it. Which ordinal is written is the
+ * vocabulary's affair, and the shorter of the two French has — "second" against
+ * "deuxième" — is the one written back.
+ */
+export function ranked(rank: number): string {
+  return `au ${nameOf(FrenchRanks, `${rank}`)}`;
 }
 
 /**

@@ -62,6 +62,26 @@ describe('EnglishBlazonWriter', () => {
     ).toBe('Per pale azure three fleurs-de-lis or and ermine.');
   });
 
+  // English has no ranked form to write, having none to read: a charge on the
+  // second half is written where the reading takes it for the shield's, so the
+  // arms come back saying something else. It is the one place the round trip does
+  // not hold, and it holds again the day English marshals its parts — "impaled
+  // with" — or ranks them as it ranks quarters.
+  test('cannot write a charge on the second half, having no rank to write it with', () => {
+    const blazon: Blazon = {
+      field: {
+        type: FieldType.pale,
+        first: half(Colours.azure),
+        second: {
+          field: { type: FieldType.plain, tincture: Metals.or },
+          chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+        },
+      },
+    };
+    expect(writer.write(blazon)).toBe('Per pale azure and or a bordure gules.');
+    expect(parser.parse(writer.write(blazon))).not.toEqual(blazon);
+  });
+
   test('writes a bare half as its tincture and nothing more', () => {
     // A half that bears nothing is arms that bear nothing, and arms that bear
     // nothing are written as their field: so the commonest division in the
