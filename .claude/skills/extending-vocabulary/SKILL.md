@@ -73,9 +73,10 @@ The rest of the dictionary is a separate piece of work — the README says as mu
 `src/domain/models/` is where the term lives and where what may be said of it is
 declared: `ChargeType` and its `ChargeDefinitions` entry, with `allowedModifiers`
 and, where the figure is not itself until something has been said of it,
-`onlyUnder`. It is declared in the model and not in a vocabulary because the
-answer is the same in every tongue: an annelet is no more voidable than an
-annulet.
+`onlyUnder`; `OrdinaryType` and its `OrdinaryDefinitions` entry, with
+`canBeBorneInNumbers`. It is declared in the model and not in a vocabulary
+because the answer is the same in every tongue: an annelet is no more voidable
+than an annulet, and a third chief is no likelier in English than in French.
 
 Every `Record` in the codebase is keyed on the enum's values, so `npm run
 typecheck` names every place that has not caught up — both `Charges.ts`, both

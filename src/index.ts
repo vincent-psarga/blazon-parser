@@ -37,10 +37,11 @@ export {
 } from './domain/models/Field';
 export type { Division, Field, Furred, Plain, Semy, Variation } from './domain/models/Field';
 export {
+  OrdinaryDefinition,
+  OrdinaryDefinitions,
   OrdinaryType,
   SEVERAL,
   borne,
-  bornInNumber,
   isOrdinaryType,
 } from './domain/models/Ordinary';
 export {

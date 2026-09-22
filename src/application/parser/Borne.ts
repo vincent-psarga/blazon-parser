@@ -12,7 +12,12 @@ import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { RepeatedOrdinary } from '../../domain/errors/parsing/RepeatedOrdinary';
 import { ChargeType, allowsModifier, isChargeType } from '../../domain/models/Charge';
 import { Modifier } from '../../domain/models/Modifier';
-import { OrdinaryType, SEVERAL, bornInNumber, isOrdinaryType } from '../../domain/models/Ordinary';
+import {
+  OrdinaryDefinitions,
+  OrdinaryType,
+  SEVERAL,
+  isOrdinaryType,
+} from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords } from '../../domain/translations/Numbers';
 import { TermWord, Translation, asSeveral } from '../../domain/translations/Translation';
@@ -211,7 +216,7 @@ export function bearings<W extends Word>(
  * every charge may be borne in number.
  */
 export const NOT_IN_NUMBER: Refusal<BorneType, Word> = {
-  accepts: ({ term }) => !isOrdinaryType(term) || bornInNumber(term),
+  accepts: ({ term }) => !isOrdinaryType(term) || OrdinaryDefinitions[term].canBeBorneInNumbers,
   complain: ({ word }, count, position) =>
     new RepeatedOrdinary(word.plural.toLowerCase(), count, position),
 };

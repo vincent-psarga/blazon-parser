@@ -6,7 +6,7 @@ import { Blazon } from '../../src/domain/models/Blazon';
 import { ChargeType, allowsModifier, modifiersOf } from '../../src/domain/models/Charge';
 import { Modifier } from '../../src/domain/models/Modifier';
 import { VariationType, usualPieces } from '../../src/domain/models/Field';
-import { OrdinaryType, bornInNumber } from '../../src/domain/models/Ordinary';
+import { OrdinaryDefinitions, OrdinaryType } from '../../src/domain/models/Ordinary';
 import { COLOURS, Colours, Metals, Tincture, isFur } from '../../src/domain/models/Tinctures';
 import { counted } from '../../src/domain/translations/Numbers';
 import { EnglishNumbers } from '../../src/domain/translations/en/Numbers';
@@ -551,7 +551,10 @@ function otherwise<W extends Word>(
     ),
   });
 
-  if (sense.rank === 'ordinary' && bornInNumber(sense.term as OrdinaryType)) {
+  if (
+    sense.rank === 'ordinary' &&
+    OrdinaryDefinitions[sense.term as OrdinaryType].canBeBorneInNumbers
+  ) {
     return [inNumber()];
   }
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { OrdinaryType, SEVERAL, borne, bornInNumber } from './Ordinary';
+import { OrdinaryDefinitions, OrdinaryType, SEVERAL, borne } from './Ordinary';
 import { Metals } from './Tinctures';
 
 describe('an ordinary borne in number', () => {
@@ -10,19 +10,25 @@ describe('an ordinary borne in number', () => {
     OrdinaryType.bendSinister,
     OrdinaryType.chevron,
   ])('a field may bear several of %s', (type) => {
-    expect(bornInNumber(type)).toBe(true);
+    expect(OrdinaryDefinitions[type].canBeBorneInNumbers).toBe(true);
   });
 
   test.each([OrdinaryType.chief, OrdinaryType.cross, OrdinaryType.saltire, OrdinaryType.bordure])(
     'a field bears but one %s',
     (type) => {
-      expect(bornInNumber(type)).toBe(false);
+      expect(OrdinaryDefinitions[type].canBeBorneInNumbers).toBe(false);
     }
   );
 
   test('says of every ordinary in the vocabulary which it is', () => {
     for (const type of Object.values(OrdinaryType)) {
-      expect(typeof bornInNumber(type)).toBe('boolean');
+      expect(typeof OrdinaryDefinitions[type].canBeBorneInNumbers).toBe('boolean');
+    }
+  });
+
+  test('every definition is filed under the ordinary it defines', () => {
+    for (const type of Object.values(OrdinaryType)) {
+      expect(OrdinaryDefinitions[type].type).toBe(type);
     }
   });
 });
