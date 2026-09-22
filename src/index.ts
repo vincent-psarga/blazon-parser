@@ -33,6 +33,7 @@ export {
   PIECES,
   VARIATIONS,
   cutInPieces,
+  half,
   isDivision,
   isFurred,
   isPlain,

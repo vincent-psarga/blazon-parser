@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
-import { FieldType } from '../../domain/models/Field';
+import { FieldType, half } from '../../domain/models/Field';
 import { Colours, Metals } from '../../domain/models/Tinctures';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
@@ -11,11 +11,7 @@ const parser = new FrenchBlazonParser();
 describe('divided fields', () => {
   test('reads "Parti d\'azur et d\'or" as a field divided per pale', () => {
     expect(parser.parse("Parti d'azur et d'or")).toEqual({
-      field: {
-        type: FieldType.pale,
-        firstTincture: Colours.azure,
-        secondTincture: Metals.or,
-      },
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
     });
   });
 
@@ -26,29 +22,25 @@ describe('divided fields', () => {
     ['taillé', FieldType.bendSinister],
   ])('%s divides the field per %s', (name, type) => {
     expect(parser.parse(`${name} de gueules et d'argent`)).toEqual({
-      field: { type, firstTincture: Colours.gules, secondTincture: Metals.argent },
+      field: { type, first: half(Colours.gules), second: half(Metals.argent) },
     });
   });
 
   test('accepts tinctures named without their article', () => {
     expect(parser.parse('Parti azur et or')).toEqual({
-      field: { type: FieldType.pale, firstTincture: Colours.azure, secondTincture: Metals.or },
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
     });
   });
 
   test('accepts the same tincture on both sides', () => {
     expect(parser.parse("Coupé d'or et d'or")).toEqual({
-      field: { type: FieldType.fess, firstTincture: Metals.or, secondTincture: Metals.or },
+      field: { type: FieldType.fess, first: half(Metals.or), second: half(Metals.or) },
     });
   });
 
   test('is case insensitive', () => {
     expect(parser.parse("TRANCHÉ D'AZUR ET DE SABLE")).toEqual({
-      field: {
-        type: FieldType.bend,
-        firstTincture: Colours.azure,
-        secondTincture: Colours.sable,
-      },
+      field: { type: FieldType.bend, first: half(Colours.azure), second: half(Colours.sable) },
     });
   });
 
@@ -56,13 +48,13 @@ describe('divided fields', () => {
     const decomposed = "Coupé d'or et de sable".normalize('NFD');
     expect(decomposed).not.toBe("Coupé d'or et de sable");
     expect(parser.parse(decomposed)).toEqual({
-      field: { type: FieldType.fess, firstTincture: Metals.or, secondTincture: Colours.sable },
+      field: { type: FieldType.fess, first: half(Metals.or), second: half(Colours.sable) },
     });
   });
 
   test('closes with the optional full stop', () => {
     expect(parser.parse("Parti d'azur et d'or.")).toEqual({
-      field: { type: FieldType.pale, firstTincture: Colours.azure, secondTincture: Metals.or },
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
     });
   });
 
@@ -87,6 +79,17 @@ describe('divided fields', () => {
     test('still reports an unknown tincture rather than an unknown division', () => {
       expect(() => parser.parse('de fuchsia')).toThrow(UnknownTincture);
       expect(() => parser.parse('de fuchsia')).toThrow(/Unknown tincture: fuchsia/);
+    });
+
+    // A half is arms and the model holds one: "Parti d'azur à trois fleurs de
+    // lys d'or et d'hermine" charges the half at dexter, and the writer writes
+    // it. Reading it is a rule that has to know where the first half ends and
+    // the conjunction begins, and until that rule is written the blazon is
+    // refused outright rather than read by halves.
+    test('does not yet read a half that bears a charge', () => {
+      expect(() => parser.parse("Parti d'azur à trois fleurs de lys d'or et d'hermine")).toThrow(
+        /Expected "et"/
+      );
     });
 
     test('carries the elision rule into both halves', () => {

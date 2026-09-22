@@ -6,6 +6,7 @@ import {
   FieldType,
   VARIATIONS,
   VariationType,
+  half,
 } from '../../domain/models/Field';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
@@ -26,11 +27,7 @@ describe('EnglishBlazonWriter', () => {
   test('writes a divided field', () => {
     expect(
       writer.write({
-        field: {
-          type: FieldType.pale,
-          firstTincture: Colours.azure,
-          secondTincture: Metals.or,
-        },
+        field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
       })
     ).toBe('Per pale azure and or.');
   });
@@ -41,9 +38,43 @@ describe('EnglishBlazonWriter', () => {
     [FieldType.bendSinister, 'Per bend sinister'],
   ])('names %s in English', (type, name) => {
     const written = writer.write({
-      field: { type, firstTincture: Colours.gules, secondTincture: Metals.argent },
+      field: { type, first: half(Colours.gules), second: half(Metals.argent) },
     });
     expect(written).toBe(`${name} gules and argent.`);
+  });
+
+  // A half is arms, so it is written as arms are — the field, then whatever it
+  // bears — in the place a bare half writes its tincture. The phrase around it
+  // is the one a division always has: the name of the line, then the halves with
+  // the conjunction between them.
+  test('writes a half that bears a charge as the arms it is', () => {
+    expect(
+      writer.write({
+        field: {
+          type: FieldType.pale,
+          first: {
+            field: { type: FieldType.plain, tincture: Colours.azure },
+            chargesOrOrdinaries: [{ type: ChargeType.fleurDeLis, tincture: Metals.or, count: 3 }],
+          },
+          second: half(Furs.ermine),
+        },
+      })
+    ).toBe('Per pale azure three fleurs-de-lis or and ermine.');
+  });
+
+  test('writes a bare half as its tincture and nothing more', () => {
+    // A half that bears nothing is arms that bear nothing, and arms that bear
+    // nothing are written as their field: so the commonest division in the
+    // armorials comes back out as the two tinctures it was written as.
+    expect(
+      writer.write({
+        field: {
+          type: FieldType.fess,
+          first: { field: { type: FieldType.plain, tincture: Metals.or } },
+          second: half(Colours.sable),
+        },
+      })
+    ).toBe('Per fess or and sable.');
   });
 
   test('introduces a tincture bare, with no article', () => {
@@ -87,11 +118,7 @@ describe('EnglishBlazonWriter', () => {
         chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
       });
       const divided = writer.write({
-        field: {
-          type: FieldType.fess,
-          firstTincture: Colours.azure,
-          secondTincture: Metals.or,
-        },
+        field: { type: FieldType.fess, first: half(Colours.azure), second: half(Metals.or) },
       });
       expect(borne).toBe('Azure a fess or.');
       expect(divided).toBe('Per fess azure and or.');
@@ -113,11 +140,7 @@ describe('EnglishBlazonWriter', () => {
         ).toBe(`Argent ${article} gules.`);
         expect(
           writer.write({
-            field: {
-              type: divides,
-              firstTincture: Metals.argent,
-              secondTincture: Colours.gules,
-            },
+            field: { type: divides, first: half(Metals.argent), second: half(Colours.gules) },
           })
         ).toBe(`${per} argent and gules.`);
       }
@@ -126,11 +149,7 @@ describe('EnglishBlazonWriter', () => {
     test('writes an ordinary laid on a divided field', () => {
       expect(
         writer.write({
-          field: {
-            type: FieldType.pale,
-            firstTincture: Colours.azure,
-            secondTincture: Metals.or,
-          },
+          field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
           chargesOrOrdinaries: [{ type: OrdinaryType.saltire, tincture: Colours.gules }],
         })
       ).toBe('Per pale azure and or a saltire gules.');
@@ -148,7 +167,7 @@ describe('round trip', () => {
 
   test.each(DIVISIONS)('a field divided per %s survives the round trip', (type) => {
     const blazon: Blazon = {
-      field: { type, firstTincture: Colours.sable, secondTincture: Metals.or },
+      field: { type, first: half(Colours.sable), second: half(Metals.or) },
     };
     expect(roundTrip(blazon)).toEqual(blazon);
   });
@@ -171,11 +190,7 @@ describe('round trip', () => {
 
   test('a divided field bearing an ordinary survives the round trip', () => {
     const blazon: Blazon = {
-      field: {
-        type: FieldType.bend,
-        firstTincture: Colours.gules,
-        secondTincture: Metals.argent,
-      },
+      field: { type: FieldType.bend, first: half(Colours.gules), second: half(Metals.argent) },
       chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Colours.sable }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);

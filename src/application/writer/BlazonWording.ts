@@ -113,11 +113,23 @@ const SEPARATOR = ',';
  * covers the bends.
  */
 export function writeBlazon<W extends Word>(wording: BlazonWording<W>, blazon: Blazon): string {
-  const field = capitalise(writeField(wording, blazon.field));
+  return `${capitalise(writeArms(wording, blazon))}.`;
+}
+
+/**
+ * A field and whatever it bears, which is the same phrase wherever it stands:
+ * the whole shield says it, and so does either half of a divided field.
+ *
+ * The sentence is what a blazon is written as, and a half is no sentence — it is
+ * written inside one — so the capital and the full stop are put on by the caller
+ * that has a sentence to make.
+ */
+function writeArms<W extends Word>(wording: BlazonWording<W>, blazon: Blazon): string {
+  const field = writeField(wording, blazon.field);
   const borne = (blazon.chargesOrOrdinaries ?? [])
     .map((one) => writeBorne(wording, one))
     .join(`${SEPARATOR} `);
-  return `${borne === '' ? field : `${field} ${borne}`}.`;
+  return borne === '' ? field : `${field} ${borne}`;
 }
 
 /**
@@ -260,30 +272,43 @@ function writeVariation<W extends Word>(wording: BlazonWording<W>, variation: Va
   );
 }
 
+/**
+ * The name of the line, then each half written as the arms it is, with the
+ * conjunction between them.
+ *
+ * A half carrying nothing but its tincture writes as that tincture and nothing
+ * else — which is what a plain field bearing nothing writes as — so "parti
+ * d'azur et d'or" comes back out as itself, and a half carrying more says more
+ * in the same place: "Parti d'azur à trois fleurs de lys d'or et d'hermine".
+ *
+ * Nothing is done here about a half that ends where the conjunction begins. A
+ * half bearing several things is written with the mark that separates them, and
+ * a reader — this library's included — may not be able to tell that mark's work
+ * from the conjunction's. Writing it plainly is the honest answer: the blazon
+ * says what the arms are, and whether it can be read back again is the reading's
+ * to answer for.
+ */
 function writeDivision<W extends Word>(wording: BlazonWording<W>, division: Division): string {
-  return writeBetween(wording, nameOf(wording.divisions, division.type), division);
+  return [
+    nameOf(wording.divisions, division.type),
+    writeArms(wording, division.first),
+    wording.conjunction,
+    writeArms(wording, division.second),
+  ].join(' ');
 }
 
 /**
- * A furred field is written as a division is — the name, then the two tinctures
- * — because that is all there is to say: no count stands anywhere in the phrase,
- * and neither tongue puts anything between the name and the pair.
+ * A furred field is written as a division of two bare halves is — the name, then
+ * the two tinctures — because that is all there is to say: no count stands
+ * anywhere in the phrase, neither tongue puts anything between the name and the
+ * pair, and a pelt has no halves for anything to be laid on.
  */
 function writeFurred<W extends Word>(wording: BlazonWording<W>, furred: Furred): string {
-  return writeBetween(wording, nameOf(wording.furs, furred.type), furred);
-}
-
-/** A named term and the two tinctures it takes, joined by the conjunction. */
-function writeBetween<W extends Word>(
-  wording: BlazonWording<W>,
-  name: string,
-  between: Division | Furred
-): string {
   return [
-    name,
-    writeTincture(wording, between.firstTincture),
+    nameOf(wording.furs, furred.type),
+    writeTincture(wording, furred.firstTincture),
     wording.conjunction,
-    writeTincture(wording, between.secondTincture),
+    writeTincture(wording, furred.secondTincture),
   ].join(' ');
 }
 

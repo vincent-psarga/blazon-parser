@@ -28,6 +28,7 @@ import {
   PIECES,
   Variation,
   cutInPieces,
+  half,
   usualPieces,
 } from '../../domain/models/Field';
 import { Modifier } from '../../domain/models/Modifier';
@@ -41,8 +42,8 @@ import { VariedField } from './Variations';
 
 /**
  * What one language contributes to reading a blazon. The shape of a blazon is
- * the same in every language — a field, plain or divided between two tinctures —
- * so only the words and whatever introduces them differ.
+ * the same in every language — a field, plain or divided between two halves — so
+ * only the words and whatever introduces them differ.
  */
 export interface BlazonGrammar {
   /** A tincture, with whatever article the language puts in front of it. */
@@ -120,13 +121,20 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
 
   // Wrapped as a phrase so that a tincture which never arrives is reported as
   // missing from the division that owed it, rather than from the blazon at large.
+  //
+  // Each half is read as the tincture it carries and nothing more. A half is
+  // arms and may carry a whole blazon — "Parti d'azur à trois fleurs de lys d'or
+  // et d'hermine" charges the one at dexter — but reading that much is a rule
+  // that has to know where one half ends and the conjunction begins, and until
+  // it is written a half carrying anything is a blazon this refuses rather than
+  // one it reads by halves.
   const dividedField = within(
     apply(
       seq(grammar.division, grammar.tincture, grammar.and, grammar.tincture),
-      ([type, firstTincture, , secondTincture]): Division => ({
+      ([type, first, , second]): Division => ({
         type,
-        firstTincture,
-        secondTincture,
+        first: half(first),
+        second: half(second),
       })
     )
   );

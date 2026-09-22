@@ -1,3 +1,4 @@
+import type { Blazon } from './Blazon';
 import { ChargeType } from './Charge';
 import { Tincture } from './Tinctures';
 
@@ -5,11 +6,12 @@ import { Tincture } from './Tinctures';
  * The field terms: every way a field may be painted, in one vocabulary.
  *
  * Four kinds of thing are named here — a field of one tincture, a field divided
- * once along a line, that line taken over and over into a row of equal pieces,
- * and a pelt cut from two tinctures — and they are named together because a
- * blazon names them in the same place, first of all, before anything the field
- * bears. Which kind a term belongs to is declared with the term below, once, and
- * every reading, writing and drawing of it is settled by that declaration.
+ * once along a line between two halves, that line taken over and over into a row
+ * of equal pieces, and a pelt cut from two tinctures — and they are named
+ * together because a blazon names them in the same place, first of all, before
+ * anything the field bears. Which kind a term belongs to is declared with the
+ * term below, once, and every reading, writing and drawing of it is settled by
+ * that declaration.
  *
  * The plain field is a term here like the rest, though it names no cut of the
  * field: it is what a field is when nothing has been done to it, and naming it
@@ -58,10 +60,12 @@ export enum FieldType {
  * apart.
  *
  * Nothing about a term's spelling says which kind it is, and nothing about the
- * shape of the field it makes says so either: three of the four kinds carry a
- * type and two tinctures, and the words for them stand in the same place in a
- * blazon. So the kind is declared with the term and read off the declaration,
- * and a term added to the vocabulary belongs to no kind until it is given one.
+ * shape of the field it makes says so either: a varied field and a furred one
+ * carry a type and the same two tinctures, the words for every kind stand in the
+ * same place in a blazon, and the shapes that differ differ in what the kind
+ * needed rather than in anything that could be read back off them. So the kind
+ * is declared with the term and read off the declaration, and a term added to
+ * the vocabulary belongs to no kind until it is given one.
  */
 export enum FieldKind {
   plain = 'FieldKind.plain',
@@ -299,11 +303,32 @@ export type Semy = {
   tincture: Tincture;
 };
 
+/**
+ * A field divided once along a line, and what each half of it carries.
+ *
+ * A half is arms and not a tincture, because heraldry charges one: "Parti
+ * d'azur à trois fleurs de lys d'or et d'hermine" divides the field per pale,
+ * sets three lilies on the half at dexter, and leaves the other half the fur it
+ * named. The half at dexter is a shield's worth of blazon and is held as one.
+ *
+ * The half that carries nothing but a tincture — which is what most halves
+ * carry — is arms that bear nothing, its list left off exactly as a plain
+ * field's is. So there is one way to say a half and not two, and a half read
+ * from "parti d'azur et d'or" comes back out as the tincture it was written as.
+ *
+ * The first half named is the one in chief: the upper, or the one at dexter
+ * where the two stand side by side.
+ */
 export type Division = {
   type: DivisionType;
-  firstTincture: Tincture;
-  secondTincture: Tincture;
+  first: Blazon;
+  second: Blazon;
 };
+
+/** A half that carries one tincture and bears nothing, as most halves do. */
+export function half(tincture: Tincture): Blazon {
+  return { field: { type: FieldType.plain, tincture } };
+}
 
 /**
  * A varied field, and how many pieces it is cut into, counting both tinctures.
@@ -330,9 +355,9 @@ export type Furred = {
 };
 
 /**
- * Which kind a field's term was declared under is what tells the four apart: the
- * three that cut the field up all carry a type and two tinctures, and nothing
- * about the shape of the object says which it is.
+ * Which kind a field's term was declared under is what tells the four apart: a
+ * varied field and a furred one carry a type and the same two tinctures, and
+ * nothing about the shape of the object says which it is.
  *
  * Each is asked after by name rather than left to be whatever the others are
  * not, so that a kind added to the vocabulary is refused by all four until it is

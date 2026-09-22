@@ -5,6 +5,7 @@ import {
   Furred,
   VARIATIONS,
   VariationType,
+  half,
 } from '../../../domain/models/Field';
 import { ChargeType } from '../../../domain/models/Charge';
 import { OrdinaryType } from '../../../domain/models/Ordinary';
@@ -79,18 +80,14 @@ describe('SvgBlazonDrawer', () => {
   describe('divided fields', () => {
     test.each(DIVISIONS)('paints both halves of a field per %s', (type) => {
       const svg = drawer.draw({
-        field: { type, firstTincture: Colours.azure, secondTincture: Metals.or },
+        field: { type, first: half(Colours.azure), second: half(Metals.or) },
       });
       expect(fills(svg)).toEqual([WikipediaColours[Colours.azure], WikipediaColours[Metals.or]]);
     });
 
     test('gives the first tincture the half in chief', () => {
       const perPale = drawer.draw({
-        field: {
-          type: FieldType.pale,
-          firstTincture: Colours.gules,
-          secondTincture: Metals.argent,
-        },
+        field: { type: FieldType.pale, first: half(Colours.gules), second: half(Metals.argent) },
       });
       // Dexter is the viewer's left, so the first tincture starts at x=0.
       expect(perPale).toContain(`<rect x="0" y="0" width="100" height="240" fill="#ff0000"/>`);
@@ -99,13 +96,45 @@ describe('SvgBlazonDrawer', () => {
 
     test('paints the same tincture on both sides when asked', () => {
       const svg = drawer.draw({
-        field: {
-          type: FieldType.fess,
-          firstTincture: Colours.sable,
-          secondTincture: Colours.sable,
-        },
+        field: { type: FieldType.fess, first: half(Colours.sable), second: half(Colours.sable) },
       });
       expect(fills(svg)).toEqual(['#000000', '#000000']);
+    });
+
+    // A half is arms, and drawing arms inside half a frame is work the frame is
+    // ready for and nothing else here is. So a half carrying more than a tincture
+    // is painted the tincture it is laid on, and what it carries is not drawn.
+    // Neither grammar reads such a half, so nothing can arrive here asking for
+    // it: this says what the drawing does while it lags behind the model.
+    test('paints a charged half with the tincture it is laid on, and draws no more', () => {
+      const svg = drawer.draw({
+        field: {
+          type: FieldType.pale,
+          first: {
+            field: { type: FieldType.plain, tincture: Colours.azure },
+            chargesOrOrdinaries: [{ type: ChargeType.fleurDeLis, tincture: Metals.or, count: 3 }],
+          },
+          second: half(Colours.gules),
+        },
+      });
+      expect(fills(svg)).toEqual([
+        WikipediaColours[Colours.azure],
+        WikipediaColours[Colours.gules],
+      ]);
+      expect(inside(svg)).not.toContain('<path');
+    });
+
+    // A hatched shield rules each of its tinctures in the defs and paints out of
+    // them, so a tincture missing from that list is a tincture drawn in nothing
+    // at all. The halves are asked rather than the field, each half being arms
+    // with a field of its own.
+    test('rules both halves of a hatched field', () => {
+      const svg = new SvgBlazonDrawer(HatchingColours).draw({
+        field: { type: FieldType.pale, first: half(Colours.azure), second: half(Colours.vert) },
+      });
+      const defs = svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'));
+      expect(defs).toContain('hatch-azure');
+      expect(defs).toContain('hatch-vert');
     });
   });
 
@@ -152,11 +181,7 @@ describe('SvgBlazonDrawer', () => {
 
     test('lays an ordinary on a divided field over both halves', () => {
       const svg = drawer.draw({
-        field: {
-          type: FieldType.pale,
-          firstTincture: Colours.azure,
-          secondTincture: Metals.or,
-        },
+        field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
         chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.gules }],
       });
       expect(fills(svg)).toEqual(['#0000ff', '#ffd700', '#ff0000']);
@@ -253,11 +278,7 @@ describe('painting with patterns rather than colours', () => {
 
   test('carries both patterns of a divided field', () => {
     const svg = hatched.draw({
-      field: {
-        type: FieldType.pale,
-        firstTincture: Colours.azure,
-        secondTincture: Colours.gules,
-      },
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Colours.gules) },
     });
     expect(defs(svg)).toContain('<pattern id="hatch-azure"');
     expect(defs(svg)).toContain('<pattern id="hatch-gules"');
@@ -265,11 +286,7 @@ describe('painting with patterns rather than colours', () => {
 
   test('carries a shared pattern once, not twice', () => {
     const svg = hatched.draw({
-      field: {
-        type: FieldType.fess,
-        firstTincture: Colours.sable,
-        secondTincture: Colours.sable,
-      },
+      field: { type: FieldType.fess, first: half(Colours.sable), second: half(Colours.sable) },
     });
     expect(svg.split('<pattern id="hatch-sable"').length - 1).toBe(1);
   });

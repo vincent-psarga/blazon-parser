@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { FieldType } from '../../domain/models/Field';
+import { FieldType, half } from '../../domain/models/Field';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
@@ -36,11 +36,7 @@ describe('EnglishBlazonParser', () => {
 
   test('reads a divided field', () => {
     expect(parser.parse('Per pale azure and or.')).toEqual({
-      field: {
-        type: FieldType.pale,
-        firstTincture: Colours.azure,
-        secondTincture: Metals.or,
-      },
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
     });
   });
 
@@ -50,7 +46,7 @@ describe('EnglishBlazonParser', () => {
     ['Per bend sinister', FieldType.bendSinister],
   ])('reads "%s" as a field divided per that line', (name, type) => {
     expect(parser.parse(`${name} gules and argent`)).toEqual({
-      field: { type, firstTincture: Colours.gules, secondTincture: Metals.argent },
+      field: { type, first: half(Colours.gules), second: half(Metals.argent) },
     });
   });
 
@@ -61,7 +57,7 @@ describe('EnglishBlazonParser', () => {
 
   test('is case insensitive', () => {
     expect(parser.parse('PER PALE AZURE AND OR')).toEqual({
-      field: { type: FieldType.pale, firstTincture: Colours.azure, secondTincture: Metals.or },
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
     });
   });
 
@@ -103,11 +99,7 @@ describe('EnglishBlazonParser', () => {
 
     test('lays an ordinary on a divided field', () => {
       expect(parser.parse('Per pale azure and or a saltire gules')).toEqual({
-        field: {
-          type: FieldType.pale,
-          firstTincture: Colours.azure,
-          secondTincture: Metals.or,
-        },
+        field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
         chargesOrOrdinaries: [{ type: OrdinaryType.saltire, tincture: Colours.gules }],
       });
     });

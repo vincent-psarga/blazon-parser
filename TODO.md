@@ -4,13 +4,17 @@
 - Handle the disposition of charges (en chef, en orle, mal ordonnées)
 - Grow the modifiers past "voided" and "pierced": alésé, and the rest
 - Let an ordinary take a modifier, its own being lines drawn otherwise
-- Allow complex partition (eg: "per fess azur a bend or and argent")
+- Read a half that carries more than a tincture (eg: "per fess azure a bend or
+  and argent"): the model holds it and both writers write it, so what is left is
+  the rule that knows where the first half ends and the conjunction begins
 - Handle a semy of more than one figure ("semé alterné de tours et de fleurs de lys")
-- Sow a divided field, once the blazon can say which half was sown
+- Read a sown half, the model and the writers now saying which half was sown
 - Support for "shortcuts" (eg: "du même", "l'un dans l'autre", "brochant sur le tout")
 
 # Display
 
+- Draw a half that carries more than a tincture: it is painted the tincture it is
+  laid on today, and whatever it bears is not drawn
 - Cross display seems too low
 - Bends and saltire have a "weird" rendering - angles seem wrong.
 

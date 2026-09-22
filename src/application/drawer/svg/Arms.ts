@@ -1,8 +1,16 @@
 import { Blazon, ChargeOrOrdinary, isOrdinary } from '../../../domain/models/Blazon';
 import { Charge, numberBorne } from '../../../domain/models/Charge';
-import { Field, Semy, isDivision, isFurred, isVariation } from '../../../domain/models/Field';
+import {
+  Field,
+  Semy,
+  isDivision,
+  isFurred,
+  isPlain,
+  isVariation,
+} from '../../../domain/models/Field';
 import { borne } from '../../../domain/models/Ordinary';
-import { Painter } from './Ground';
+import { Tincture } from '../../../domain/models/Tinctures';
+import { Ink, Painter } from './Ground';
 import { laid } from './painting/laid';
 import { over } from './painting/over';
 import { plain } from './painting/plain';
@@ -59,13 +67,41 @@ function field(field: Field): Painter {
   if (isDivision(field)) {
     return split(
       (frame) => DIVISIONS[field.type].halves(frame),
-      INKS[field.firstTincture],
-      INKS[field.secondTincture]
+      inkOf(field.first),
+      inkOf(field.second)
     );
   }
   return field.semy === undefined
     ? plain(INKS[field.tincture])
     : over(plain(INKS[field.tincture]), sown(field.semy));
+}
+
+/**
+ * What one half of a divided field is painted with.
+ *
+ * A half is arms and not a tincture: it may bear charges and it may be cut up
+ * again, and drawing that much means drawing a shield's worth of blazon inside
+ * half a frame. The frame is ready for it — a quarter is the same frame made
+ * smaller — and nothing else here is, so what is painted is the tincture the
+ * half is laid on, and whatever it bears is not drawn.
+ *
+ * It cannot arrive bearing anything: neither tongue's grammar reads a half
+ * beyond the tincture it carries. This says what to do about a drawing that has
+ * fallen behind the model rather than about anything a blazon can say today.
+ */
+function inkOf(half: Blazon): Ink {
+  return INKS[laidOn(half.field)];
+}
+
+/**
+ * The tincture a field is laid on: its own where it is plain, and the first it
+ * names where it is cut — which is the piece in chief, or the one at dexter.
+ */
+function laidOn(field: Field): Tincture {
+  if (isDivision(field)) {
+    return laidOn(field.first.field);
+  }
+  return isPlain(field) ? field.tincture : field.firstTincture;
 }
 
 /**
