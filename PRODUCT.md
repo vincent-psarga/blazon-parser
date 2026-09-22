@@ -57,7 +57,14 @@ Supported vocabulary as it stands:
 
 - **Tinctures (8)** in three ranks — metals (or, argent), colours (azure, gules, sable, vert),
   furs (ermine, vair).
-- **Divisions (4)** — per pale, per fess, per bend, per bend sinister.
+- **Divisions (4)** — per pale, per fess, per bend, per bend sinister. Either half is arms of its
+  own, so heraldry charges one: "Parti d'azur à trois fleurs de lys d'or et d'hermine", "Per fess
+  azure a bend or and argent". What a half bears stands between its tincture and the conjunction,
+  which is where both tongues write it and where both read it; what follows the second half belongs
+  to the shield, a bordure blazoned after a division surrounding the whole of it. A charge on the
+  second half alone is blazoned another way — "au premier ..., au second ..." — which is not read.
+  The drawing has yet to follow: a charged half is painted the tincture it is laid on, and what it
+  bears is not drawn.
 - **Varied fields (5)** — barry, paly, bendy, pily, chevronny, cut into a counted number of pieces.
 - **Furred fields (1)** — vairy: the bells of vair cut from two tinctures the blazon names, rather
   than from the argent and azure vair itself is always drawn in. Nothing about it is counted.
@@ -101,8 +108,9 @@ Supported vocabulary as it stands:
   the field bears, so nothing is counted and a band blazoned after it covers the sowing. Where the
   language names the strewing it is written by that name — billeté, billetty, besanté, bezanty —
   and the name carries its tincture exactly as a charge's does. One figure only: a field sown with
-  two alternately is a second list and is not read. A plain field only: which half of a divided one
-  was sown is said in words this does not read.
+  two alternately is a second list and is not read. A plain field only: a half of a divided field
+  can be sown — its field is a field like any other — but the word for it is not read inside a half
+  yet, though both tongues write it.
 - **Plain** — French may call a bare field plain, and the parser holds it to it: a field called
   plain that then bears something is refused. The word adds nothing to the model and is never
   written back. English is given no equivalent — Parker's "plain" is a band with a straight line —
@@ -117,9 +125,10 @@ Supported vocabulary as it stands:
 
 Constraints and facts future work must preserve:
 
-- A blazon is a field, plain or divided between two tinctures or sown with a charge, with whatever
-  bands are laid on it and whatever charges it bears. Nothing may be charged upon a charge, no line
-  but the straight one is drawn, and no disposition is read.
+- A blazon is a field — plain, sown with a charge, or cut between two of them — with whatever bands
+  are laid on it and whatever charges it bears. A half of a divided field is a blazon by the same
+  reckoning, and is held in the same type: it has a field and it may bear things. Nothing may be
+  charged upon a charge, no line but the straight one is drawn, and no disposition is read.
 - The rule of tincture (metal may not lie on metal, nor colour on colour) is why the tinctures carry
   three ranks. The furs answer to neither rank.
 - Heraldry fixes no shade. Colours are supplied to the drawer, never assumed by it. A fur's figure is

@@ -101,11 +101,11 @@ describe('SvgBlazonDrawer', () => {
       expect(fills(svg)).toEqual(['#000000', '#000000']);
     });
 
-    // A half is arms, and drawing arms inside half a frame is work the frame is
-    // ready for and nothing else here is. So a half carrying more than a tincture
+    // A half is arms, and drawing arms inside half a frame wants a frame for the
+    // half, which nothing here makes yet. So a half carrying more than a tincture
     // is painted the tincture it is laid on, and what it carries is not drawn.
-    // Neither grammar reads such a half, so nothing can arrive here asking for
-    // it: this says what the drawing does while it lags behind the model.
+    // Both tongues read such a half, so this is what a reader of the armorials
+    // is shown meanwhile, and it is held here so that it changes on purpose.
     test('paints a charged half with the tincture it is laid on, and draws no more', () => {
       const svg = drawer.draw({
         field: {

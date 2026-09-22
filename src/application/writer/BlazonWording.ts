@@ -281,12 +281,14 @@ function writeVariation<W extends Word>(wording: BlazonWording<W>, variation: Va
  * d'azur et d'or" comes back out as itself, and a half carrying more says more
  * in the same place: "Parti d'azur à trois fleurs de lys d'or et d'hermine".
  *
- * Nothing is done here about a half that ends where the conjunction begins. A
- * half bearing several things is written with the mark that separates them, and
- * a reader — this library's included — may not be able to tell that mark's work
- * from the conjunction's. Writing it plainly is the honest answer: the blazon
- * says what the arms are, and whether it can be read back again is the reading's
- * to answer for.
+ * What the first half bears reads back as the first half's, both tongues
+ * writing it between that half's tincture and the conjunction, and both reading
+ * it there. What the second half bears does not: a blazon written this way lays
+ * it on the shield when it is read again, because that is what an armorial means
+ * by writing anything after the second half. Heraldry says the other thing
+ * another way — "au premier ..., au second ..." — and until that phrase is
+ * written, this writes what the arms are and the reading takes them as it finds
+ * them.
  */
 function writeDivision<W extends Word>(wording: BlazonWording<W>, division: Division): string {
   return [

@@ -94,6 +94,32 @@ export function owed(vocabulary: Vocabulary): ParseError {
 }
 
 /**
+ * A phrase whose absence at the end of the blazon is a term going missing.
+ *
+ * A rule that has read enough to know what it is owed can say so plainly: a
+ * division has named one tincture where it names two, so a blazon that simply
+ * stops is missing a tincture. Left to the leaf parsers, the complaint would be
+ * about whatever word stands first in the phrase — the conjunction, which is the
+ * grammar's own plumbing and names nothing a reader was trying to write.
+ *
+ * Only the end of the blazon is answered for. A word that arrived and was the
+ * wrong one names itself, and the parser that read it complains better than this
+ * could.
+ */
+export function owedAtEnd<TResult>(
+  parser: Parser<TokenKind, TResult>,
+  vocabulary: Vocabulary
+): Parser<TokenKind, TResult> {
+  return {
+    parse(token) {
+      return token === undefined
+        ? { successful: false, error: owed(vocabulary) }
+        : parser.parse(token);
+    },
+  };
+}
+
+/**
  * Names the phrase a rule is reading, so a term that never arrived can say where
  * it was owed: a tincture wanting at the end of "à la fasce" is missing from
  * that phrase rather than from the blazon at large.

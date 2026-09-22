@@ -7,6 +7,7 @@ import {
   betterError,
   combine,
   kleft,
+  kright,
   nil,
   resultOrError,
   rule,
@@ -36,7 +37,7 @@ import { Tincture } from '../../domain/models/Tinctures';
 import { TokenKind } from '../lexer/Lexer';
 import { BorneTerm, bornUnder, carried } from './Borne';
 import { guard, optional, optionalUnlessBegun } from './Combinators';
-import { within } from './Failures';
+import { asTincture, owedAtEnd, within } from './Failures';
 import { Treatment, isBare } from './Treatment';
 import { VariedField } from './Variations';
 
@@ -119,107 +120,6 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
         : { field: { type: FieldType.plain, tincture, semy: treatment.semy }, bare: false }
   );
 
-  // Wrapped as a phrase so that a tincture which never arrives is reported as
-  // missing from the division that owed it, rather than from the blazon at large.
-  //
-  // Each half is read as the tincture it carries and nothing more. A half is
-  // arms and may carry a whole blazon — "Parti d'azur à trois fleurs de lys d'or
-  // et d'hermine" charges the one at dexter — but reading that much is a rule
-  // that has to know where one half ends and the conjunction begins, and until
-  // it is written a half carrying anything is a blazon this refuses rather than
-  // one it reads by halves.
-  const dividedField = within(
-    apply(
-      seq(grammar.division, grammar.tincture, grammar.and, grammar.tincture),
-      ([type, first, , second]): Division => ({
-        type,
-        first: half(first),
-        second: half(second),
-      })
-    )
-  );
-
-  // A varied field is the same two tinctures cut along the same lines, over and
-  // over — so it is read as a division is, with a number of pieces around it.
-  //
-  // Where that number stands is the language's business: English counts before
-  // the tinctures, French after them, and either may leave it unsaid. What
-  // arrives is taken wherever it came from, and what never arrives is the number
-  // the term is understood to have — save for the pily, which is understood to
-  // have none and must therefore be counted.
-  const trailingPieces: Parser<TokenKind, number | undefined> =
-    grammar.pieces === undefined ? nil() : optional(grammar.pieces);
-
-  const variedField = within(
-    apply(
-      guard(
-        apply(
-          seq(grammar.variation, grammar.tincture, grammar.and, grammar.tincture, trailingPieces),
-          ([named, firstTincture, , secondTincture, counted]) => ({
-            named,
-            firstTincture,
-            secondTincture,
-            pieces: counted ?? named.pieces ?? usualPieces(named.type),
-          })
-        ),
-        ({ named, pieces }) => pieces !== undefined && cutInPieces(named.type, pieces),
-        ({ named, pieces }, position) =>
-          pieces === undefined
-            ? new MissingPieces(named.named, position)
-            : new BlazonParseError(
-                pieces < PIECES
-                  ? `A field is cut into pieces: ${pieces} is not more than one`
-                  : `A ${named.named} alternates its tinctures, so its pieces are even: ${pieces} is odd`,
-                position
-              )
-      ),
-      // Whatever reaches here was counted: the guard has refused every field
-      // whose pieces neither the blazon nor the term itself could say.
-      ({ named, firstTincture, secondTincture, pieces }): Variation => ({
-        type: named.type,
-        firstTincture,
-        secondTincture,
-        pieces: pieces as number,
-      })
-    )
-  );
-
-  // A furred field names the fur and the two tinctures it is cut from, and is
-  // read exactly as a division is: what differs is the vocabulary the first word
-  // belongs to, and that the pelt takes the whole field rather than half of it.
-  const furredField = within(
-    apply(
-      seq(grammar.fur, grammar.tincture, grammar.and, grammar.tincture),
-      ([type, firstTincture, , secondTincture]): Furred => ({
-        type,
-        firstTincture,
-        secondTincture,
-      })
-    )
-  );
-
-  // What follows a partition's name: the two tinctures it divides the field
-  // between. Reading it alone is how an unknown first word is told apart from a
-  // word that was never meant to be a partition at all.
-  const restOfDivision = seq(grammar.tincture, grammar.and, grammar.tincture);
-
-  // The varied reading is tried first of the three, because all three open on a
-  // word of their own vocabulary and all three complain about the same word when
-  // they fail: a tie between them is settled in favour of whichever was listed
-  // first, and only the varied one has anything to say beyond the name — that the
-  // pieces were never counted, or counted in a number no such field is cut into.
-  //
-  // None of the three is ever bare: only a field of one tincture is called
-  // plain, a divided one being no such thing whatever it bears.
-  const field = eitherReading(
-    plainField,
-    apply(alt(variedField, furredField, dividedField), (field): ReadField => ({
-      field,
-      bare: false,
-    })),
-    restOfDivision
-  );
-
   // What the field bears is laid on it and carries a tincture of its own, however
   // many of it are borne: two chevrons are two bands of one tincture, not two
   // charges each with its own, and three billets are three of one tincture too.
@@ -285,6 +185,138 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
     )
   );
 
+  /**
+   * A field and what was laid on it, which is arms: the whole shield's, or one
+   * half of a divided field's.
+   *
+   * The list is left off rather than set to an empty one where nothing was laid,
+   * so that a field bearing nothing reads back as the blazon it was before
+   * anything could be laid on one — and so that a half has one way to be written
+   * and not two.
+   */
+  const borneOn = (field: Field, laid: readonly ChargeOrOrdinary[]): Blazon =>
+    laid.length === 0 ? { field } : { field, chargesOrOrdinaries: laid };
+
+  // The second of the two tinctures a cut field is cut between, the conjunction
+  // and all: every one of the three reads it, and every one of them owes it once
+  // the first has been read. A blazon that stops there has named one tincture
+  // where the field it named takes two, and saying so is more use than pointing
+  // at the conjunction — which is the grammar's own plumbing, and names nothing
+  // a reader was trying to write.
+  const secondOfThePair = owedAtEnd(kright(grammar.and, grammar.tincture), asTincture);
+
+  // Wrapped as a phrase so that a tincture which never arrives is reported as
+  // missing from the division that owed it, rather than from the blazon at large.
+  //
+  // The first half may bear what a shield bears: "Parti d'azur à trois fleurs de
+  // lys d'or et d'hermine" sets three lilies on the half at dexter, and "Per
+  // fess azure a bend or and argent" lays a bend on the half in chief. What it
+  // bears stands between its tincture and the conjunction, which is where the
+  // armorials of both tongues write it, and is read by the very rule that reads
+  // what the whole shield bears — a half being arms, there is nothing else it
+  // could be read by.
+  //
+  // The second half bears nothing, and what follows it belongs to the shield:
+  // "Parti d'azur et d'or à la bordure de gueules" surrounds the whole shield
+  // with the bordure, which is what an armorial means by writing it there. Let
+  // the second half bear it instead and the blazon would have two readings and
+  // no way to choose between them, so the one heraldry means is the one read.
+  // A charge on the second half alone is blazoned another way — "au premier ...,
+  // au second ..." — which is a phrase neither tongue reads here yet.
+  const dividedField = within(
+    apply(
+      seq(grammar.division, grammar.tincture, borne, secondOfThePair),
+      ([type, first, laid, second]): Division => ({
+        type,
+        first: borneOn({ type: FieldType.plain, tincture: first }, laid),
+        second: half(second),
+      })
+    )
+  );
+
+  // A varied field is the same two tinctures cut along the same lines, over and
+  // over — so it is read as a division is, with a number of pieces around it.
+  //
+  // Where that number stands is the language's business: English counts before
+  // the tinctures, French after them, and either may leave it unsaid. What
+  // arrives is taken wherever it came from, and what never arrives is the number
+  // the term is understood to have — save for the pily, which is understood to
+  // have none and must therefore be counted.
+  const trailingPieces: Parser<TokenKind, number | undefined> =
+    grammar.pieces === undefined ? nil() : optional(grammar.pieces);
+
+  const variedField = within(
+    apply(
+      guard(
+        apply(
+          seq(grammar.variation, grammar.tincture, secondOfThePair, trailingPieces),
+          ([named, firstTincture, secondTincture, counted]) => ({
+            named,
+            firstTincture,
+            secondTincture,
+            pieces: counted ?? named.pieces ?? usualPieces(named.type),
+          })
+        ),
+        ({ named, pieces }) => pieces !== undefined && cutInPieces(named.type, pieces),
+        ({ named, pieces }, position) =>
+          pieces === undefined
+            ? new MissingPieces(named.named, position)
+            : new BlazonParseError(
+                pieces < PIECES
+                  ? `A field is cut into pieces: ${pieces} is not more than one`
+                  : `A ${named.named} alternates its tinctures, so its pieces are even: ${pieces} is odd`,
+                position
+              )
+      ),
+      // Whatever reaches here was counted: the guard has refused every field
+      // whose pieces neither the blazon nor the term itself could say.
+      ({ named, firstTincture, secondTincture, pieces }): Variation => ({
+        type: named.type,
+        firstTincture,
+        secondTincture,
+        pieces: pieces as number,
+      })
+    )
+  );
+
+  // A furred field names the fur and the two tinctures it is cut from, and is
+  // read exactly as a division is: what differs is the vocabulary the first word
+  // belongs to, and that the pelt takes the whole field rather than half of it.
+  const furredField = within(
+    apply(
+      seq(grammar.fur, grammar.tincture, secondOfThePair),
+      ([type, firstTincture, secondTincture]): Furred => ({
+        type,
+        firstTincture,
+        secondTincture,
+      })
+    )
+  );
+
+  // What follows a partition's name: the two tinctures it divides the field
+  // between, and whatever the first half bears. Reading it alone is how an
+  // unknown first word is told apart from a word that was never meant to be a
+  // partition at all — so it has to recognise as much of a division as the
+  // division rule does, or a charged half would hide the partition from it.
+  const restOfDivision = seq(grammar.tincture, borne, secondOfThePair);
+
+  // The varied reading is tried first of the three, because all three open on a
+  // word of their own vocabulary and all three complain about the same word when
+  // they fail: a tie between them is settled in favour of whichever was listed
+  // first, and only the varied one has anything to say beyond the name — that the
+  // pieces were never counted, or counted in a number no such field is cut into.
+  //
+  // None of the three is ever bare: only a field of one tincture is called
+  // plain, a divided one being no such thing whatever it bears.
+  const field = eitherReading(
+    plainField,
+    apply(alt(variedField, furredField, dividedField), (field): ReadField => ({
+      field,
+      bare: false,
+    })),
+    restOfDivision
+  );
+
   // The key is left off rather than set to an empty list when nothing is borne,
   // so a plain field reads back as the blazon it was before anything could be
   // laid on one.
@@ -302,7 +334,7 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
             (laid, position) => new ChargedPlainField(laid.length, position)
           )
         : borne,
-      (laid): Blazon => (laid.length === 0 ? { field } : { field, chargesOrOrdinaries: laid })
+      (laid): Blazon => borneOn(field, laid)
     )
   );
 

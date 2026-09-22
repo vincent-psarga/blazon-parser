@@ -85,9 +85,12 @@ function field(field: Field): Painter {
  * smaller — and nothing else here is, so what is painted is the tincture the
  * half is laid on, and whatever it bears is not drawn.
  *
- * It cannot arrive bearing anything: neither tongue's grammar reads a half
- * beyond the tincture it carries. This says what to do about a drawing that has
- * fallen behind the model rather than about anything a blazon can say today.
+ * Both tongues read a charged half, so this is a drawing that has fallen behind
+ * what the parsers read rather than one guarding against the impossible: "Parti
+ * d'azur à trois fleurs de lys d'or et d'hermine" is drawn per pale azure and
+ * ermine, with the lilies left off, and is drawn rather than refused. What it
+ * waits on is a frame for the half, so the figures laid in it can measure
+ * themselves against the half they stand in rather than against the shield.
  */
 function inkOf(half: Blazon): Ink {
   return INKS[laidOn(half.field)];
