@@ -35,5 +35,15 @@ export const SampleArmorial: Armorial = {
         url: 'https://fr.wikipedia.org/wiki/Maison_cap%C3%A9tienne_de_Bourgogne',
       },
     },
+    {
+      name: 'Anne de Bretagne',
+      blazon: "Parti d'azur à trois fleurs de lys d'or et d'hermine",
+      image:
+        'https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e2/Blason_Anne_de_Bretagne_%281476-1514%29_Reine_de_France.svg/250px-Blason_Anne_de_Bretagne_%281476-1514%29_Reine_de_France.svg.png?utm_source=fr.wikipedia.org&utm_campaign=parser&utm_content=thumbnail',
+      source: {
+        name: 'Wikipédia: Anne de Bretagne',
+        url: 'https://fr.wikipedia.org/wiki/Anne_de_Bretagne#Ses_embl%C3%A8mes_et_devises',
+      },
+    },
   ],
 };
