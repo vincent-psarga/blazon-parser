@@ -247,17 +247,18 @@ export function Reference({
               )}
 
               <p className="showing__gloss">{struck.description}</p>
+
+              {/* Who says so, against the sentences it answers for. A gloss and
+                the authority behind it are one thing, and anything standing
+                between them makes a reader hold the first in mind while they
+                look for the second. */}
+              <Sources sources={struck.sources} />
+
               {struck.note !== undefined && <p className="showing__note">{struck.note}</p>}
 
               {struck.alsoHere.length !== 0 && (
                 <Sightings heading="See also" sightings={struck.alsoHere} />
               )}
-
-              {/* Who says so. The gloss above is this library's own sentences,
-                and a reader who wants the authority behind them rather than the
-                summary of it follows these. They stand after the words of this
-                vocabulary because they lead out of it. */}
-              <Sources sources={struck.sources} />
 
               {/* The further arms are smaller than the struck ones, and say what
                 one drawing cannot without ever standing in its place. One
@@ -315,9 +316,11 @@ export interface SourcesProps {
 /**
  * The works this word rests on, each linked to the entry itself.
  *
- * A source is cited in full rather than by a bare name: a reader deciding
- * whether to follow a link is owed the work and the entry within it, and half
- * the citations here are the only thing standing between a gloss and an opinion.
+ * Numbered rather than written out. A citation is a whole line of prose — the
+ * author, the work, and the entry within it — and a line of prose set under the
+ * gloss reads as though it were more of the gloss. So the reading carries the
+ * mark and the citation waits behind it, in the title a pointer shows and in the
+ * name a screen reader says.
  *
  * The tongue is the source's own. A French word is glossed in English, because
  * the reader came to learn French heraldry and not to read French, but what
@@ -330,10 +333,22 @@ export function Sources({ sources }: SourcesProps) {
   }
   return (
     <p className="showing__sources">
-      <span className="showing__heading">{sources.length === 1 ? 'Source' : 'Sources'}</span>
-      {sources.map((source) => (
-        <a key={source.url} href={source.url} lang={source.language} hrefLang={source.language}>
-          {source.title}
+      {sources.length === 1 ? 'Source:' : 'Sources:'}
+      {sources.map((source, at) => (
+        <a
+          key={source.url}
+          href={source.url}
+          title={source.title}
+          lang={source.language}
+          hrefLang={source.language}
+        >
+          [{at + 1}]{' '}
+          {/* The citation itself, out of sight and not out of the page: a link
+            reading "[1]" and nothing else tells whoever cannot see the tooltip
+            nothing whatever about where it goes. The space before it is the
+            reader's: it parts the mark from the citation in what is said aloud,
+            and shows as nothing at all. */}
+          <span className="showing__cited">{source.title}</span>
         </a>
       ))}
     </p>

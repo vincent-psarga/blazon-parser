@@ -706,42 +706,38 @@ body {
 }
 
 /*
- * Who says so. A citation is a whole line of prose rather than a word, so these
- * stack where the sightings sit in a row, and they are the quietest thing in the
- * reading: a reader who wants them will look for them, and the rest must never
- * have to read past them.
+ * Who says so. It sits against the gloss it answers for — one line, tight under
+ * the prose — and carries a mark apiece rather than the citations themselves: a
+ * citation names an author, a work and an entry within it, which set here would
+ * read as more of the gloss than as the authority behind it.
  */
 .showing__sources {
-  margin: 0;
-  display: grid;
-  gap: 0.3rem;
-  justify-items: start;
+  margin: -0.7rem 0 0;
   max-width: var(--measure);
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   color: var(--bone-quiet);
-  text-wrap: pretty;
-}
-
-.showing__sources .showing__heading {
-  font-family: var(--display);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 .showing__sources a {
+  margin-left: 0.35rem;
   color: var(--bone-quiet);
-  text-decoration: underline;
-  text-decoration-color: rgb(var(--gauze) / 0.9);
-  text-underline-offset: 0.25em;
-  text-decoration-thickness: 1px;
+  text-decoration: none;
   transition: color 140ms linear;
 }
 
 .showing__sources a:hover,
 .showing__sources a:focus-visible {
   color: var(--strike);
+}
+
+/* The citation itself, out of sight and not out of the page. */
+.showing__cited {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /*

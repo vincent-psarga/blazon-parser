@@ -114,16 +114,32 @@ describe('a word read at full size', () => {
     expect(within(showing()).getByText(/The little cross/)).toBeInTheDocument();
   });
 
-  test('says who says so, and leads to the entry itself', async () => {
+  test('says who says so by a mark, and leads to the entry itself', async () => {
     mount(<VocabularyPage language="en" />);
     await strike('mascle');
-    const cited = within(showing()).getByRole('link', {
-      name: 'James Parker, A Glossary of Terms Used in Heraldry, under Mascle',
-    });
+    const cited = within(showing()).getByRole('link', { name: /A Glossary of Terms Used/ });
+    // The reading carries the mark, and the citation waits behind it: in the
+    // title a pointer shows, and in the name a screen reader says.
+    expect(cited.textContent).toContain('[1]');
+    expect(cited).toHaveAccessibleName(
+      '[1] James Parker, A Glossary of Terms Used in Heraldry, under Mascle'
+    );
+    expect(cited).toHaveAttribute(
+      'title',
+      'James Parker, A Glossary of Terms Used in Heraldry, under Mascle'
+    );
     expect(cited).toHaveAttribute(
       'href',
       'https://www.heraldsnet.org/saitou/parker/Jpglossm.htm#Mascle'
     );
+  });
+
+  test('stands against the gloss it answers for, nothing between the two', async () => {
+    mount(<VocabularyPage language="fr" />);
+    await strike('évidé');
+    const read = showing().querySelector('.showing__read') as HTMLElement;
+    const blocks = Array.from(read.children).map((block) => block.className);
+    expect(blocks.indexOf('showing__sources')).toBe(blocks.indexOf('showing__gloss') + 1);
   });
 
   test('marks a source written in the other tongue as being in it', async () => {
