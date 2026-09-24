@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { TINCTURES } from '../domain/models/Tinctures';
-import { DivisionType } from '../domain/models/Field';
+import { DIVISIONS, FieldType } from '../domain/models/Field';
 import { EnglishBlazonParser } from './parser/EnglishBlazonParser';
 import { FrenchBlazonParser } from './parser/FrenchBlazonParser';
 import { EnglishBlazonWriter } from './writer/EnglishBlazonWriter';
@@ -39,12 +39,12 @@ describe('translating a blazon', () => {
   });
 
   test.each(TINCTURES)('a field of %s translates both ways', (tincture) => {
-    expect(intoFrench(intoEnglish(french.writer.write({ field: { tincture } })))).toBe(
-      french.writer.write({ field: { tincture } })
-    );
+    expect(
+      intoFrench(intoEnglish(french.writer.write({ field: { type: FieldType.plain, tincture } })))
+    ).toBe(french.writer.write({ field: { type: FieldType.plain, tincture } }));
   });
 
-  test.each(Object.values(DivisionType))('a field divided per %s translates both ways', (type) => {
+  test.each(DIVISIONS)('a field divided per %s translates both ways', (type) => {
     const blazon = { field: { type, firstTincture: TINCTURES[0], secondTincture: TINCTURES[3] } };
     expect(french.parser.parse(intoFrench(english.writer.write(blazon)))).toEqual(blazon);
   });

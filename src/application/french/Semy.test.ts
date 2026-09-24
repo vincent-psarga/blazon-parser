@@ -4,7 +4,7 @@ import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { ChargeType } from '../../domain/models/Charge';
-import { DivisionType, Field, Semy, isPlain } from '../../domain/models/Field';
+import { Field, FieldType, Semy, isPlain } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Furs, Metals } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
@@ -20,6 +20,7 @@ describe('a field sown with a charge', () => {
   test('reads "semé de" and the figure in the plural', () => {
     expect(parser.parse("D'azur semé de billettes d'or")).toEqual({
       field: {
+        type: FieldType.plain,
         tincture: Colours.azure,
         semy: { type: ChargeType.billet, tincture: Metals.or },
       },
@@ -58,6 +59,7 @@ describe('a field sown with a charge', () => {
   test('bears a band over the sown field, as any other field does', () => {
     expect(parser.parse("D'azur billeté d'or à la bordure de gueules")).toEqual({
       field: {
+        type: FieldType.plain,
         tincture: Colours.azure,
         semy: { type: ChargeType.billet, tincture: Metals.or },
       },
@@ -80,7 +82,7 @@ describe('a field sown with a charge', () => {
   test('leaves a divided field unsown: which half was sown is not read', () => {
     expect(() => parser.parse("Parti d'azur et d'or semé de billettes d'argent")).toThrow();
     expect(parser.parse("Parti d'azur et d'or").field).toMatchObject({
-      type: DivisionType.pale,
+      type: FieldType.pale,
     });
   });
 });
@@ -152,7 +154,9 @@ describe('writing a sown field back', () => {
 
 describe('a field the blazon calls plain', () => {
   test('is the plain field it was, the word saying nothing the model can hold', () => {
-    expect(parser.parse("D'azur plain")).toEqual({ field: { tincture: Colours.azure } });
+    expect(parser.parse("D'azur plain")).toEqual({
+      field: { type: FieldType.plain, tincture: Colours.azure },
+    });
   });
 
   test('is never written back: what it said is said by there being nothing else', () => {
@@ -182,7 +186,9 @@ describe('a field the blazon calls plain', () => {
   });
 
   test('calls a fur plain as readily: it is a tincture like any other', () => {
-    expect(parser.parse("D'hermine plain")).toEqual({ field: { tincture: Furs.ermine } });
+    expect(parser.parse("D'hermine plain")).toEqual({
+      field: { type: FieldType.plain, tincture: Furs.ermine },
+    });
   });
 
   test('is not written of a divided field, which is no plain field at all', () => {

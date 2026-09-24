@@ -7,12 +7,14 @@ import { SvgBlazonDrawer } from './SvgBlazonDrawer';
 import { placed } from './shapes/path';
 import { CHARGES } from './vocabulary/charges';
 import { SHIELD_FRAME } from './shapes/shield';
+import { FieldType } from '../../../domain/models/Field';
+import { Blazon } from '../../../domain/models/Blazon';
 
 const drawer = new SvgBlazonDrawer(WikipediaColours);
 const hatched = new SvgBlazonDrawer(HatchingColours);
 
-const borne = (type: ChargeType) => ({
-  field: { tincture: Colours.azure },
+const borne = (type: ChargeType): Blazon => ({
+  field: { type: FieldType.plain, tincture: Colours.azure },
   chargesOrOrdinaries: [{ type, tincture: Metals.or }],
 });
 

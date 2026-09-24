@@ -1,3 +1,4 @@
+import { laLangueDuBlason } from '../Sources';
 import { FrenchWord } from './FrenchWord';
 
 /**
@@ -12,7 +13,10 @@ import { FrenchWord } from './FrenchWord';
  * "Plein" is not read for it: that is the undifferenced arms of the head of a
  * family, which is another word entirely and says nothing about the field.
  */
-export const FrenchPlain = new FrenchWord(
-  'plain',
-  'Said of a field that carries nothing whatever: de gueules plain. It states a fact the blazon has already stated by stopping, so nothing in the model holds it and nothing writes it back. It is read all the same, and held to: a field called plain and then charged is refused rather than quietly drawn, the two words contradicting each other.'
-);
+export const FrenchPlain = new FrenchWord('plain', {
+  value:
+    'Said of a field that carries nothing whatever: de gueules plain. It states a fact the blazon has already stated by stopping, so nothing in the model holds it and nothing writes it back. It is read all the same, and held to: a field called plain and then charged is refused rather than quietly drawn, the two words contradicting each other.',
+  sources: [
+    laLangueDuBlason('« plain » et « plein »', '2012/08/plain-et-plein-en-langue-du-blason.html'),
+  ],
+});

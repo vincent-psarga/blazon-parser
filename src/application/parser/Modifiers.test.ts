@@ -12,6 +12,8 @@ import { EnglishBlazonWriter } from '../writer/EnglishBlazonWriter';
 import { FrenchBlazonWriter } from '../writer/FrenchBlazonWriter';
 import { EnglishBlazonParser } from './EnglishBlazonParser';
 import { FrenchBlazonParser } from './FrenchBlazonParser';
+import { FieldType } from '../../domain/models/Field';
+import { Blazon } from '../../domain/models/Blazon';
 
 const inFrench = new FrenchBlazonParser();
 const inEnglish = new EnglishBlazonParser();
@@ -27,7 +29,7 @@ const MODIFIERS = Object.values(Modifier);
 describe('a charge borne under a modifier', () => {
   test('is the same charge, with what was done to it beside the tincture', () => {
     expect(inEnglish.parse('Azure a lozenge voided or')).toEqual({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [
         { type: ChargeType.lozenge, tincture: Metals.or, modifier: Modifier.voided },
       ],
@@ -169,7 +171,7 @@ describe('what a charge will take', () => {
     // the vocabulary could not keep.
     for (const modifier of MODIFIERS) {
       const written = writeEnglish.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
       });
       if (allowsModifier(type, modifier)) {
@@ -326,8 +328,8 @@ describe('writing a modified charge', () => {
     // back évidée and is understood, as the lozenge comes back vidée.
     for (const type of CHARGES) {
       for (const modifier of modifiersOf(type)) {
-        const blazon = {
-          field: { tincture: Colours.azure },
+        const blazon: Blazon = {
+          field: { type: FieldType.plain, tincture: Colours.azure },
           chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
         };
         expect(inFrench.parse(writeFrench.write(blazon))).toEqual(blazon);
@@ -339,7 +341,7 @@ describe('writing a modified charge', () => {
   test('says nothing of a band the blazon said nothing of', () => {
     expect(
       writeEnglish.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
       })
     ).toBe('Azure a fess or.');
@@ -349,7 +351,7 @@ describe('writing a modified charge', () => {
 describe('a band drawn along a modified line', () => {
   test('is the same band, with the line beside the tincture', () => {
     expect(inEnglish.parse('Azure a fess indented or')).toEqual({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [
         { type: OrdinaryType.fess, tincture: Metals.or, modifier: Modifier.indented },
       ],
@@ -419,7 +421,7 @@ describe('a band drawn along a modified line', () => {
     // does, and what is drawn is the plain band with teeth standing on it.
     const arms = (modifier?: Modifier) =>
       drawer.draw({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Metals.or, modifier }],
       });
     expect(arms(Modifier.indented)).not.toBe(arms());
@@ -435,7 +437,7 @@ describe('a band drawn along a modified line', () => {
     // vocabulary could not keep.
     for (const modifier of MODIFIERS) {
       const written = writeEnglish.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
       });
       if (admitsModifier(type, modifier)) {
@@ -461,8 +463,8 @@ describe('a band drawn along a modified line', () => {
   test('reads back everything it writes, every band under every line it takes', () => {
     for (const type of ORDINARIES) {
       for (const modifier of modifiersOn(type)) {
-        const blazon = {
-          field: { tincture: Colours.azure },
+        const blazon: Blazon = {
+          field: { type: FieldType.plain, tincture: Colours.azure },
           chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
         };
         expect(inFrench.parse(writeFrench.write(blazon))).toEqual(blazon);
@@ -476,7 +478,7 @@ describe('a band drawn along a modified line', () => {
     for (const type of ORDINARIES.filter((type) => admitsModifier(type, Modifier.indented))) {
       const arms = (modifier?: Modifier) =>
         drawer.draw({
-          field: { tincture: Colours.azure },
+          field: { type: FieldType.plain, tincture: Colours.azure },
           chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
         });
       expect(arms(Modifier.indented)).not.toBe(arms());
@@ -494,7 +496,7 @@ describe('a band drawn along a modified line', () => {
     // it guards is a drawing fallen behind the model, not a blazon.
     const drawn = (modifier?: Modifier) =>
       drawer.draw({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.cross, tincture: Metals.or, modifier }],
       });
     expect(drawn(Modifier.indented)).toBe(drawn());
@@ -561,7 +563,7 @@ describe('piercing a charge, which is not voiding it', () => {
     expect(pierced).toEqual([ChargeType.billet, ChargeType.lozenge, ChargeType.mullet]);
     for (const type of pierced) {
       const written = writeEnglish.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier: Modifier.pierced }],
       });
       expect(drawn(written)).toContain('fill-rule="evenodd"');
@@ -569,7 +571,7 @@ describe('piercing a charge, which is not voiding it', () => {
       expect(drawn(written)).not.toBe(
         drawn(
           writeEnglish.write({
-            field: { tincture: Colours.azure },
+            field: { type: FieldType.plain, tincture: Colours.azure },
             chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier: Modifier.voided }],
           })
         )
@@ -678,8 +680,8 @@ describe('the names heraldry gave a modified charge', () => {
   test('read back everything they write', () => {
     for (const type of CHARGES) {
       for (const modifier of modifiersOf(type)) {
-        const blazon = {
-          field: { tincture: Colours.azure },
+        const blazon: Blazon = {
+          field: { type: FieldType.plain, tincture: Colours.azure },
           chargesOrOrdinaries: [{ type, tincture: Metals.or, modifier }],
         };
         expect(inFrench.parse(writeFrench.write(blazon))).toEqual(blazon);

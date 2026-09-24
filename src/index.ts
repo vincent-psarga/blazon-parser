@@ -14,9 +14,11 @@ export { FrenchBlazonParser } from './application/parser/FrenchBlazonParser';
 export { EnglishBlazonWriter } from './application/writer/EnglishBlazonWriter';
 export { FrenchBlazonWriter } from './application/writer/FrenchBlazonWriter';
 
+export { Languages, TONGUES } from './domain/models/Languages';
 export { isCharge, isOrdinary } from './domain/models/Blazon';
 export type { Blazon, BorneType, ChargeOrOrdinary } from './domain/models/Blazon';
-export type { Armorial, ArmorialEntry, ArmorialSource } from './domain/models/Armorial';
+export type { Armorial, ArmorialEntry } from './domain/models/Armorial';
+export type { Source } from './domain/models/Source';
 export { readArmorial } from './application/armorial/ArmorialReading';
 export type {
   ArmorialReading,
@@ -24,18 +26,33 @@ export type {
   UnknownWords,
 } from './application/armorial/ArmorialReading';
 export {
-  DivisionType,
-  FurType,
+  DIVISIONS,
+  FURS,
+  FieldDefinition,
+  FieldDefinitions,
+  FieldKind,
+  FieldType,
   PIECES,
-  VariationType,
+  VARIATIONS,
   cutInPieces,
   isDivision,
   isFurred,
   isPlain,
   isVariation,
+  kindOf,
   usualPieces,
 } from './domain/models/Field';
-export type { Division, Field, Furred, Plain, Semy, Variation } from './domain/models/Field';
+export type {
+  Division,
+  DivisionType,
+  Field,
+  FurType,
+  Furred,
+  Plain,
+  Semy,
+  Variation,
+  VariationType,
+} from './domain/models/Field';
 export {
   OrdinaryDefinition,
   OrdinaryDefinitions,
@@ -105,7 +122,15 @@ export type { NumberWords } from './domain/translations/Numbers';
 export { strewnIn, strewnTerms } from './domain/translations/Strewings';
 export type { Strewings } from './domain/translations/Strewings';
 export { Word } from './domain/translations/Word';
-export type { AlternateWording, Spelling, Wording, WordOptions } from './domain/translations/Word';
+export type {
+  AlternateWording,
+  Description,
+  Gloss,
+  Spelling,
+  Wording,
+  WordOptions,
+} from './domain/translations/Word';
+export { blasonArmoiries, laLangueDuBlason, parker } from './domain/translations/Sources';
 export { FrenchWord } from './domain/translations/fr/FrenchWord';
 export type { FrenchWordOptions } from './domain/translations/fr/FrenchWord';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';

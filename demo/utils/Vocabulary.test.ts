@@ -1,17 +1,20 @@
 import { describe, expect, test } from 'vitest';
 import { EnglishBlazonWriter } from '../../src/application/writer/EnglishBlazonWriter';
 import { FrenchBlazonWriter } from '../../src/application/writer/FrenchBlazonWriter';
+import { Languages, TONGUES } from '../../src/domain/models/Languages';
 import { isFur } from '../../src/domain/models/Tinctures';
+import { IBlazonWriter } from '../../src/domain/services/IBlazonWriter';
 import { anchorOf, folded } from './Anchors';
-import { LanguageCode } from './Languages';
 import { readBlazon } from './Reading';
 import { VocabularyEntry, lettersOf, vocabularyIn } from './Vocabulary';
 
-const TONGUES: readonly LanguageCode[] = ['fr', 'en'];
-const WRITERS = { fr: new FrenchBlazonWriter(), en: new EnglishBlazonWriter() };
+const WRITERS: Record<Languages, IBlazonWriter> = {
+  [Languages.fr]: new FrenchBlazonWriter(),
+  [Languages.en]: new EnglishBlazonWriter(),
+};
 
-const french = vocabularyIn('fr');
-const english = vocabularyIn('en');
+const french = vocabularyIn(Languages.fr);
+const english = vocabularyIn(Languages.en);
 
 const word = (entries: readonly VocabularyEntry[], spelling: string) => {
   const found = entries.find((entry) => entry.spellings.includes(spelling));
@@ -46,9 +49,9 @@ describe('what the vocabulary holds', () => {
     // Counted off the vocabulary rather than written down: what fails here is a
     // word the library reads and the page does not show.
     const spellings = spelled(vocabularyIn(language));
-    expect(spellings).toContain(language === 'fr' ? 'gueules' : 'gules');
-    expect(spellings).toContain(language === 'fr' ? 'croisette' : 'cross couped');
-    expect(spellings).toContain(language === 'fr' ? 'billeté' : 'billetty');
+    expect(spellings).toContain(language === Languages.fr ? 'gueules' : 'gules');
+    expect(spellings).toContain(language === Languages.fr ? 'croisette' : 'cross couped');
+    expect(spellings).toContain(language === Languages.fr ? 'billeté' : 'billetty');
   });
 
   test('holds the two words that say what a field is rather than what it bears', () => {
@@ -74,6 +77,29 @@ describe('what the vocabulary holds', () => {
     }
   });
 
+  test.each(TONGUES)('%s says who says so of every one of its words', (language) => {
+    // A gloss nobody stands behind is this library's opinion about heraldry,
+    // which is not a thing it is entitled to have.
+    for (const entry of vocabularyIn(language)) {
+      expect(entry.sources.length, entry.word).toBeGreaterThan(0);
+      for (const source of entry.sources) {
+        expect(source.title, entry.word).not.toBe('');
+        expect(source.url, entry.word).toMatch(/^https?:\/\/\S+$/);
+      }
+    }
+  });
+
+  test('answers for a French word out of a French work, and says as much', () => {
+    // The gloss is English on both pages; the authority behind it need not be,
+    // and the dictionaries that settle French heraldry are French.
+    for (const source of word(french, 'sautoir').sources) {
+      expect(source.language).toBe(Languages.fr);
+    }
+    for (const source of word(english, 'saltire').sources) {
+      expect(source.language).toBe(Languages.en);
+    }
+  });
+
   test.each(TONGUES)('%s files each word at an address of its own', (language) => {
     const anchors = vocabularyIn(language).map((entry) => entry.anchor);
     expect(new Set(anchors).size).toBe(anchors.length);
@@ -88,6 +114,8 @@ describe('what a word means', () => {
     expect(word(english, 'azure').description).toBe('Blue.');
     expect(word(english, 'mullet').description).not.toMatch(/French/);
     expect(word(french, 'étoile').description).not.toMatch(/English/);
+    expect(word(french, 'macle').description).not.toMatch(/English/);
+    expect(word(english, 'mascle').description).not.toMatch(/French/);
   });
 
   test('stands on its own, a reader arriving at any word by its anchor alone', () => {
@@ -146,14 +174,16 @@ describe('a word written more than one way', () => {
   test('is read under every one of them all the same', () => {
     // The vocabulary lists one; the parser answers to the lot.
     for (const spelling of ['Argent a fleur-de-lys gules.', 'Argent a fleur de lis gules.']) {
-      const read = readBlazon(spelling, 'en');
+      const read = readBlazon(spelling, Languages.en);
       expect('blazon' in read, spelling).toBe(true);
     }
-    expect(readBlazon("D'argent à trois fleurs-de-lis de gueules.", 'fr')).toHaveProperty('blazon');
-    expect(readBlazon('Argent semy-de-lys gules.', 'en')).toHaveProperty('blazon');
-    expect(readBlazon('Argent semee of annulets gules.', 'en')).toHaveProperty('blazon');
-    expect(readBlazon('Gules a bezant.', 'en')).toHaveProperty('blazon');
-    expect(readBlazon('Vaire argent and gules.', 'en')).toHaveProperty('blazon');
+    expect(readBlazon("D'argent à trois fleurs-de-lis de gueules.", Languages.fr)).toHaveProperty(
+      'blazon'
+    );
+    expect(readBlazon('Argent semy-de-lys gules.', Languages.en)).toHaveProperty('blazon');
+    expect(readBlazon('Argent semee of annulets gules.', Languages.en)).toHaveProperty('blazon');
+    expect(readBlazon('Gules a bezant.', Languages.en)).toHaveProperty('blazon');
+    expect(readBlazon('Vaire argent and gules.', Languages.en)).toHaveProperty('blazon');
   });
 
   test('keeps a spelling that is another word rather than another writing of one', () => {
@@ -290,8 +320,8 @@ describe('the same word elsewhere', () => {
   });
 
   test('sends a word of the other tongue to the other tongue', () => {
-    expect(word(french, 'croix').otherTongue[0].language).toBe('en');
-    expect(word(french, 'besant').alsoHere[0].language).toBe('fr');
+    expect(word(french, 'croix').otherTongue[0].language).toBe(Languages.en);
+    expect(word(french, 'besant').alsoHere[0].language).toBe(Languages.fr);
   });
 });
 

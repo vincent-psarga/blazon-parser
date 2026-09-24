@@ -5,22 +5,25 @@ import { withArticle } from './FrenchGrammar';
 import { Colours, Metals, TINCTURES } from '../../domain/models/Tinctures';
 import { wordOf } from '../../domain/translations/Translation';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
+import { FieldType } from '../../domain/models/Field';
 
 const parser = new FrenchBlazonParser();
 
 describe('parseBlazon', () => {
   test.each(TINCTURES)('reads a field %s into the blazon', (tincture) => {
     expect(parser.parse(withArticle(wordOf(FrenchTinctures, tincture)))).toEqual({
-      field: { tincture },
+      field: { type: FieldType.plain, tincture },
     });
   });
 
   test('accepts a field named without its article', () => {
-    expect(parser.parse('azur')).toEqual({ field: { tincture: Colours.azure } });
+    expect(parser.parse('azur')).toEqual({
+      field: { type: FieldType.plain, tincture: Colours.azure },
+    });
   });
 
   test('accepts the capitalisation a blazon is written with', () => {
-    expect(parser.parse("D'Or")).toEqual({ field: { tincture: Metals.or } });
+    expect(parser.parse("D'Or")).toEqual({ field: { type: FieldType.plain, tincture: Metals.or } });
   });
 
   test('rejects an unknown tincture', () => {
@@ -35,11 +38,15 @@ describe('parseBlazon', () => {
 
   describe('the closing full stop', () => {
     test('accepts a blazon that ends with one', () => {
-      expect(parser.parse("D'azur.")).toEqual({ field: { tincture: Colours.azure } });
+      expect(parser.parse("D'azur.")).toEqual({
+        field: { type: FieldType.plain, tincture: Colours.azure },
+      });
     });
 
     test('accepts a blazon that omits it', () => {
-      expect(parser.parse("D'azur")).toEqual({ field: { tincture: Colours.azure } });
+      expect(parser.parse("D'azur")).toEqual({
+        field: { type: FieldType.plain, tincture: Colours.azure },
+      });
     });
 
     test('rejects a doubled stop', () => {

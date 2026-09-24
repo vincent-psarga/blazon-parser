@@ -1,5 +1,6 @@
 import { ChargeType } from '../../models/Charge';
 import { Metals } from '../../models/Tinctures';
+import { parker } from '../Sources';
 import { Strewings } from '../Strewings';
 import { Word } from '../Word';
 
@@ -19,14 +20,19 @@ import { Word } from '../Word';
  */
 export const EnglishStrewings: Strewings = {
   [ChargeType.annulet]: undefined,
-  [ChargeType.billet]: new Word(
-    'billetty',
-    'A field sown with billets: the figure repeated small over the whole of it, running off every edge and past counting. Heraldry would rather name such a field than describe it, and Parker calls the special term preferable — semy of billets says no more.'
-  ),
+  [ChargeType.billet]: new Word('billetty', {
+    value:
+      'A field sown with billets: the figure repeated small over the whole of it, running off every edge and past counting. Heraldry would rather name such a field than describe it, and Parker calls the special term preferable — semy of billets says no more.',
+    sources: [parker('Billetty')],
+  }),
   [ChargeType.lozenge]: undefined,
   [ChargeType.roundel]: new Word(
     'bezanty',
-    'A field sown with bezants, and gold by being bezanty: nothing is written after the word. A field sown with silver discs is no bezanty at all but semy of plates, English having named no adjective for that one.',
+    {
+      value:
+        'A field sown with bezants, and gold by being bezanty: nothing is written after the word. A field sown with silver discs is no bezanty at all but semy of plates, English having named no adjective for that one.',
+      sources: [parker('Bezanty')],
+    },
     { defaultTincture: Metals.or }
   ),
   // A field sown with drops has a word — gutté, gutty — and the word does not
@@ -45,7 +51,11 @@ export const EnglishStrewings: Strewings = {
   [ChargeType.crescent]: undefined,
   [ChargeType.fleurDeLis]: new Word(
     'semy-de-lis',
-    'A field sown with fleurs-de-lis: the arms of France before they were reduced to three. It is the one strewing English names after the figure itself rather than after an adjective made of it.',
+    {
+      value:
+        'A field sown with fleurs-de-lis: the arms of France before they were reduced to three. It is the one strewing English names after the figure itself rather than after an adjective made of it.',
+      sources: [parker('Seme')],
+    },
     {
       alternateWording: {
         'semy-de-lys': {},
@@ -66,13 +76,18 @@ export const EnglishStrewings: Strewings = {
  * off this rather than out of strings of its own.
  */
 export const SOWN: readonly Word[] = [
-  new Word(
-    'semy',
-    'The field sown with a figure English has no single word for: semy of annulets, semy of mullets. What is sown is drawn small, runs off every edge and is past counting — the field’s own state rather than something it bears, so a band blazoned after it covers the sowing exactly as it covers the tincture beneath. Where English does have a word — billetty, bezanty, semy-de-lis — that word is written instead.'
-  ),
+  new Word('semy', {
+    value:
+      'The field sown with a figure English has no single word for: semy of annulets, semy of mullets. What is sown is drawn small, runs off every edge and is past counting — the field’s own state rather than something it bears, so a band blazoned after it covers the sowing exactly as it covers the tincture beneath. Where English does have a word — billetty, bezanty, semy-de-lis — that word is written instead.',
+    sources: [parker('Seme')],
+  }),
   new Word(
     'semé',
-    'The field sown with a figure English has no single word for, drawn small, running off every edge and past counting. This is the French participle English took the word from, written with its accent or with the accent spelled out.',
+    {
+      value:
+        'The field sown with a figure English has no single word for, drawn small, running off every edge and past counting. This is the French participle English took the word from, written with its accent or with the accent spelled out.',
+      sources: [parker('Seme')],
+    },
     { alternateWording: { semee: {} } }
   ),
 ];

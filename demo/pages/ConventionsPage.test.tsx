@@ -2,9 +2,10 @@
 import { cleanup, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
 import { isDivision, isFurred, isPlain, isVariation } from '../../src/domain/models/Field';
+import { Languages } from '../../src/domain/models/Languages';
 import { METALS, Tincture, isFur } from '../../src/domain/models/Tinctures';
 import { mount } from '../testing/Mounting';
-import { LANGUAGES, LanguageCode } from '../utils/Languages';
+import { LANGUAGES } from '../utils/Languages';
 import { readingPath } from '../utils/Reading';
 import { ConventionsPage } from './ConventionsPage';
 
@@ -14,7 +15,7 @@ afterEach(cleanup);
 interface Case {
   readonly typed: string;
   /** The tongue it was typed in, which the page says of every blazon it shows. */
-  readonly language: LanguageCode;
+  readonly language: Languages;
   readonly written: readonly string[];
   readonly refused: string | undefined;
   readonly arms: number;
@@ -23,7 +24,7 @@ interface Case {
 const cases = (): readonly Case[] =>
   Array.from(document.querySelectorAll('.case')).map((shown) => ({
     typed: shown.querySelector('.case__typed')?.textContent ?? '',
-    language: shown.querySelector('.case__typed')?.getAttribute('lang') as LanguageCode,
+    language: shown.querySelector('.case__typed')?.getAttribute('lang') as Languages,
     written: Array.from(shown.querySelectorAll('.case__written a')).map(
       (link) => link.textContent ?? ''
     ),
@@ -38,7 +39,7 @@ const shown = (typed: string): Case => {
 };
 
 /** What the library answers, asked of it directly rather than of the page. */
-const answered = (typed: string, read: LanguageCode, written: LanguageCode) =>
+const answered = (typed: string, read: Languages, written: Languages) =>
   LANGUAGES[written].writer.write(LANGUAGES[read].parser.parse(typed));
 
 const HEADINGS = [
@@ -50,6 +51,8 @@ const HEADINGS = [
   'A strewing is named where heraldry names it',
   'A word that says nothing is read and never written',
   'A modifier stands after what it qualifies and before its tincture',
+  'A French modifier agrees with the charge the blazon named',
+  'A modifier is said only of what can show it',
   'A word the armorials keep for one charge is written of that charge alone',
   'The smaller settlements',
 ];
@@ -82,7 +85,10 @@ describe('ConventionsPage', () => {
         expect(() => LANGUAGES[language].parser.parse(typed)).toThrow(refused);
         continue;
       }
-      expect(written).toEqual([answered(typed, language, 'fr'), answered(typed, language, 'en')]);
+      expect(written).toEqual([
+        answered(typed, language, Languages.fr),
+        answered(typed, language, Languages.en),
+      ]);
     }
   });
 
@@ -90,7 +96,7 @@ describe('ConventionsPage', () => {
     mount(<ConventionsPage />);
     for (const link of Array.from(document.querySelectorAll('.case__written a'))) {
       const blazon = link.textContent ?? '';
-      const language = link.getAttribute('lang') as LanguageCode;
+      const language = link.getAttribute('lang') as Languages;
       expect(link).toHaveAttribute('href', readingPath(blazon, language));
     }
   });
@@ -274,6 +280,9 @@ describe('what each rule shows', () => {
     // agree with the one the blazon chose — which is the other rule's case, the
     // losange voided having a name of its own to come back under.
     expect(shown("D'azur au losange vidé d'or").written).toContain("D'azur à la macle d'or.");
+    // And under the other article, with the word agreeing the other way: one
+    // charge, one answer, whichever gender the blazon chose for it.
+    expect(shown("D'azur à la losange vidée d'or").written).toContain("D'azur à la macle d'or.");
   });
 
   test('writes each of the two French voidings of the charges it is kept for', () => {
@@ -302,6 +311,13 @@ describe('what each rule shows', () => {
     mount(<ConventionsPage />);
     const refused = shown('Azure an annulet voided or');
     expect(refused.refused).toBe('Wrong modifier: annulet is never voided');
+    expect(refused.arms).toBe(0);
+  });
+
+  test('refuses a modifier on an ordinary, no voided band being drawn', () => {
+    mount(<ConventionsPage />);
+    const refused = shown('Azure a fess voided or');
+    expect(refused.refused).toBe('Wrong modifier: fess is never voided');
     expect(refused.arms).toBe(0);
   });
 
@@ -371,17 +387,43 @@ describe('the rule of tincture, which every example must keep', () => {
 describe('the authorities the decisions rest on', () => {
   test.each([
     ['https://www.heraldry.ca/resources/BLAZONRY_GUIDE_2014.pdf'],
-    ['http://www.blason-armoiries.org/heraldique/b/bandee.htm'],
-    ['https://www.heraldsnet.org/saitou/parker/Jpglossr.htm'],
-    ['http://www.blason-armoiries.org/heraldique/b/besant.htm'],
-    ['http://www.blason-armoiries.org/heraldique/l/losange.htm'],
-    ['https://www.heraldsnet.org/saitou/parker/Jpglossv.htm'],
-    ['http://www.blason-armoiries.org/heraldique/e/evide.htm'],
-    ['http://www.blason-armoiries.org/heraldique/v/vide.htm'],
+    ['https://blason-armoiries.org/heraldique/b/bandee.htm'],
+    ['https://www.heraldsnet.org/saitou/parker/Jpglossr.htm#Roundles'],
+    ['https://blason-armoiries.org/heraldique/b/besant.htm'],
+    ['https://blason-armoiries.org/heraldique/l/losange.htm'],
+    ['https://www.heraldsnet.org/saitou/parker/Jpglossv.htm#Voided'],
+    ['https://blason-armoiries.org/heraldique/e/evide.htm'],
+    ['https://blason-armoiries.org/heraldique/v/vide.htm'],
     ['https://en.wikipedia.org/wiki/Blazon'],
   ])('cites %s', (href) => {
     mount(<ConventionsPage />);
-    expect(document.querySelector(`.rule__source a[href="${href}"]`)).toBeInTheDocument();
+    expect(document.querySelector(`.cited a[href="${href}"]`)).toBeInTheDocument();
+  });
+
+  test('says who says so by a mark, the citation waiting behind it', () => {
+    mount(<ConventionsPage />);
+    const rule = document.querySelector('#naming-a-strewing') as HTMLElement;
+    const cited = within(rule).getByRole('link', { name: /A Glossary of Terms Used/ });
+    expect(cited.textContent).toContain('[1]');
+    expect(cited).toHaveAttribute(
+      'title',
+      'James Parker, A Glossary of Terms Used in Heraldry, under Seme'
+    );
+  });
+
+  test("marks each rule's works in the order its prose quotes them", () => {
+    mount(<ConventionsPage />);
+    const rule = document.querySelector('#a-name-that-means-what-was-done') as HTMLElement;
+    const marks = Array.from(rule.querySelectorAll('.cited a')).map((cited) =>
+      cited.getAttribute('title')
+    );
+    expect(marks).toEqual([
+      'James Parker, A Glossary of Terms Used in Heraldry, under Mascle',
+      'James Parker, A Glossary of Terms Used in Heraldry, under Rustre',
+      'Au blason des armoiries, Macle — in French',
+      'Au blason des armoiries, Rustre — in French',
+      'James Parker, A Glossary of Terms Used in Heraldry, under Mullet',
+    ]);
   });
 
   test('names the guide that says English counts every time', () => {

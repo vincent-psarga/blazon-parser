@@ -1,4 +1,4 @@
-import { DivisionType } from '../../../../../../domain/models/Field';
+import { DivisionType, FieldType } from '../../../../../../domain/models/Field';
 import { DivisionFigure } from '../../Figures';
 import { bend } from './bend';
 import { bendSinister } from './bendSinister';
@@ -12,8 +12,8 @@ import { pale } from './pale';
  * until it is given a shape.
  */
 export const DIVISIONS: Record<DivisionType, DivisionFigure> = {
-  [DivisionType.pale]: pale,
-  [DivisionType.fess]: fess,
-  [DivisionType.bend]: bend,
-  [DivisionType.bendSinister]: bendSinister,
+  [FieldType.pale]: pale,
+  [FieldType.fess]: fess,
+  [FieldType.bend]: bend,
+  [FieldType.bendSinister]: bendSinister,
 };

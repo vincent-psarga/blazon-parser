@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { Blazon } from '../../domain/models/Blazon';
-import { DivisionType, FurType, VariationType } from '../../domain/models/Field';
+import { DIVISIONS, DivisionType, FieldType } from '../../domain/models/Field';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Furs, Metals, TINCTURES, Tincture } from '../../domain/models/Tinctures';
@@ -12,14 +12,16 @@ const parser = new FrenchBlazonParser();
 
 describe('FrenchBlazonWriter', () => {
   test('writes a plain field', () => {
-    expect(writer.write({ field: { tincture: Colours.azure } })).toBe("D'azur.");
+    expect(writer.write({ field: { type: FieldType.plain, tincture: Colours.azure } })).toBe(
+      "D'azur."
+    );
   });
 
   test('writes a divided field', () => {
     expect(
       writer.write({
         field: {
-          type: DivisionType.pale,
+          type: FieldType.pale,
           firstTincture: Colours.azure,
           secondTincture: Metals.or,
         },
@@ -27,10 +29,10 @@ describe('FrenchBlazonWriter', () => {
     ).toBe("Parti d'azur et d'or.");
   });
 
-  test.each([
-    [DivisionType.fess, 'Coupé'],
-    [DivisionType.bend, 'Tranché'],
-    [DivisionType.bendSinister, 'Taillé'],
+  test.each<[DivisionType, string]>([
+    [FieldType.fess, 'Coupé'],
+    [FieldType.bend, 'Tranché'],
+    [FieldType.bendSinister, 'Taillé'],
   ])('names %s in French', (type, name) => {
     const written = writer.write({
       field: { type, firstTincture: Colours.gules, secondTincture: Metals.argent },
@@ -42,7 +44,7 @@ describe('FrenchBlazonWriter', () => {
     test('writes the ordinary after the field, in its own tincture', () => {
       expect(
         writer.write({
-          field: { tincture: Colours.azure },
+          field: { type: FieldType.plain, tincture: Colours.azure },
           chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
         })
       ).toBe("D'azur à la fasce d'or.");
@@ -60,7 +62,7 @@ describe('FrenchBlazonWriter', () => {
     ])('agrees the article with %s', (type, borne) => {
       expect(
         writer.write({
-          field: { tincture: Colours.gules },
+          field: { type: FieldType.plain, tincture: Colours.gules },
           chargesOrOrdinaries: [{ type, tincture: Metals.argent }],
         })
       ).toBe(`De gueules ${borne} d'argent.`);
@@ -70,7 +72,7 @@ describe('FrenchBlazonWriter', () => {
       expect(
         writer.write({
           field: {
-            type: DivisionType.pale,
+            type: FieldType.pale,
             firstTincture: Colours.azure,
             secondTincture: Metals.or,
           },
@@ -81,7 +83,7 @@ describe('FrenchBlazonWriter', () => {
 
     test('closes the sentence after what the field bears, not before', () => {
       const written = writer.write({
-        field: { tincture: Colours.vert },
+        field: { type: FieldType.plain, tincture: Colours.vert },
         chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or }],
       });
       expect(written.endsWith("d'or.")).toBe(true);
@@ -90,12 +92,14 @@ describe('FrenchBlazonWriter', () => {
   });
 
   test('agrees the article with the tincture it introduces', () => {
-    expect(writer.write({ field: { tincture: Metals.or } })).toBe("D'or.");
-    expect(writer.write({ field: { tincture: Colours.gules } })).toBe('De gueules.');
+    expect(writer.write({ field: { type: FieldType.plain, tincture: Metals.or } })).toBe("D'or.");
+    expect(writer.write({ field: { type: FieldType.plain, tincture: Colours.gules } })).toBe(
+      'De gueules.'
+    );
   });
 
   test('opens with a capital and closes with a full stop', () => {
-    const written = writer.write({ field: { tincture: Colours.vert } });
+    const written = writer.write({ field: { type: FieldType.plain, tincture: Colours.vert } });
     expect(written.charAt(0)).toBe(written.charAt(0).toUpperCase());
     expect(written.endsWith('.')).toBe(true);
   });
@@ -105,23 +109,20 @@ describe('round trip', () => {
   const roundTrip = (blazon: Blazon) => parser.parse(writer.write(blazon));
 
   test.each(TINCTURES)('a plain field of %s survives being written and read back', (tincture) => {
-    const blazon: Blazon = { field: { tincture } };
+    const blazon: Blazon = { field: { type: FieldType.plain, tincture } };
     expect(roundTrip(blazon)).toEqual(blazon);
   });
 
-  test.each(Object.values(DivisionType))(
-    'a field divided per %s survives the round trip',
-    (type) => {
-      const blazon: Blazon = {
-        field: { type, firstTincture: Colours.sable, secondTincture: Metals.or },
-      };
-      expect(roundTrip(blazon)).toEqual(blazon);
-    }
-  );
+  test.each(DIVISIONS)('a field divided per %s survives the round trip', (type) => {
+    const blazon: Blazon = {
+      field: { type, firstTincture: Colours.sable, secondTincture: Metals.or },
+    };
+    expect(roundTrip(blazon)).toEqual(blazon);
+  });
 
   test.each(Object.values(OrdinaryType))('a field bearing %s survives the round trip', (type) => {
     const blazon: Blazon = {
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type, tincture: Metals.or }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);
@@ -129,7 +130,7 @@ describe('round trip', () => {
 
   test.each(TINCTURES)('an ordinary of %s survives with its own tincture', (tincture) => {
     const blazon: Blazon = {
-      field: { tincture: Colours.sable },
+      field: { type: FieldType.plain, tincture: Colours.sable },
       chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture }],
     };
     expect(roundTrip(blazon)).toEqual(blazon);
@@ -138,7 +139,7 @@ describe('round trip', () => {
   test('a divided field bearing an ordinary survives the round trip', () => {
     const blazon: Blazon = {
       field: {
-        type: DivisionType.bend,
+        type: FieldType.bend,
         firstTincture: Colours.gules,
         secondTincture: Metals.argent,
       },
@@ -158,13 +159,13 @@ describe('round trip', () => {
   test('keeps the bande apart from the tranché it runs along', () => {
     expect(
       writer.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.bend, tincture: Metals.or }],
       })
     ).toBe("D'azur à la bande d'or.");
     expect(
       writer.write({
-        field: { type: DivisionType.bend, firstTincture: Colours.azure, secondTincture: Metals.or },
+        field: { type: FieldType.bend, firstTincture: Colours.azure, secondTincture: Metals.or },
       })
     ).toBe("Tranché d'azur et d'or.");
   });
@@ -180,7 +181,7 @@ describe('several of one ordinary', () => {
     // Blazonry keeps "à" where ordinary French would contract it into "aux".
     expect(
       writer.write({
-        field: { tincture: Colours.gules },
+        field: { type: FieldType.plain, tincture: Colours.gules },
         chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or, count: 3 }],
       })
     ).toBe("De gueules à trois chevrons d'or.");
@@ -194,7 +195,7 @@ describe('several of one ordinary', () => {
   ])('writes %s borne %i times as "%s"', (type, count, expected) => {
     expect(
       writer.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type, tincture: Metals.or, count }],
       })
     ).toBe(expected);
@@ -203,7 +204,7 @@ describe('several of one ordinary', () => {
   test('writes a single band as the one it is, count or no count', () => {
     expect(
       writer.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or, count: 1 }],
       })
     ).toBe("D'azur au chevron d'or.");
@@ -212,7 +213,7 @@ describe('several of one ordinary', () => {
   test('writes but one of an ordinary borne but once, whatever it was handed', () => {
     expect(
       writer.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.chief, tincture: Metals.or, count: 3 }],
       })
     ).toBe("D'azur au chef d'or.");
@@ -221,7 +222,7 @@ describe('several of one ordinary', () => {
   test('writes the roundel under the name its tincture answers to', () => {
     const roundel = (tincture: Tincture) =>
       writer.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture }],
       });
     expect(roundel(Metals.or)).toBe("D'azur au besant.");
@@ -233,7 +234,7 @@ describe('several of one ordinary', () => {
   test('leaves the tincture unwritten where the name has already said it', () => {
     expect(
       writer.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture: Metals.or, count: 3 }],
       })
     ).toBe("D'azur à trois besants.");
@@ -245,7 +246,7 @@ describe('several of one ordinary', () => {
 
   test.each(TINCTURES)('writes a roundel %s as a blazon the parser reads back', (tincture) => {
     const blazon: Blazon = {
-      field: { tincture: Colours.sable },
+      field: { type: FieldType.plain, tincture: Colours.sable },
       chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture }],
     };
     expect(parser.parse(writer.write(blazon))).toEqual(blazon);
@@ -253,7 +254,7 @@ describe('several of one ordinary', () => {
 
   test('survives the round trip, count and all', () => {
     const blazon: Blazon = {
-      field: { tincture: Metals.or },
+      field: { type: FieldType.plain, tincture: Metals.or },
       chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.sable, count: 3 }],
     };
     expect(parser.parse(writer.write(blazon))).toEqual(blazon);
@@ -271,7 +272,7 @@ describe('several of one ordinary', () => {
     // is not in the vocabulary. A figure is a poor blazon but an honest one.
     expect(
       writer.write({
-        field: { tincture: Metals.or },
+        field: { type: FieldType.plain, tincture: Metals.or },
         chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.gules, count: 17 }],
       })
     ).toBe("D'or à 17 fasces de gueules.");
@@ -280,7 +281,7 @@ describe('several of one ordinary', () => {
 
 describe('a field bearing more than one ordinary', () => {
   const ARMS: Blazon = {
-    field: { tincture: Metals.or },
+    field: { type: FieldType.plain, tincture: Metals.or },
     chargesOrOrdinaries: [
       { type: OrdinaryType.bend, tincture: Colours.sable, count: 3 },
       { type: OrdinaryType.bordure, tincture: Colours.gules },
@@ -314,7 +315,7 @@ describe('a field bearing more than one ordinary', () => {
   test('gives each one its own article, agreed with its own name', () => {
     expect(
       writer.write({
-        field: { tincture: Metals.argent },
+        field: { type: FieldType.plain, tincture: Metals.argent },
         chargesOrOrdinaries: [
           { type: OrdinaryType.chevron, tincture: Metals.or },
           { type: OrdinaryType.fess, tincture: Colours.gules },
@@ -328,7 +329,7 @@ describe('the bordure', () => {
   test('is borne under the feminine article', () => {
     expect(
       writer.write({
-        field: { tincture: Metals.argent },
+        field: { type: FieldType.plain, tincture: Metals.argent },
         chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
       })
     ).toBe("D'argent à la bordure de gueules.");
@@ -338,7 +339,7 @@ describe('the bordure', () => {
 describe('a varied field', () => {
   const barry = (pieces: number): Blazon => ({
     field: {
-      type: VariationType.barry,
+      type: FieldType.barry,
       firstTincture: Metals.argent,
       secondTincture: Colours.gules,
       pieces,
@@ -355,10 +356,10 @@ describe('a varied field', () => {
   });
 
   test.each([
-    [VariationType.barry, 'Fascé'],
-    [VariationType.paly, 'Palé'],
-    [VariationType.bendy, 'Bandé'],
-    [VariationType.chevronny, 'Chevronné'],
+    [FieldType.barry, 'Fascé'],
+    [FieldType.paly, 'Palé'],
+    [FieldType.bendy, 'Bandé'],
+    [FieldType.chevronny, 'Chevronné'],
   ])('names %s in French', (type, name) => {
     expect(writer.write({ ...barry(6), field: { ...barry(6).field, type } as never })).toBe(
       `${name} d'argent et de gueules.`
@@ -369,7 +370,7 @@ describe('a varied field', () => {
     expect(
       writer.write({
         field: {
-          type: VariationType.pily,
+          type: FieldType.pily,
           firstTincture: Metals.or,
           secondTincture: Colours.azure,
           pieces: 6,
@@ -403,7 +404,7 @@ describe('a varied field', () => {
 
 describe('a furred field', () => {
   const vairy = (first: Tincture, second: Tincture): Blazon => ({
-    field: { type: FurType.vairy, firstTincture: first, secondTincture: second },
+    field: { type: FieldType.vairy, firstTincture: first, secondTincture: second },
   });
 
   test('names the fur and the pair it is cut from, with the articles the pair calls for', () => {
@@ -437,7 +438,7 @@ describe('a field bearing charges, in French', () => {
   ])('writes %s under the article its name agrees with', (type, expected) => {
     expect(
       writer.write({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type, tincture: Metals.or }],
       })
     ).toBe(expected);
@@ -446,7 +447,7 @@ describe('a field bearing charges, in French', () => {
   test('writes the count before the name in the plural, as it does for a band', () => {
     expect(
       writer.write({
-        field: { tincture: Metals.argent },
+        field: { type: FieldType.plain, tincture: Metals.argent },
         chargesOrOrdinaries: [{ type: ChargeType.billet, tincture: Metals.or, count: 3 }],
       })
     ).toBe("D'argent à trois billettes d'or.");
@@ -455,7 +456,7 @@ describe('a field bearing charges, in French', () => {
   test('writes a single charge as the one it is, whatever count it was handed', () => {
     expect(
       writer.write({
-        field: { tincture: Metals.argent },
+        field: { type: FieldType.plain, tincture: Metals.argent },
         chargesOrOrdinaries: [{ type: ChargeType.lozenge, tincture: Metals.or, count: 1 }],
       })
     ).toBe("D'argent à la losange d'or.");
@@ -463,7 +464,7 @@ describe('a field bearing charges, in French', () => {
 
   test('writes bands and charges in the order the model holds them, a comma between', () => {
     const laid: Blazon = {
-      field: { tincture: Metals.or },
+      field: { type: FieldType.plain, tincture: Metals.or },
       chargesOrOrdinaries: [
         { type: OrdinaryType.fess, tincture: Colours.gules },
         { type: ChargeType.billet, tincture: Colours.azure, count: 3 },
@@ -480,7 +481,7 @@ describe('a field bearing charges, in French', () => {
 
   test('survives the round trip, count and all', () => {
     const blazon: Blazon = {
-      field: { tincture: Metals.or },
+      field: { type: FieldType.plain, tincture: Metals.or },
       chargesOrOrdinaries: [
         { type: OrdinaryType.bordure, tincture: Colours.sable },
         { type: ChargeType.annulet, tincture: Colours.gules, count: 6 },

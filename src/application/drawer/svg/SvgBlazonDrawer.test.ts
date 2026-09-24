@@ -1,5 +1,11 @@
 import { describe, expect, test } from 'vitest';
-import { DivisionType, FurType, VariationType } from '../../../domain/models/Field';
+import {
+  DIVISIONS,
+  FieldType,
+  Furred,
+  VARIATIONS,
+  VariationType,
+} from '../../../domain/models/Field';
 import { ChargeType } from '../../../domain/models/Charge';
 import { OrdinaryType } from '../../../domain/models/Ordinary';
 import { Colours, Furs, Metals, SHADES, TINCTURES } from '../../../domain/models/Tinctures';
@@ -34,14 +40,14 @@ const inside = (svg: string) => {
 
 describe('SvgBlazonDrawer', () => {
   test('draws an SVG document', () => {
-    const svg = drawer.draw({ field: { tincture: Colours.azure } });
+    const svg = drawer.draw({ field: { type: FieldType.plain, tincture: Colours.azure } });
     expect(svg.startsWith('<svg xmlns="http://www.w3.org/2000/svg"')).toBe(true);
     expect(svg.endsWith('</svg>')).toBe(true);
     expect(svg).toContain('viewBox="0 0 200 240"');
   });
 
   test('opens and closes every tag it writes', () => {
-    const svg = drawer.draw({ field: { tincture: Colours.azure } });
+    const svg = drawer.draw({ field: { type: FieldType.plain, tincture: Colours.azure } });
     for (const tag of ['svg', 'defs', 'clipPath', 'g']) {
       expect(svg.split(`<${tag}`).length - 1).toBe(svg.split(`</${tag}>`).length - 1);
     }
@@ -50,26 +56,28 @@ describe('SvgBlazonDrawer', () => {
   const PLAIN = SHADES.filter((tincture) => !isPattern(WikipediaColours[tincture]));
 
   test.each(PLAIN)('paints a plain field of %s with its own colour', (tincture) => {
-    expect(fills(drawer.draw({ field: { tincture } }))).toEqual([WikipediaColours[tincture]]);
+    expect(fills(drawer.draw({ field: { type: FieldType.plain, tincture } }))).toEqual([
+      WikipediaColours[tincture],
+    ]);
   });
 
   // A fur is no shade, so the colouring holds none: the drawer cuts the pelt
   // from the pair the fur is understood to have and carries the definition.
   test.each(Object.values(Furs))('covers a field of %s with a pelt of its own', (fur) => {
-    const svg = drawer.draw({ field: { tincture: fur } });
+    const svg = drawer.draw({ field: { type: FieldType.plain, tincture: fur } });
     const id = svg.match(/<pattern id="([^"]+)"/)?.[1];
     expect(id).toBeDefined();
     expect(inside(svg)).toContain(`fill="url(#${id})"`);
   });
 
   test('clips the field to the shield and outlines it', () => {
-    const svg = drawer.draw({ field: { tincture: Metals.argent } });
+    const svg = drawer.draw({ field: { type: FieldType.plain, tincture: Metals.argent } });
     expect(svg).toContain('clip-path="url(#blason-shield)"');
     expect(svg).toContain('stroke-width="3"');
   });
 
   describe('divided fields', () => {
-    test.each(Object.values(DivisionType))('paints both halves of a field per %s', (type) => {
+    test.each(DIVISIONS)('paints both halves of a field per %s', (type) => {
       const svg = drawer.draw({
         field: { type, firstTincture: Colours.azure, secondTincture: Metals.or },
       });
@@ -79,7 +87,7 @@ describe('SvgBlazonDrawer', () => {
     test('gives the first tincture the half in chief', () => {
       const perPale = drawer.draw({
         field: {
-          type: DivisionType.pale,
+          type: FieldType.pale,
           firstTincture: Colours.gules,
           secondTincture: Metals.argent,
         },
@@ -92,7 +100,7 @@ describe('SvgBlazonDrawer', () => {
     test('paints the same tincture on both sides when asked', () => {
       const svg = drawer.draw({
         field: {
-          type: DivisionType.fess,
+          type: FieldType.fess,
           firstTincture: Colours.sable,
           secondTincture: Colours.sable,
         },
@@ -104,7 +112,7 @@ describe('SvgBlazonDrawer', () => {
   describe('a field bearing an ordinary', () => {
     test.each(Object.values(OrdinaryType))('lays %s over the field', (type) => {
       const svg = drawer.draw({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type, tincture: Metals.or }],
       });
       // The field is painted first and the ordinary over it, so the shield's own
@@ -118,7 +126,7 @@ describe('SvgBlazonDrawer', () => {
 
     test('draws a fess as a band across the middle of the shield', () => {
       const svg = drawer.draw({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
       });
       expect(svg).toContain('<rect x="0" y="80" width="200" height="80" fill="#ffd700"/>');
@@ -126,7 +134,7 @@ describe('SvgBlazonDrawer', () => {
 
     test('draws a saltire as two limbs crossing, painted alike', () => {
       const svg = drawer.draw({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.saltire, tincture: Metals.argent }],
       });
       expect(svg.split('<polygon').length - 1).toBe(2);
@@ -135,7 +143,7 @@ describe('SvgBlazonDrawer', () => {
 
     test('keeps the ordinary inside the shield', () => {
       const svg = drawer.draw({
-        field: { tincture: Colours.azure },
+        field: { type: FieldType.plain, tincture: Colours.azure },
         chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or }],
       });
       const arms = svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>'));
@@ -145,7 +153,7 @@ describe('SvgBlazonDrawer', () => {
     test('lays an ordinary on a divided field over both halves', () => {
       const svg = drawer.draw({
         field: {
-          type: DivisionType.pale,
+          type: FieldType.pale,
           firstTincture: Colours.azure,
           secondTincture: Metals.or,
         },
@@ -156,7 +164,7 @@ describe('SvgBlazonDrawer', () => {
 
     test('paints an ordinary of the same tincture as its field', () => {
       const svg = drawer.draw({
-        field: { tincture: Colours.sable },
+        field: { type: FieldType.plain, tincture: Colours.sable },
         chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.sable }],
       });
       expect(fills(svg)).toEqual(['#000000', '#000000']);
@@ -165,7 +173,7 @@ describe('SvgBlazonDrawer', () => {
     test('carries the pattern an ordinary is painted with', () => {
       const hatched = new SvgBlazonDrawer(HatchingColours);
       const svg = hatched.draw({
-        field: { tincture: Metals.or },
+        field: { type: FieldType.plain, tincture: Metals.or },
         chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Colours.azure }],
       });
       const paint = HatchingColours[Colours.azure];
@@ -175,7 +183,7 @@ describe('SvgBlazonDrawer', () => {
     });
 
     test('draws nothing extra when the field bears nothing', () => {
-      const bare = drawer.draw({ field: { tincture: Colours.azure } });
+      const bare = drawer.draw({ field: { type: FieldType.plain, tincture: Colours.azure } });
       expect(bare).not.toContain('<polygon');
       expect(bare).not.toContain('<rect');
     });
@@ -192,17 +200,25 @@ describe('SvgBlazonDrawer', () => {
     ) as ColorModel;
 
     test('prefers the colours given at the call over the ones it was built with', () => {
-      const svg = drawer.draw({ field: { tincture: Colours.vert } }, { colorModel: monochrome });
+      const svg = drawer.draw(
+        { field: { type: FieldType.plain, tincture: Colours.vert } },
+        { colorModel: monochrome }
+      );
       expect(fills(svg)).toEqual(['#123456']);
     });
 
     test('falls back to the colours it was built with', () => {
-      expect(fills(drawer.draw({ field: { tincture: Colours.vert } }))).toEqual(['#008000']);
+      expect(
+        fills(drawer.draw({ field: { type: FieldType.plain, tincture: Colours.vert } }))
+      ).toEqual(['#008000']);
     });
 
     test('escapes a colour that would otherwise break out of the attribute', () => {
       const hostile = { ...WikipediaColours, [Colours.vert]: '"><script/>' };
-      const svg = drawer.draw({ field: { tincture: Colours.vert } }, { colorModel: hostile });
+      const svg = drawer.draw(
+        { field: { type: FieldType.plain, tincture: Colours.vert } },
+        { colorModel: hostile }
+      );
       expect(svg).not.toContain('<script/>');
       expect(svg).toContain('&quot;&gt;&lt;script/&gt;');
     });
@@ -220,17 +236,17 @@ describe('painting with patterns rather than colours', () => {
   const defs = (svg: string) => svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'));
 
   test('fills the field by referring to the pattern', () => {
-    const svg = hatched.draw({ field: { tincture: Colours.azure } });
+    const svg = hatched.draw({ field: { type: FieldType.plain, tincture: Colours.azure } });
     expect(svg).toContain('fill="url(#hatch-azure)"');
   });
 
   test('carries the definition the fill refers to', () => {
-    const svg = hatched.draw({ field: { tincture: Colours.azure } });
+    const svg = hatched.draw({ field: { type: FieldType.plain, tincture: Colours.azure } });
     expect(defs(svg)).toContain('<pattern id="hatch-azure"');
   });
 
   test('carries only the patterns the field is painted with', () => {
-    const svg = hatched.draw({ field: { tincture: Colours.azure } });
+    const svg = hatched.draw({ field: { type: FieldType.plain, tincture: Colours.azure } });
     expect(defs(svg)).not.toContain('hatch-gules');
     expect(defs(svg)).not.toContain('hatch-vert');
   });
@@ -238,7 +254,7 @@ describe('painting with patterns rather than colours', () => {
   test('carries both patterns of a divided field', () => {
     const svg = hatched.draw({
       field: {
-        type: DivisionType.pale,
+        type: FieldType.pale,
         firstTincture: Colours.azure,
         secondTincture: Colours.gules,
       },
@@ -250,7 +266,7 @@ describe('painting with patterns rather than colours', () => {
   test('carries a shared pattern once, not twice', () => {
     const svg = hatched.draw({
       field: {
-        type: DivisionType.fess,
+        type: FieldType.fess,
         firstTincture: Colours.sable,
         secondTincture: Colours.sable,
       },
@@ -259,13 +275,13 @@ describe('painting with patterns rather than colours', () => {
   });
 
   test('still paints a tincture that wants a plain colour', () => {
-    const svg = hatched.draw({ field: { tincture: Metals.argent } });
+    const svg = hatched.draw({ field: { type: FieldType.plain, tincture: Metals.argent } });
     expect(svg).toContain('fill="#ffffff"');
     expect(defs(svg)).not.toContain('<pattern');
   });
 
   test('needs no pattern at all for a colour model that has none', () => {
-    const svg = drawer.draw({ field: { tincture: Colours.azure } });
+    const svg = drawer.draw({ field: { type: FieldType.plain, tincture: Colours.azure } });
     expect(defs(svg)).not.toContain('<pattern');
   });
 });
@@ -286,8 +302,10 @@ describe('WikipediaColours', () => {
 
   test('draws every tincture, the furs included, though it paints only shades', () => {
     for (const tincture of TINCTURES) {
-      expect(fills(drawer.draw({ field: { tincture } })).length + 1).toBeGreaterThan(0);
-      expect(drawer.draw({ field: { tincture } })).toContain('<path d=');
+      expect(
+        fills(drawer.draw({ field: { type: FieldType.plain, tincture } })).length + 1
+      ).toBeGreaterThan(0);
+      expect(drawer.draw({ field: { type: FieldType.plain, tincture } })).toContain('<path d=');
     }
   });
 });
@@ -298,7 +316,7 @@ describe('a field bearing several of one ordinary', () => {
 
   test('draws as many bands as are borne, painted alike', () => {
     const svg = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or, count: 3 }],
     });
     expect(polygons(svg)).toBe(3);
@@ -307,7 +325,7 @@ describe('a field bearing several of one ordinary', () => {
 
   test('draws two pales as two bands, evenly spaced across the field', () => {
     const svg = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.pale, tincture: Metals.or, count: 2 }],
     });
     // A fifth apiece, with a fifth of the field between them and at either edge.
@@ -317,11 +335,11 @@ describe('a field bearing several of one ordinary', () => {
 
   test('narrows the bands to make room for each other', () => {
     const one = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
     });
     const three = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or, count: 3 }],
     });
     const heights = (svg: string) =>
@@ -333,11 +351,11 @@ describe('a field bearing several of one ordinary', () => {
 
   test('leaves a single band exactly where it was drawn before there could be two', () => {
     const counted = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.bend, tincture: Metals.or, count: 1 }],
     });
     const plain = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.bend, tincture: Metals.or }],
     });
     expect(counted).toBe(plain);
@@ -345,7 +363,7 @@ describe('a field bearing several of one ordinary', () => {
 
   test('draws but one of an ordinary borne but once, whatever count it was handed', () => {
     const svg = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.chief, tincture: Metals.or, count: 3 }],
     });
     expect(rects(svg)).toBe(1);
@@ -353,7 +371,7 @@ describe('a field bearing several of one ordinary', () => {
 
   test('keeps every band inside the shield', () => {
     const svg = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.bendSinister, tincture: Metals.or, count: 4 }],
     });
     const arms = svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>'));
@@ -362,7 +380,7 @@ describe('a field bearing several of one ordinary', () => {
 
   test('paints several bands with one pattern, not one apiece', () => {
     const svg = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Furs.ermine, count: 3 }],
     });
     expect(svg.split('<pattern').length - 1).toBe(1);
@@ -379,7 +397,7 @@ describe('a bar gemel', () => {
   const drawn = (count?: number) =>
     bars(
       drawer.draw({
-        field: { tincture: Metals.argent },
+        field: { type: FieldType.plain, tincture: Metals.argent },
         chargesOrOrdinaries: [{ type: OrdinaryType.barGemel, tincture: Colours.gules, count }],
       })
     );
@@ -413,7 +431,7 @@ describe('a bordure', () => {
   const armsOf = (svg: string) => svg.slice(svg.indexOf('<g clip-path'), svg.indexOf('</g>'));
 
   const bordure = drawer.draw({
-    field: { tincture: Metals.argent },
+    field: { type: FieldType.plain, tincture: Metals.argent },
     chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
   });
 
@@ -439,7 +457,7 @@ describe('a bordure', () => {
   test('is painted with a pattern as readily as with a colour', () => {
     const hatched = new SvgBlazonDrawer(HatchingColours);
     const svg = hatched.draw({
-      field: { tincture: Metals.or },
+      field: { type: FieldType.plain, tincture: Metals.or },
       chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.azure }],
     });
     const paint = HatchingColours[Colours.azure];
@@ -450,7 +468,7 @@ describe('a bordure', () => {
 
   test('draws but one of it, whatever count it was handed', () => {
     const twice = drawer.draw({
-      field: { tincture: Metals.argent },
+      field: { type: FieldType.plain, tincture: Metals.argent },
       chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules, count: 2 }],
     });
     expect(twice).toBe(bordure);
@@ -459,7 +477,7 @@ describe('a bordure', () => {
 
 describe('a field bearing more than one ordinary', () => {
   const ARMS = {
-    field: { tincture: Metals.or },
+    field: { type: FieldType.plain, tincture: Metals.or },
     bends: { type: OrdinaryType.bend, tincture: Colours.sable, count: 3 },
     bordure: { type: OrdinaryType.bordure, tincture: Colours.gules },
   } as const;
@@ -489,7 +507,7 @@ describe('a field bearing more than one ordinary', () => {
   test('carries the patterns all of them are painted with', () => {
     const hatched = new SvgBlazonDrawer(HatchingColours);
     const svg = hatched.draw({
-      field: { tincture: Metals.argent },
+      field: { type: FieldType.plain, tincture: Metals.argent },
       chargesOrOrdinaries: [
         { type: OrdinaryType.fess, tincture: Colours.azure },
         { type: OrdinaryType.bordure, tincture: Colours.gules },
@@ -524,29 +542,23 @@ describe('a varied field', () => {
   const ARGENT = WikipediaColours[Metals.argent];
   const GULES = WikipediaColours[Colours.gules];
 
-  test.each(Object.values(VariationType))(
-    'cuts a field %s into pieces of both tinctures',
-    (type) => {
-      const painted = paints(varied(type, 6));
-      // The field is painted the first tincture entire and every other piece laid
-      // over it in the second, so the first paint is the field's own.
-      expect(painted[0]).toBe(ARGENT);
-      expect(painted.slice(1)).not.toHaveLength(0);
-      expect(painted.slice(1).every((paint) => paint === GULES)).toBe(true);
-    }
-  );
+  test.each(VARIATIONS)('cuts a field %s into pieces of both tinctures', (type) => {
+    const painted = paints(varied(type, 6));
+    // The field is painted the first tincture entire and every other piece laid
+    // over it in the second, so the first paint is the field's own.
+    expect(painted[0]).toBe(ARGENT);
+    expect(painted.slice(1)).not.toHaveLength(0);
+    expect(painted.slice(1).every((paint) => paint === GULES)).toBe(true);
+  });
 
-  test.each(Object.values(VariationType))(
-    'lays half the pieces of %s over the other half',
-    (type) => {
-      // Six pieces are three laid over a field of three, whatever their shape.
-      expect(paints(varied(type, 6))).toHaveLength(1 + 3);
-      expect(paints(varied(type, 8))).toHaveLength(1 + 4);
-    }
-  );
+  test.each(VARIATIONS)('lays half the pieces of %s over the other half', (type) => {
+    // Six pieces are three laid over a field of three, whatever their shape.
+    expect(paints(varied(type, 6))).toHaveLength(1 + 3);
+    expect(paints(varied(type, 8))).toHaveLength(1 + 4);
+  });
 
   test('draws a barry of six as six bands across, sharing the shield from head to foot', () => {
-    const svg = varied(VariationType.barry, 6);
+    const svg = varied(FieldType.barry, 6);
     // The shield runs from 6 to 234, not the drawing's 0 to 240, so the bands
     // are 38 apiece and the first of them begins at the top of the shield.
     expect(svg).toContain('<rect x="0" y="44" width="200" height="38"');
@@ -555,7 +567,7 @@ describe('a varied field', () => {
   });
 
   test('draws a paly of six as six bands down, the first at dexter', () => {
-    const svg = varied(VariationType.paly, 6);
+    const svg = varied(FieldType.paly, 6);
     // Dexter is the viewer's left, and the bands share the shield's own width —
     // 6 to 194 — so the second piece, which is the first one laid over, begins
     // a sixth of that in rather than a sixth of the drawing.
@@ -567,7 +579,7 @@ describe('a varied field', () => {
     // Which is where the armorials start counting: "Bandé de gueules et d'argent
     // de six pièces" puts the gules in that corner. The last piece is therefore
     // never one of those laid over, so no piece reaches the top edge's far end.
-    const svg = varied(VariationType.bendy, 6);
+    const svg = varied(FieldType.bendy, 6);
     expect(svg).toContain('<polygon points="82,0 136,0 336,240 282,240"');
     expect(svg).not.toContain('<polygon points="136,0');
   });
@@ -576,12 +588,12 @@ describe('a varied field', () => {
     // The lowest diagonal of a bendy falls where a square shield would have a
     // corner and a heater has only its point, so the pieces are measured over
     // what the shield actually reaches: six pieces, six of them drawn.
-    const svg = varied(VariationType.bendy, 6);
+    const svg = varied(FieldType.bendy, 6);
     expect(svg).toContain('<polygon points="-131,0 -78,0 122,240 69,240"');
   });
 
   test('draws a pily as piles driven up between the piles from the chief', () => {
-    const svg = varied(VariationType.pily, 6);
+    const svg = varied(FieldType.pily, 6);
     // Three piles from the chief share the shield's width; the three laid over
     // point up where two of those meet, the last at the sinister flank.
     expect(svg).toContain('<polygon points="38,240 69,0 100,240"');
@@ -589,11 +601,11 @@ describe('a varied field', () => {
   });
 
   test('counts a pily odd as readily as even, its piles interlocking', () => {
-    expect(paints(varied(VariationType.pily, 7))).toHaveLength(1 + 3);
+    expect(paints(varied(FieldType.pily, 7))).toHaveLength(1 + 3);
   });
 
   test('draws a chevronny of six as six chevron pieces, the first in chief', () => {
-    const svg = varied(VariationType.chevronny, 6);
+    const svg = varied(FieldType.chevronny, 6);
     // A chevron reaches a hundred below its point, so the points share the room
     // from a hundred above the head of the shield down to its foot: the second
     // piece — the first one laid over — points 39 above the top of the shield.
@@ -602,14 +614,14 @@ describe('a varied field', () => {
   });
 
   test('cuts a field in two, which is the fewest it can be cut into', () => {
-    expect(paints(varied(VariationType.barry, 2))).toEqual([ARGENT, GULES]);
+    expect(paints(varied(FieldType.barry, 2))).toEqual([ARGENT, GULES]);
   });
 
   test('carries the patterns both its tinctures are painted with', () => {
     const hatched = new SvgBlazonDrawer(HatchingColours);
     const svg = hatched.draw({
       field: {
-        type: VariationType.paly,
+        type: FieldType.paly,
         firstTincture: Colours.azure,
         secondTincture: Colours.gules,
         pieces: 6,
@@ -623,7 +635,7 @@ describe('a varied field', () => {
   test('lays an ordinary over the pieces', () => {
     const svg = drawer.draw({
       field: {
-        type: VariationType.bendy,
+        type: FieldType.bendy,
         firstTincture: Metals.or,
         secondTincture: Colours.azure,
         pieces: 6,
@@ -635,7 +647,7 @@ describe('a varied field', () => {
 
   test('draws what was read from a blazon', () => {
     expect(drawer.draw(parser.parse("Fascé d'argent et de gueules"))).toBe(
-      varied(VariationType.barry, 6)
+      varied(FieldType.barry, 6)
     );
   });
 });
@@ -643,7 +655,11 @@ describe('a varied field', () => {
 describe('a furred field', () => {
   const hatched = new SvgBlazonDrawer(HatchingColours);
   const defs = (svg: string) => svg.slice(svg.indexOf('<defs>'), svg.indexOf('</defs>'));
-  const vairy = { type: FurType.vairy, firstTincture: Metals.or, secondTincture: Colours.gules };
+  const vairy: Furred = {
+    type: FieldType.vairy,
+    firstTincture: Metals.or,
+    secondTincture: Colours.gules,
+  };
 
   test('covers the whole shield with the fur rather than cutting it', () => {
     const svg = drawer.draw({ field: vairy });
@@ -730,7 +746,7 @@ describe('a furred field', () => {
 describe('a field bearing charges', () => {
   const armsOf = (type: ChargeType, count?: number) =>
     drawer.draw({
-      field: { tincture: Metals.argent },
+      field: { type: FieldType.plain, tincture: Metals.argent },
       chargesOrOrdinaries: [
         count === undefined
           ? { type, tincture: Colours.gules }
@@ -832,7 +848,7 @@ describe('a field bearing charges', () => {
 
   test('paints a charge over a band blazoned before it', () => {
     const svg = drawer.draw({
-      field: { tincture: Metals.or },
+      field: { type: FieldType.plain, tincture: Metals.or },
       chargesOrOrdinaries: [
         { type: OrdinaryType.fess, tincture: Colours.azure },
         { type: ChargeType.billet, tincture: Colours.gules, count: 3 },
@@ -847,7 +863,7 @@ describe('a field bearing charges', () => {
 
   test('paints a band over a charge blazoned before it, the order being the whole of it', () => {
     const svg = drawer.draw({
-      field: { tincture: Metals.or },
+      field: { type: FieldType.plain, tincture: Metals.or },
       chargesOrOrdinaries: [
         { type: ChargeType.billet, tincture: Colours.gules, count: 3 },
         { type: OrdinaryType.fess, tincture: Colours.azure },
@@ -862,7 +878,7 @@ describe('a field bearing charges', () => {
 
   test('carries the pattern a charge of a patterned tincture calls for', () => {
     const svg = drawer.draw({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: ChargeType.lozenge, tincture: Furs.ermine }],
     });
     const id = svg.match(/<pattern id="(ermine-[^"]+)"/)?.[1];

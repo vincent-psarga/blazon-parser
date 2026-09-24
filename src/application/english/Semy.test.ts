@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
 import { UnknownOrdinary } from '../../domain/errors/parsing/UnknownOrdinary';
 import { ChargeType } from '../../domain/models/Charge';
-import { Field, Semy, isPlain } from '../../domain/models/Field';
+import { Field, FieldType, Semy, isPlain } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Furs, Metals } from '../../domain/models/Tinctures';
 import { EnglishBlazonParser } from '../parser/EnglishBlazonParser';
@@ -18,6 +18,7 @@ describe('a field sown with a charge', () => {
   test('reads "semy of" and the figure in the plural', () => {
     expect(parser.parse('Azure semy of billets or')).toEqual({
       field: {
+        type: FieldType.plain,
         tincture: Colours.azure,
         semy: { type: ChargeType.billet, tincture: Metals.or },
       },
@@ -47,6 +48,7 @@ describe('a field sown with a charge', () => {
   test('bears a band over the sown field, as any other field does', () => {
     expect(parser.parse('Azure billetty or a bordure gules')).toEqual({
       field: {
+        type: FieldType.plain,
         tincture: Colours.azure,
         semy: { type: ChargeType.billet, tincture: Metals.or },
       },
