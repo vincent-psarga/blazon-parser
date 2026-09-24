@@ -52,16 +52,23 @@ describe('the index of the documentation', () => {
     }
   });
 
-  test('shows one arms for every convention, and leads to the rule itself', () => {
+  test('shows as many conventions as it shows words of a vocabulary', () => {
+    mount(<DocIndexPage />, '/doc');
+    // Ten again, where the conventions run to more: an entry that grew past the
+    // others stood a longer row than either of them.
+    expect(arms('Conventions')).toHaveLength(10);
+    expect(RULES.length).toBeGreaterThan(10);
+  });
+
+  test('leads from each arms to the rule it was drawn from, and names it', () => {
     mount(<DocIndexPage />, '/doc');
     const shown = arms('Conventions');
-    expect(shown).toHaveLength(RULES.length);
-    expect(shown.map((arm) => arm.getAttribute('href'))).toEqual(
-      RULES.map((rule) => `/doc/conventions#${rule.id}`)
-    );
-    expect(shown.map((arm) => arm.getAttribute('aria-label'))).toEqual(
-      RULES.map((rule) => rule.heading)
-    );
+    const rules = new Map(RULES.map((rule) => [`/doc/conventions#${rule.id}`, rule.heading]));
+    expect(new Set(shown.map((arm) => arm.getAttribute('href'))).size).toBe(shown.length);
+    for (const arm of shown) {
+      const href = arm.getAttribute('href') ?? '';
+      expect(rules.get(href)).toBe(arm.getAttribute('aria-label'));
+    }
   });
 
   test('counts the whole of each vocabulary, though it shows a handful', () => {
