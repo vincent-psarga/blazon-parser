@@ -333,7 +333,7 @@ export function Sources({ sources }: SourcesProps) {
   }
   return (
     <p className="showing__sources">
-      {sources.length === 1 ? 'Source:' : 'Sources:'}
+      <span className="showing__heading">{sources.length === 1 ? 'Source' : 'Sources'}</span>
       {sources.map((source, at) => (
         <a
           key={source.url}
@@ -342,7 +342,9 @@ export function Sources({ sources }: SourcesProps) {
           lang={source.language}
           hrefLang={source.language}
         >
-          [{at + 1}]{' '}
+          {/* The mark is struck on its own, so that the rule under it stops
+            where the mark stops and never runs on under the space behind it. */}
+          <span className="showing__mark">[{at + 1}]</span>{' '}
           {/* The citation itself, out of sight and not out of the page: a link
             reading "[1]" and nothing else tells whoever cannot see the tooltip
             nothing whatever about where it goes. The space before it is the
