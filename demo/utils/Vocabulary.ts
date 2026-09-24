@@ -30,7 +30,7 @@ import {
 } from '../../src/domain/translations/Translation';
 import { Source } from '../../src/domain/models/Source';
 import { Word } from '../../src/domain/translations/Word';
-import { anchorOf, folded, letterOf } from './Anchors';
+import { anchorOf, folded, isAnchored, letterOf } from './Anchors';
 import { Languages } from '../../src/domain/models/Languages';
 import { readBlazon } from './Reading';
 
@@ -851,6 +851,29 @@ function vocabularyOf<W extends Word, O extends Word>(
   return [...entries].sort(
     (one, another) =>
       folded(one.word).localeCompare(folded(another.word)) || one.rank.localeCompare(another.rank)
+  );
+}
+
+/**
+ * The word an address names, out of these.
+ *
+ * A word answers to every way it is written and not only to the one it is
+ * written in: whoever met "bezant" in an armorial looks that up, and is shown
+ * the word it is a writing of.
+ *
+ * Nothing where the address names no word of this set — which is a question the
+ * page asks as well as the pane that draws the answer, a vocabulary sifted down
+ * to one kind having to know whether the word being read is still among them.
+ */
+export function struckIn(
+  entries: readonly VocabularyEntry[],
+  hash: string
+): VocabularyEntry | undefined {
+  return (
+    entries.find((entry) => isAnchored(entry.anchor, hash)) ??
+    entries.find((entry) =>
+      entry.spellings.some((spelling) => isAnchored(anchorOf(spelling), hash))
+    )
   );
 }
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
-import { afterEach, describe, expect, test } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import { Languages } from '../../src/domain/models/Languages';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
@@ -45,6 +45,25 @@ const labels = (heading: string) =>
     (label) => label.textContent
   );
 
+/** One kind of word in the line that counts them, which is also the way to it. */
+const sift = (counted: string) =>
+  within(document.querySelector('.sift') as HTMLElement).getByRole('link', { name: counted });
+
+/** Which kind the line says is being read. */
+const sifted = () => document.querySelector('.sift [aria-current="true"]')?.textContent;
+
+/** The words standing in the stack, whatever the line has sifted it down to. */
+const stacked = () => document.querySelectorAll('.stack .ghost').length;
+
+/** The pane the vocabulary stands in, which is the box that scrolls it. */
+const pane = () => document.querySelector('.reference__read') as HTMLElement;
+
+/** Told to overflow, jsdom laying nothing out and measuring everything at nothing. */
+const overflowing = (box: HTMLElement) => {
+  Object.defineProperty(box, 'scrollHeight', { value: 2000, configurable: true });
+  Object.defineProperty(box, 'clientHeight', { value: 500, configurable: true });
+};
+
 const painting = (colouring: string) =>
   decodeURIComponent(
     within(showing())
@@ -55,7 +74,7 @@ const painting = (colouring: string) =>
 describe('the vocabulary of one tongue', () => {
   test('states how many words there are, counting them rather than claiming', () => {
     mount(<VocabularyPage language={Languages.fr} />);
-    expect(screen.getByText(new RegExp(`^${FRENCH.length} words`))).toBeInTheDocument();
+    expect(sift(`${FRENCH.length} words`)).toBeInTheDocument();
   });
 
   test.each(FRENCH.map((entry) => entry.word))('keeps %s present in the stack', (word) => {
@@ -105,6 +124,90 @@ describe('the vocabulary of one tongue', () => {
     cleanup();
     mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr#fleur-de-lis');
     expect(struck()).toBe('fleur de lys');
+  });
+});
+
+describe('the kinds of word the vocabulary holds', () => {
+  const CHARGES = FRENCH.filter((entry) => entry.rank === 'charge');
+
+  test('counts every kind there is, and counts it off the vocabulary', () => {
+    mount(<VocabularyPage language={Languages.fr} />);
+    expect(sift(`${CHARGES.length} charges`)).toBeInTheDocument();
+    expect(sift('1 furred field')).toBeInTheDocument();
+  });
+
+  test('leads to a kind by an address of its own, so one can be sent alone', () => {
+    mount(<VocabularyPage language={Languages.fr} />);
+    expect(sift(`${CHARGES.length} charges`)).toHaveAttribute(
+      'href',
+      '/doc/vocabulary/fr?of=charge'
+    );
+    // The whole vocabulary is named by its path: a relative "here" under a route
+    // with a parameter resolves to the front page.
+    expect(sift(`${FRENCH.length} words`)).toHaveAttribute('href', '/doc/vocabulary/fr');
+  });
+
+  test('shows the whole vocabulary where the address asks for no kind', () => {
+    mount(<VocabularyPage language={Languages.fr} />);
+    expect(stacked()).toBe(FRENCH.length);
+    expect(sifted()).toBe(`${FRENCH.length} words`);
+  });
+
+  test('shows one kind alone where the address asks for one', async () => {
+    mount(<VocabularyPage language={Languages.fr} />);
+    await userEvent.setup().click(sift(`${CHARGES.length} charges`));
+    expect(stacked()).toBe(CHARGES.length);
+    expect(sifted()).toBe(`${CHARGES.length} charges`);
+    expect(ghost('losange')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'azur' })).toBeNull();
+  });
+
+  test('keeps the kind as the reader moves from one of its words to the next', async () => {
+    // A reader who has sifted the vocabulary down to the charges is still among
+    // them a word later: every link that stays on this page carries the kind.
+    mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr?of=charge');
+    await strike('losange');
+    expect(struck()).toBe('losange');
+    expect(sifted()).toBe(`${CHARGES.length} charges`);
+    expect(stacked()).toBe(CHARGES.length);
+  });
+
+  test('gives the kind up for the word, where the word asked for is not of it', () => {
+    // The losange shows what it is voided as, and voided is a modifier. The
+    // stack widens to hold what is being read rather than answering a reader who
+    // asked for azur with a charge they did not ask for.
+    mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr?of=charge#azur');
+    expect(struck()).toBe('azur');
+    expect(stacked()).toBe(FRENCH.length);
+    expect(sifted()).toBe(`${FRENCH.length} words`);
+  });
+
+  test('carries the kind on every link that stays on the page', async () => {
+    mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr?of=charge');
+    await strike('losange');
+    for (const link of Array.from(showing().querySelectorAll('a[href^="/doc/vocabulary/fr"]'))) {
+      expect(link.getAttribute('href'), link.textContent ?? '').toContain('?of=charge');
+    }
+    // In the stack, where "macle" also stands in the reading as a word to see.
+    const listed = within(document.querySelector('.stack') as HTMLElement);
+    expect(listed.getByRole('link', { name: 'macle' })).toHaveAttribute(
+      'href',
+      '/doc/vocabulary/fr?of=charge#macle'
+    );
+  });
+
+  test('counts the whole vocabulary still, a reader sifted down to one kind', () => {
+    // A count that fell to nothing beside every kind but the one in hand would
+    // leave a reader unable to see what else there was to ask for.
+    mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr?of=charge');
+    expect(sift(`${FRENCH.length} words`)).toBeInTheDocument();
+    expect(sift('8 tinctures')).toBeInTheDocument();
+  });
+
+  test('shows the whole of it where the address asks for a kind there is none of', () => {
+    mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr?of=wyvern');
+    expect(stacked()).toBe(FRENCH.length);
+    expect(sifted()).toBe(`${FRENCH.length} words`);
   });
 });
 
@@ -273,6 +376,31 @@ describe('a word read at full size', () => {
     await strike('chef');
     expect(struck()).toBe('chef');
     expect(leaf().scrollTop).toBe(0);
+  });
+
+  test('brings the word into view among the rest, where the stack scrolls itself', async () => {
+    // A reader who strikes a word from the stack is looking at it already; one
+    // who follows "see also" out of the reading is not, and the stack stands
+    // wherever it was last left. jsdom lays nothing out, so the pane is told it
+    // overflows and the question put is only which word was brought.
+    mount(<VocabularyPage language={Languages.fr} />);
+    overflowing(pane());
+    const brought = vi.spyOn(Element.prototype, 'scrollIntoView');
+    await strike('sautoir');
+    expect(brought.mock.instances).toContain(pane().querySelector('.stack [aria-current="true"]'));
+    brought.mockRestore();
+  });
+
+  test('leaves the stack where it stands where the page is what scrolls', async () => {
+    // Narrow, the pane holds no scroll of its own and the page is already
+    // carrying the reader to the reading: two answers to one tap would fight.
+    mount(<VocabularyPage language={Languages.fr} />);
+    const brought = vi.spyOn(Element.prototype, 'scrollIntoView');
+    await strike('sautoir');
+    expect(brought.mock.instances).not.toContain(
+      pane().querySelector('.stack [aria-current="true"]')
+    );
+    brought.mockRestore();
   });
 
   test('sets the blazon with the arms it drew, the two being the one fact', async () => {

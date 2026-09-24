@@ -1,18 +1,30 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Languages } from '../../src/domain/models/Languages';
-import { anchorOf, isAnchored } from '../utils/Anchors';
+import { anchorOf } from '../utils/Anchors';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 import { LANGUAGES, otherThan } from '../utils/Languages';
 import { readingPath } from '../utils/Reading';
-import { Sighting, VocabularyEntry, lettersOf, vocabularyPath } from '../utils/Vocabulary';
+import {
+  Sighting,
+  VocabularyEntry,
+  lettersOf,
+  struckIn,
+  vocabularyPath,
+} from '../utils/Vocabulary';
 import { BlazonShield } from './BlazonShield';
 import { Sources } from './Sources';
 
 export interface ReferenceProps {
   readonly title: string;
-  /** The size of the closed set, stated before anything is read. */
-  readonly extent: string;
+  /**
+   * The size of the closed set, stated before anything is read.
+   *
+   * Brought whole, element and all, rather than as words to be wrapped here: the
+   * vocabulary's extent is a set of links and would have been a nav inside a
+   * paragraph.
+   */
+  readonly extent: ReactNode;
   readonly lead: ReactNode;
   /** The tongue whose words these are, which is what the page is a page of. */
   readonly language: Languages;
@@ -40,20 +52,15 @@ export function Reference({
   entries,
   colourings = COLOURINGS,
 }: ReferenceProps) {
-  const { hash } = useLocation();
-  // A word answers to every way it is written, not only to the one it is written
-  // in: whoever met "bezant" in an armorial looks that up, and is shown the word
-  // it is a writing of. No anchor at all means the head of the vocabulary, so
-  // the page is never empty.
-  const struck =
-    entries.find((entry) => isAnchored(entry.anchor, hash)) ??
-    entries.find((entry) =>
-      entry.spellings.some((spelling) => isAnchored(anchorOf(spelling), hash))
-    ) ??
-    entries[0];
+  const { hash, search } = useLocation();
+  // No anchor at all means the head of the vocabulary, so the page is never
+  // empty.
+  const struck = struckIn(entries, hash) ?? entries[0];
   const letters = lettersOf(entries);
 
   const reading = useRef<HTMLDivElement>(null);
+  /** The pane the vocabulary stands in, which is the box that scrolls it. */
+  const listing = useRef<HTMLDivElement>(null);
   // What was last brought into view. A page opened without an anchor is opened
   // at its beginning, so what it strikes of its own accord counts as read
   // already; one opened at an anchor was opened at that word, and is answered
@@ -94,11 +101,35 @@ export function Reference({
     shown.scrollIntoView({ block: 'start' });
   }, [struck?.anchor]);
 
+  /*
+   * And the word itself is brought into view among the rest.
+   *
+   * A reader who strikes a word from the stack is already looking at it, but one
+   * who arrives at an address, or follows "see also" out of the reading, is not:
+   * the stack stands wherever it was last left, and the word now being read is
+   * anywhere in it — struck, and out of sight.
+   *
+   * Only where the stack scrolls itself. Narrow, it is the page that scrolls,
+   * and the page is already carrying the reader to the reading: two answers to
+   * one tap would fight each other. "Nearest" is what makes this safe to run on
+   * every strike — a word already in view is not moved at all.
+   */
+  useEffect(() => {
+    const pane = listing.current;
+    if (pane === null || pane.scrollHeight <= pane.clientHeight) {
+      return;
+    }
+    // Among the words, and not among whatever else the pane holds that marks
+    // itself current: the filter above the stack is current too, and is not a
+    // word.
+    pane.querySelector('.stack [aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
+  }, [struck?.anchor]);
+
   return (
     <main className="plane plane--reference">
-      <div className="reference__read">
+      <div className="reference__read" ref={listing}>
         <h1>{title}</h1>
-        <p className="plane__extent">{extent}</p>
+        {extent}
         {lead}
 
         <div className="stack">
@@ -121,7 +152,7 @@ export function Reference({
                   <li key={entry.anchor}>
                     <Link
                       className="ghost"
-                      to={`#${entry.anchor}`}
+                      to={`${search}#${entry.anchor}`}
                       aria-current={entry.anchor === struck?.anchor ? 'true' : undefined}
                     >
                       <span className="ghost__field">
@@ -292,7 +323,9 @@ export function Reference({
                             {variant.sighting === undefined ? (
                               variant.label
                             ) : (
-                              <Link to={`#${variant.sighting.anchor}`}>{variant.label}</Link>
+                              <Link to={`${search}#${variant.sighting.anchor}`}>
+                                {variant.label}
+                              </Link>
                             )}
                           </b>
                           <BlazonLink blazon={variant.typed} language={language} />
@@ -324,11 +357,12 @@ export interface SightingsProps {
  * elided — a reader after the synonyms wants all of them.
  */
 export function Sightings({ heading, sightings }: SightingsProps) {
+  const { search } = useLocation();
   return (
     <p className="showing__sightings">
       <span className="showing__heading">{heading}</span>
       {sightings.map((sighting) => (
-        <Link key={sighting.anchor} lang={sighting.language} to={`#${sighting.anchor}`}>
+        <Link key={sighting.anchor} lang={sighting.language} to={`${search}#${sighting.anchor}`}>
           {sighting.word}
         </Link>
       ))}
