@@ -214,6 +214,46 @@ body {
   color: var(--bone-quiet);
 }
 
+/*
+ * What the vocabulary holds, and the way into each part of it.
+ *
+ * It stands where the extent stood and counts the same things in the same words,
+ * but each count is now a way in. So it is set out as the stack below sets out
+ * its words — a row of choices parted by air, nothing drawn between them — and
+ * the kind being read is struck as a word is struck.
+ */
+.sift {
+  margin: 1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 1.15rem;
+}
+
+.sift__kind {
+  font-family: var(--display);
+  font-size: 1.0625rem;
+  letter-spacing: 0.04em;
+  color: var(--bone-quiet);
+  text-decoration: none;
+  /* The figures stand the same width apiece, so that a row of counts does not
+     shuffle sideways as the vocabulary grows. */
+  font-variant-numeric: tabular-nums;
+  transition: color 200ms linear;
+}
+
+.sift__kind:hover,
+.sift__kind:focus-visible {
+  color: var(--bone);
+}
+
+/* Struck, as a word in the stack is struck: what is being read burns, and the
+   rest stay behind the gauze. */
+.sift__kind[aria-current='true'] {
+  color: var(--strike);
+  text-shadow: 0 0 16px rgb(251 247 238 / 0.4);
+}
+
 /* ─ the ghost stack: every value present at once ─────────────────────────── */
 
 .stack {
@@ -607,6 +647,19 @@ body {
   color: var(--bone-quiet);
 }
 
+/* What a page calls a small block of itself: the rank, the other spellings, the
+   words elsewhere, the works behind the prose. One idiom for the lot of them, so
+   that a reader learns to skip it once rather than four times. */
+.showing__heading,
+.cited__label {
+  font-family: var(--display);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bone-quiet);
+}
+
 /* The other ways the same word is written are the word, so they are said under
    it rather than filed apart from it — and parted from each other, there being
    as many of them as the armorials have habits. */
@@ -675,14 +728,6 @@ body {
   font-size: 1rem;
 }
 
-.showing__sightings .showing__heading {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--bone-quiet);
-}
-
 .showing__sightings a {
   color: var(--bone);
   text-decoration: underline;
@@ -703,6 +748,67 @@ body {
   max-width: var(--measure);
   color: var(--bone-quiet);
   text-wrap: pretty;
+}
+
+/*
+ * Who says so. It stands against the prose it answers for, close as the
+ * spellings stand under the word, and carries a mark apiece rather than the
+ * citations themselves: an author, a work and the entry within it set here would
+ * read as more of that prose than as the authority behind it.
+ *
+ * The same block wherever anything is cited — under a word's gloss, and under a
+ * rule's — so that a reader learns the mark once and knows it on sight.
+ */
+.cited {
+  /* Tight under what it answers for. The reading pane is a grid with a gap of
+     its own, so there it is pulled back through that gap to the same 0.4rem. */
+  margin: 0.4rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.7rem;
+}
+
+/*
+ * The mark is a link and is struck as one: the same bronze rule under it that
+ * every other way out of these pages carries, so that three characters read as
+ * somewhere to go rather than as punctuation left over from the sentence above.
+ */
+.cited__mark {
+  font-family: var(--display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  /* So that [1] and [10] stand the same width in a row of them. */
+  font-variant-numeric: tabular-nums;
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--gauze) / 0.9);
+  text-underline-offset: 0.25em;
+  text-decoration-thickness: 1px;
+}
+
+.cited a {
+  color: var(--bone);
+  text-decoration: none;
+  transition: color 140ms linear;
+}
+
+.cited a:hover,
+.cited a:focus-visible {
+  color: var(--strike);
+}
+
+.showing__read .cited {
+  margin-top: -0.85rem;
+}
+
+/* The citation itself, out of sight and not out of the page. */
+.cited__name {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /*

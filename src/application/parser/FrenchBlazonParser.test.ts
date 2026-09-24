@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { DivisionType } from '../../domain/models/Field';
+import { FieldType } from '../../domain/models/Field';
 import { Colours, Metals } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from './FrenchBlazonParser';
 
@@ -7,13 +7,15 @@ const parser = new FrenchBlazonParser();
 
 describe('FrenchBlazonParser', () => {
   test('reads a plain field', () => {
-    expect(parser.parse("D'azur.")).toEqual({ field: { tincture: Colours.azure } });
+    expect(parser.parse("D'azur.")).toEqual({
+      field: { type: FieldType.plain, tincture: Colours.azure },
+    });
   });
 
   test('reads a divided field', () => {
     expect(parser.parse("Parti d'azur et d'or.")).toEqual({
       field: {
-        type: DivisionType.pale,
+        type: FieldType.pale,
         firstTincture: Colours.azure,
         secondTincture: Metals.or,
       },

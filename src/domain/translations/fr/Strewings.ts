@@ -1,5 +1,6 @@
 import { ChargeType } from '../../models/Charge';
 import { COLOURS, METALS, Metals, PELTS } from '../../models/Tinctures';
+import { blasonArmoiries } from '../Sources';
 import { Strewings } from '../Strewings';
 import { FrenchWord } from './FrenchWord';
 
@@ -22,15 +23,20 @@ import { FrenchWord } from './FrenchWord';
  */
 export const FrenchStrewings: Strewings<FrenchWord> = {
   [ChargeType.annulet]: undefined,
-  [ChargeType.billet]: new FrenchWord(
-    'billeté',
-    'A field sown with billettes: the figure repeated small over the whole of it, running off every edge and past counting. French would rather name such a field than describe it, and this is the name — semé de billettes says no more.'
-  ),
+  [ChargeType.billet]: new FrenchWord('billeté', {
+    value:
+      'A field sown with billettes: the figure repeated small over the whole of it, running off every edge and past counting. French would rather name such a field than describe it, and this is the name — semé de billettes says no more.',
+    sources: [blasonArmoiries('Billeté', 'billetee')],
+  }),
   [ChargeType.lozenge]: undefined,
   [ChargeType.roundel]: [
     new FrenchWord(
       'besanté',
-      'A field sown with besants. The word carries the metal exactly as the charge does: a besanté that says no more is gold, and a field sown with silver discs says so — besanté d’argent.',
+      {
+        value:
+          'A field sown with besants. The word carries the metal exactly as the charge does: a besanté that says no more is gold, and a field sown with silver discs says so — besanté d’argent.',
+        sources: [blasonArmoiries('Besanté')],
+      },
       {
         allowedTinctures: [...METALS, ...PELTS],
         defaultTincture: Metals.or,
@@ -38,7 +44,11 @@ export const FrenchStrewings: Strewings<FrenchWord> = {
     ),
     new FrenchWord(
       'tourtelé',
-      'A field sown with tourteaux, and owed its colour every time, as the tourteau itself is.',
+      {
+        value:
+          'A field sown with tourteaux, and owed its colour every time, as the tourteau itself is.',
+        sources: [blasonArmoiries('Tourtelé', 'tourtelee')],
+      },
       { allowedTinctures: [...COLOURS, ...PELTS] }
     ),
   ],
@@ -66,7 +76,8 @@ export const FrenchStrewings: Strewings<FrenchWord> = {
  * the field — so it is kept here with what it means, and the grammar reads it
  * off this rather than out of a string of its own.
  */
-export const SOWN = new FrenchWord(
-  'semé',
-  'The field sown with a figure French has no single word for: semé d’annelets, semé de fleurs de lys. What is sown is drawn small, runs off every edge and is past counting — the field’s own state rather than something it bears, so a band blazoned after it covers the sowing exactly as it covers the tincture beneath. Where French does have a word — billeté, besanté, tourtelé — that word is written instead.'
-);
+export const SOWN = new FrenchWord('semé', {
+  value:
+    'The field sown with a figure French has no single word for: semé d’annelets, semé de fleurs de lys. What is sown is drawn small, runs off every edge and is past counting — the field’s own state rather than something it bears, so a band blazoned after it covers the sowing exactly as it covers the tincture beneath. Where French does have a word — billeté, besanté, tourtelé — that word is written instead.',
+  sources: [blasonArmoiries('Semé')],
+});

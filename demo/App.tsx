@@ -16,7 +16,8 @@ import { DocIndexPage } from './pages/DocIndexPage';
 import { PresentationsPage } from './pages/PresentationsPage';
 import { VocabularyPage } from './pages/VocabularyPage';
 import { ARMORIALS } from './armorials';
-import { LANGUAGES, LanguageCode } from './utils/Languages';
+import { Languages } from '../src/domain/models/Languages';
+import { languageIn } from './utils/Languages';
 import { PRESENTATIONS, presentationNamed } from './utils/Presentations';
 import { readingIn } from './utils/Reading';
 import { vocabularyPath } from './utils/Vocabulary';
@@ -31,8 +32,8 @@ const PresentationPage = lazy(() =>
 );
 
 const DOCS = [
-  { path: vocabularyPath('fr'), label: 'French vocabulary' },
-  { path: vocabularyPath('en'), label: 'English vocabulary' },
+  { path: vocabularyPath(Languages.fr), label: 'French vocabulary' },
+  { path: vocabularyPath(Languages.en), label: 'English vocabulary' },
   { path: '/doc/conventions', label: 'Conventions' },
   { path: '/doc/presentations', label: 'Presentations' },
 ];
@@ -114,12 +115,8 @@ function ReadBlazon() {
  * apiece: a reader comes with a word in hand, and the word is in one tongue.
  */
 function ReadVocabulary() {
-  const { language } = useParams();
-  return language !== undefined && language in LANGUAGES ? (
-    <VocabularyPage language={language as LanguageCode} />
-  ) : (
-    <NotFound />
-  );
+  const language = languageIn(useParams().language);
+  return language === undefined ? <NotFound /> : <VocabularyPage language={language} />;
 }
 
 /** One armorial answers to its own slug, the one part of an address that is data. */

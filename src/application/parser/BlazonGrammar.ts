@@ -22,6 +22,7 @@ import {
   Division,
   DivisionType,
   Field,
+  FieldType,
   FurType,
   Furred,
   PIECES,
@@ -111,10 +112,10 @@ export function blazonRule(grammar: BlazonGrammar): Parser<TokenKind, Blazon> {
 
   const plainField = apply(seq(grammar.tincture, treatment), ([tincture, treatment]): ReadField =>
     treatment === undefined
-      ? { field: { tincture }, bare: false }
+      ? { field: { type: FieldType.plain, tincture }, bare: false }
       : isBare(treatment)
-        ? { field: { tincture }, bare: true }
-        : { field: { tincture, semy: treatment.semy }, bare: false }
+        ? { field: { type: FieldType.plain, tincture }, bare: true }
+        : { field: { type: FieldType.plain, tincture, semy: treatment.semy }, bare: false }
   );
 
   // Wrapped as a phrase so that a tincture which never arrives is reported as

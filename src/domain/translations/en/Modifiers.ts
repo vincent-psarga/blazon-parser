@@ -1,4 +1,5 @@
 import { Modifier } from '../../models/Modifier';
+import { parker } from '../Sources';
 import { Translation } from '../Translation';
 import { Word } from '../Word';
 
@@ -14,12 +15,20 @@ import { Word } from '../Word';
 export const EnglishModifiers: Translation<Modifier> = {
   [Modifier.voided]: new Word(
     'voided',
-    'The middle taken out, so that the field shows through where the charge was and what is left of it is the outline. What shows through is the field itself and not a tincture of its own, which is what makes a lozenge voided a lozenge still rather than two charges one upon the other.',
+    {
+      value:
+        'The middle taken out, so that the field shows through where the charge was and what is left of it is the outline. What shows through is the field itself and not a tincture of its own, which is what makes a lozenge voided a lozenge still rather than two charges one upon the other.',
+      sources: [parker('Voided')],
+    },
     { plural: 'voided' }
   ),
   [Modifier.pierced]: new Word(
     'pierced',
-    'A round hole punched through the middle, the rest of the charge left as it was — which is what parts it from voided, where nothing is left but the outline. Parker asks the shape of the hole to be named where it is not round, "e.g. square-pierced, lozenge-pierced"; no blazon says so here, and the hole is round.',
+    {
+      value:
+        'A round hole punched through the middle, the rest of the charge left as it was — which is what parts it from voided, where nothing is left but the outline. Parker asks the shape of the hole to be named where it is not round, "e.g. square-pierced, lozenge-pierced"; no blazon says so here, and the hole is round.',
+      sources: [parker('Pierced')],
+    },
     { plural: 'pierced' }
   ),
 };

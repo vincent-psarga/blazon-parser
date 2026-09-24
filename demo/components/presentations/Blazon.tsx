@@ -1,19 +1,23 @@
 import { useMemo } from 'react';
 import { BlazonShield } from '../BlazonShield';
-import { LANGUAGES, LanguageCode, otherThan } from '../../utils/Languages';
+import { Languages } from '../../../src/domain/models/Languages';
+import { LANGUAGES, otherThan } from '../../utils/Languages';
 import { readBlazon } from '../../utils/Reading';
 
 /**
  * A deck names its tongue the way a talk does, in full: a slide is written for
  * a reader rather than for a router, and `language="french"` is what somebody
  * writing one reaches for. The two-letter code is accepted just as readily.
+ *
+ * What it reads into is the library's own set, this being a way of spelling a
+ * tongue rather than a second set of them.
  */
-const SPOKEN: Record<string, LanguageCode> = {
-  french: 'fr',
-  français: 'fr',
-  fr: 'fr',
-  english: 'en',
-  en: 'en',
+const SPOKEN: Record<string, Languages> = {
+  french: Languages.fr,
+  français: Languages.fr,
+  fr: Languages.fr,
+  english: Languages.en,
+  en: Languages.en,
 };
 
 /**
@@ -91,7 +95,7 @@ export function Blazon({
   width,
   showBlazon = true,
 }: BlazonProps) {
-  const spoken = SPOKEN[language.toLowerCase()] ?? 'fr';
+  const spoken = SPOKEN[language.toLowerCase()] ?? Languages.fr;
   const other = otherThan(spoken);
   const read = useMemo(() => readBlazon(blazon, spoken), [blazon, spoken]);
   // A size the ladder has no rung for is middling rather than nothing: a

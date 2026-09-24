@@ -1,4 +1,4 @@
-import { Word, WordOptions } from '../Word';
+import { Gloss, Word, WordOptions } from '../Word';
 
 /** Everything a French word may be told about itself beyond how it is spelled. */
 export interface FrenchWordOptions extends WordOptions {
@@ -52,7 +52,7 @@ export class FrenchWord extends Word {
   /** The same, several times over: "évidées". */
   public readonly feminines: string;
 
-  constructor(value: string, description: string = '', options?: FrenchWordOptions) {
+  constructor(value: string, description?: Gloss, options?: FrenchWordOptions) {
     super(value, description, options);
     this.isFeminine = options?.isFeminine ?? false;
     this.acceptsBothGender = options?.acceptsBothGender ?? false;

@@ -12,6 +12,7 @@ import { FrenchChargeType } from '../../domain/translations/fr/Charges';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { bearing, everyBearing, withArticle } from './FrenchGrammar';
+import { FieldType } from '../../domain/models/Field';
 
 const parser = new FrenchBlazonParser();
 const CHARGES = Object.values(ChargeType);
@@ -19,7 +20,7 @@ const CHARGES = Object.values(ChargeType);
 describe('a field bearing a charge', () => {
   test('reads "D\'azur à la billette d\'or" as a billet on an azure field', () => {
     expect(parser.parse("D'azur à la billette d'or")).toEqual({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: ChargeType.billet, tincture: Metals.or }],
     });
   });
@@ -30,7 +31,7 @@ describe('a field bearing a charge', () => {
     ['à la losange', ChargeType.lozenge],
   ])('reads "%s" as that charge', (borne, type) => {
     expect(parser.parse(`De gueules ${borne} d'argent`)).toEqual({
-      field: { tincture: Colours.gules },
+      field: { type: FieldType.plain, tincture: Colours.gules },
       chargesOrOrdinaries: [{ type, tincture: Metals.argent }],
     });
   });
@@ -132,7 +133,7 @@ describe('a field bearing a charge', () => {
 describe('a field bearing several of one charge', () => {
   test('reads "D\'argent à trois billettes d\'or" as three billets', () => {
     expect(parser.parse("D'argent à trois billettes d'or")).toEqual({
-      field: { tincture: Metals.argent },
+      field: { type: FieldType.plain, tincture: Metals.argent },
       chargesOrOrdinaries: [{ type: ChargeType.billet, tincture: Metals.or, count: 3 }],
     });
   });
@@ -181,7 +182,7 @@ describe('a field bearing several of one charge', () => {
 describe('the roundel, which French has two names for', () => {
   test('reads the besant as the metal disc, gold unless the blazon says otherwise', () => {
     expect(parser.parse('De gueules au besant')).toEqual({
-      field: { tincture: Colours.gules },
+      field: { type: FieldType.plain, tincture: Colours.gules },
       chargesOrOrdinaries: [{ type: ChargeType.roundel, tincture: Metals.or }],
     });
   });
@@ -272,7 +273,7 @@ describe('the roundel, which French has two names for', () => {
 describe('a field bearing bands and charges together', () => {
   test('reads both into one list, in the order the blazon laid them', () => {
     expect(parser.parse("D'or à la fasce de gueules, à trois billettes d'azur")).toEqual({
-      field: { tincture: Metals.or },
+      field: { type: FieldType.plain, tincture: Metals.or },
       chargesOrOrdinaries: [
         { type: OrdinaryType.fess, tincture: Colours.gules },
         { type: ChargeType.billet, tincture: Colours.azure, count: 3 },

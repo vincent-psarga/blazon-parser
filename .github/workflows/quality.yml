@@ -23,9 +23,10 @@ jobs:
 
       # The suite is run through test:report so that it leaves a JSON report
       # behind: the coverage step counts the tests from it rather than running
-      # them a second time to be told the same number.
+      # them a second time to be told the same number. --coverage has it leave
+      # the code coverage of the same run alongside, for the same reason.
       - name: Run tests
-        run: npm run test:report
+        run: npm run test:report -- --coverage
 
       - name: Check formatting
         run: npm run format:check
@@ -44,6 +45,14 @@ jobs:
         with:
           name: coverage
           path: coverage/coverage.json
+
+      # The figures say how much is covered; this says what is not, line by
+      # line, which is what someone meaning to do something about it needs.
+      - name: Store the code coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage-report
+          path: coverage/code
 
   coverage:
     name: Compare the coverage with the last run

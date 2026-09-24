@@ -32,6 +32,8 @@ const baseline = read(BASELINE);
 console.log(baseline === undefined ? 'Nothing to compare against' : `Compared against ${AGAINST}.`);
 console.log('\n## Coverage\n');
 console.log(measures());
+console.log('\n### Code\n');
+console.log(code());
 console.log('\n### Armorials\n');
 console.log(armorials());
 
@@ -66,6 +68,39 @@ function measures() {
       measure('Blazons read', baseline?.armorials.read, current.armorials.read),
     ]
   );
+}
+
+/**
+ * How much of the library the suite reaches, metric by metric. A run measured
+ * without coverage says so: a table of noughts would read as a suite that
+ * touches nothing.
+ *
+ * A baseline taken before this was measured at all has no change to show. Its
+ * rows are left empty rather than called new, since it is the reading that is
+ * new and not the metric.
+ */
+function code() {
+  if (current.code === undefined) {
+    return 'No code coverage was measured in this run.';
+  }
+  const changes = baseline !== undefined;
+  return table(
+    [
+      { title: 'Metric' },
+      { title: 'Coverage', ranged: 'right' },
+      ...(changes ? [{ title: 'Change', ranged: 'right' }] : []),
+    ],
+    Object.entries(current.code).map(([metric, now]) => [
+      titled(metric),
+      `${now.percentage}%`,
+      ...(changes ? [baseline.code === undefined ? NONE : shift(baseline.code[metric], now)] : []),
+    ])
+  );
+}
+
+/** A metric's key as a column of them wants to be read: Statements, Branches. */
+function titled(metric) {
+  return `${metric[0].toUpperCase()}${metric.slice(1)}`;
 }
 
 /**

@@ -2,6 +2,7 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test } from 'vitest';
+import { Languages } from '../../src/domain/models/Languages';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
 import { HatchingColours } from '../../src/infra/colours/HatchingColours';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
@@ -83,7 +84,7 @@ describe('BlazonPage', () => {
 
   describe('choosing a language', () => {
     test('reads the blazon in the language selected', () => {
-      render(<BlazonPage initialLanguage="en" />);
+      render(<BlazonPage initialLanguage={Languages.en} />);
       expect(textarea()).toHaveValue('Per pale azure and or');
       expect(translation()).toBe("Parti d'azur et d'or.");
     });

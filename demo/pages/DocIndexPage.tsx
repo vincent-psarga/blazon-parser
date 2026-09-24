@@ -1,18 +1,19 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { Blazon } from '../../src/domain/models/Blazon';
+import { TONGUES } from '../../src/domain/models/Languages';
 import { BlazonShield } from '../components/BlazonShield';
 import { COLOURINGS, OUTLINE } from '../utils/Colourings';
-import { LANGUAGES, LanguageCode } from '../utils/Languages';
+import { LANGUAGES } from '../utils/Languages';
 import { readBlazon } from '../utils/Reading';
 import { tally } from '../utils/Tally';
 import { vocabularyIn, vocabularyPath } from '../utils/Vocabulary';
 import { RULES } from './ConventionsPage';
 
-const TONGUES: readonly LanguageCode[] = ['fr', 'en'];
-
-// How many words of a vocabulary the index shows. Enough to say what the page is
-// full of, and few enough to be looked at: the whole of it was a wall.
+// How many of a page's own the index shows, whether they are words or rules.
+// Enough to say what the page is full of, and few enough to be looked at: the
+// whole of a vocabulary was a wall, and one number keeps every row the same
+// length.
 const SHOWN = 10;
 
 /** One arms the index shows, and the place it stands for. */
@@ -75,24 +76,27 @@ function vocabularies(): readonly Entrance[] {
  * is called.
  *
  * A rule may be about a blazon that is refused, which draws nothing, so the arms
- * are chosen among the cases that read.
+ * are chosen among the cases that read. And there are more rules than the index
+ * shows of any other entry, so a handful of the same size is taken: the row is
+ * as long as the rows above it however many rules the page grows to.
  */
 function conventions(): Entrance {
+  const perRule = RULES.flatMap((rule) => {
+    const drawn = rule.cases
+      .map((typed) => readBlazon(typed.text, typed.language))
+      .flatMap((read) => ('blazon' in read ? [read.blazon] : []));
+    return someOf(drawn, 1).map((blazon) => ({
+      key: rule.id,
+      label: rule.heading,
+      blazon,
+      to: `/doc/conventions#${rule.id}`,
+    }));
+  });
   return {
     path: '/doc/conventions',
     name: 'Conventions',
     note: 'Reading is generous and writing is not: where heraldry allows a thing to be said two ways, both are read and one is written. Which one, on whose authority, and worked through the parser as the page is drawn.',
-    arms: RULES.flatMap((rule) => {
-      const drawn = rule.cases
-        .map((typed) => readBlazon(typed.text, typed.language))
-        .flatMap((read) => ('blazon' in read ? [read.blazon] : []));
-      return someOf(drawn, 1).map((blazon) => ({
-        key: rule.id,
-        label: rule.heading,
-        blazon,
-        to: `/doc/conventions#${rule.id}`,
-      }));
-    }),
+    arms: someOf(perRule, SHOWN),
   };
 }
 

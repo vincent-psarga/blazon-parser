@@ -8,15 +8,18 @@ import { WikipediaColours } from '../../../infra/colours/WikipediaColours';
 import { SHIELD_FRAME } from './shapes/shield';
 import { SvgBlazonDrawer } from './SvgBlazonDrawer';
 import { strewing } from './vocabulary/charges/disposition';
+import { FieldType, Plain } from '../../../domain/models/Field';
+import { Blazon } from '../../../domain/models/Blazon';
 
 const drawer = new SvgBlazonDrawer(WikipediaColours);
 
-const SOWN = {
-  field: {
-    tincture: Colours.azure,
-    semy: { type: ChargeType.billet, tincture: Metals.or },
-  },
+const FIELD: Plain = {
+  type: FieldType.plain,
+  tincture: Colours.azure,
+  semy: { type: ChargeType.billet, tincture: Metals.or },
 };
+
+const SOWN: Blazon = { field: FIELD };
 
 /** What is drawn inside the clipped group, the outline being drawn outside it. */
 const inside = (svg: string) => {
@@ -83,7 +86,7 @@ describe('drawing a sown field', () => {
   });
 
   test('draws nothing sown where nothing was sown', () => {
-    const svg = inside(drawer.draw({ field: { tincture: Colours.azure } }));
+    const svg = inside(drawer.draw({ field: { type: FieldType.plain, tincture: Colours.azure } }));
     expect(svg).not.toContain('<rect');
   });
 
@@ -91,7 +94,7 @@ describe('drawing a sown field', () => {
     const svg = inside(
       drawer.draw({
         ...SOWN,
-        field: { ...SOWN.field, semy: { type: ChargeType.roundel, tincture: Metals.or } },
+        field: { ...FIELD, semy: { type: ChargeType.roundel, tincture: Metals.or } },
       })
     );
     expect(svg).toContain('<circle');
@@ -113,6 +116,7 @@ describe('drawing a sown field', () => {
     const hatched = new SvgBlazonDrawer(HatchingColours);
     const svg = hatched.draw({
       field: {
+        type: FieldType.plain,
         tincture: Colours.azure,
         semy: { type: ChargeType.billet, tincture: Colours.gules },
       },

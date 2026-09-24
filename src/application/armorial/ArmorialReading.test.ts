@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'vitest';
+import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { Armorial } from '../../domain/models/Armorial';
+import { FieldType } from '../../domain/models/Field';
+import { Languages } from '../../domain/models/Languages';
 import { Colours, Metals } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
-import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { readArmorial } from './ArmorialReading';
 
 const parser = new FrenchBlazonParser();
@@ -11,7 +13,7 @@ function armorial(...blazons: readonly string[]): Armorial {
   return {
     name: 'An armorial',
     slug: 'an-armorial',
-    language: 'french',
+    language: Languages.fr,
     licence: 'MIT',
     entries: blazons.map((blazon, index) => ({
       name: `Entry ${index}`,
@@ -24,7 +26,9 @@ function armorial(...blazons: readonly string[]): Armorial {
 describe('reading an armorial', () => {
   test('reads the blazons it understands', () => {
     const { entries } = readArmorial(armorial('De gueules'), parser);
-    expect(entries[0]?.blazon).toEqual({ field: { tincture: Colours.gules } });
+    expect(entries[0]?.blazon).toEqual({
+      field: { type: FieldType.plain, tincture: Colours.gules },
+    });
   });
 
   test('keeps an entry it cannot read, unread', () => {
@@ -37,8 +41,8 @@ describe('reading an armorial', () => {
   test('keeps the entries in the order the armorial gives them', () => {
     const { entries } = readArmorial(armorial("D'or", 'De sable'), parser);
     expect(entries.map(({ blazon }) => blazon)).toEqual([
-      { field: { tincture: Metals.or } },
-      { field: { tincture: Colours.sable } },
+      { field: { type: FieldType.plain, tincture: Metals.or } },
+      { field: { type: FieldType.plain, tincture: Colours.sable } },
     ]);
   });
 
@@ -72,7 +76,7 @@ describe('reading an armorial', () => {
 
   test('reads with the parser it is given, not with one it chooses', () => {
     const reading = readArmorial(armorial('Per pale argent and gules'), {
-      parse: () => ({ field: { tincture: Metals.argent } }),
+      parse: () => ({ field: { type: FieldType.plain, tincture: Metals.argent } }),
     });
     expect(reading.score).toBe(100);
   });

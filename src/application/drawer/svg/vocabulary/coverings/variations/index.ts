@@ -1,4 +1,4 @@
-import { VariationType } from '../../../../../../domain/models/Field';
+import { FieldType, VariationType } from '../../../../../../domain/models/Field';
 import { VariationFigure } from '../../Figures';
 import { barry } from './barry';
 import { bendy } from './bendy';
@@ -14,9 +14,9 @@ import { pily } from './pily';
  * vocabulary breaks this until it is given a shape.
  */
 export const VARIATIONS: Record<VariationType, VariationFigure> = {
-  [VariationType.barry]: barry,
-  [VariationType.paly]: paly,
-  [VariationType.bendy]: bendy,
-  [VariationType.pily]: pily,
-  [VariationType.chevronny]: chevronny,
+  [FieldType.barry]: barry,
+  [FieldType.paly]: paly,
+  [FieldType.bendy]: bendy,
+  [FieldType.pily]: pily,
+  [FieldType.chevronny]: chevronny,
 };

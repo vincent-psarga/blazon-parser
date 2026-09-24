@@ -3,9 +3,10 @@ import { UnknownWords, readArmorial } from '../../src/application/armorial/Armor
 import { Armorial } from '../../src/domain/models/Armorial';
 import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
 import { BlazonShield } from '../components/BlazonShield';
+import { Cited } from '../components/Sources';
 import { BlazonLink } from '../components/Reference';
 import { COLOURINGS, OUTLINE } from '../utils/Colourings';
-import { LANGUAGES, codeOf, otherThan } from '../utils/Languages';
+import { LANGUAGES, otherThan } from '../utils/Languages';
 import { tally } from '../utils/Tally';
 
 /** Small enough to read a row by, large enough to tell two shields apart. */
@@ -31,7 +32,7 @@ export interface ArmorialPageProps {
  * where the refusal is spelled out in full.
  */
 export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: ArmorialPageProps) {
-  const language = codeOf(armorial.language);
+  const language = armorial.language;
   const other = otherThan(language);
   const { entries, read, total, score, unknown } = useMemo(
     () => readArmorial(armorial, LANGUAGES[language].parser),
@@ -48,7 +49,7 @@ export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: Arm
 
       {armorial.source !== undefined && (
         <p className="plane__lead">
-          Copied from <a href={armorial.source.url}>{armorial.source.name}</a>.
+          Copied from <Cited source={armorial.source} />.
         </p>
       )}
 
@@ -107,9 +108,7 @@ export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: Arm
                 <th scope="row" role="rowheader">
                   {entry.name}
                 </th>
-                <td role="cell">
-                  {entry.source !== undefined && <a href={entry.source.url}>{entry.source.name}</a>}
-                </td>
+                <td role="cell">{entry.source !== undefined && <Cited source={entry.source} />}</td>
                 {/* The source's own words first, exactly as the source wrote
                     them, and the translation under them where there is one. */}
                 <td className="roll__blazon" role="cell">

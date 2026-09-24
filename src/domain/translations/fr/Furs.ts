@@ -1,4 +1,5 @@
-import { FurType } from '../../models/Field';
+import { FieldType, FurType } from '../../models/Field';
+import { blasonArmoiries } from '../Sources';
 import { Translation } from '../Translation';
 import { FrenchWord } from './FrenchWord';
 
@@ -12,8 +13,9 @@ import { FrenchWord } from './FrenchWord';
 // Nothing here agrees with an article: the name opens the blazon and stands
 // alone before the tinctures it alternates, as a varied field's does.
 export const FrenchFurType: Translation<FurType, FrenchWord> = {
-  [FurType.vairy]: new FrenchWord(
-    'vairé',
-    'The bells of vair, cut from two tinctures the blazon names rather than from the argent and azure vair is always drawn in. Nothing is counted: a pelt is cut to no number of pieces. A vairé d’argent et d’azur would simply be vair, and is blazoned so.'
-  ),
+  [FieldType.vairy]: new FrenchWord('vairé', {
+    value:
+      'The bells of vair, cut from two tinctures the blazon names rather than from the argent and azure vair is always drawn in. Nothing is counted: a pelt is cut to no number of pieces. A vairé d’argent et d’azur would simply be vair, and is blazoned so.',
+    sources: [blasonArmoiries('Vairé')],
+  }),
 };

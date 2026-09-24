@@ -1,6 +1,7 @@
 import { ChargeType } from '../../models/Charge';
 import { Modifier } from '../../models/Modifier';
 import { COLOURS, METALS, Metals, PELTS } from '../../models/Tinctures';
+import { blasonArmoiries } from '../Sources';
 import { Translation } from '../Translation';
 import { FrenchWord } from './FrenchWord';
 
@@ -22,13 +23,18 @@ import { FrenchWord } from './FrenchWord';
 // therefore always be told. Either may be cut from a fur, an armorial being free
 // to blazon "un besant d'hermine".
 export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
-  [ChargeType.annulet]: new FrenchWord(
-    'annelet',
-    'A plain ring. What it encloses is the field showing through, not its own tincture, which is what makes it an annelet rather than a besant.'
-  ),
+  [ChargeType.annulet]: new FrenchWord('annelet', {
+    value:
+      'A plain ring. What it encloses is the field showing through, not its own tincture, which is what makes it an annelet rather than a besant.',
+    sources: [blasonArmoiries('Annelet')],
+  }),
   [ChargeType.billet]: new FrenchWord(
     'billette',
-    'An upright rectangle, twice as tall as it is wide. The name is the little billet — a note, or a log.',
+    {
+      value:
+        'An upright rectangle, twice as tall as it is wide. The name is the little billet — a note, or a log.',
+      sources: [blasonArmoiries('Billette')],
+    },
     { isFeminine: true }
   ),
   // French names the modified lozenge twice over as English does, and keeps the
@@ -37,7 +43,11 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
   [ChargeType.lozenge]: [
     new FrenchWord(
       'losange',
-      'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again. Blazon kept the word feminine where modern French went masculine, so it is read under either article. Vidée or percée it has a name of its own, so this word is the plain figure.',
+      {
+        value:
+          'A diamond standing on one of its points, taller than it is wide. Set square it would be a square; laid on its side it would be something else again. Blazon kept the word feminine where modern French went masculine, so it is read under either article. Vidée or percée it has a name of its own, so this word is the plain figure.',
+        sources: [blasonArmoiries('Losange')],
+      },
       {
         isFeminine: true,
         acceptsBothGender: true,
@@ -45,19 +55,31 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
     ),
     new FrenchWord(
       'macle',
-      'A losange vidée: the middle taken out, and the field showing through the outline. Vidée by being a macle, so the blazon writes nothing after it. English spells the same word mascle.',
+      {
+        value:
+          'A losange vidée: the middle taken out, and the field showing through the outline. Vidée by being a macle, so the blazon writes nothing after it.',
+        sources: [blasonArmoiries('Macle')],
+      },
       { isFeminine: true, defaultModifier: Modifier.voided }
     ),
     new FrenchWord(
       'rustre',
-      'A losange percée: a round hole punched through the middle, the rest of the figure left as it was. It is not the macle, which keeps nothing but its outline. Masculine, where the macle and the losange are feminine.',
+      {
+        value:
+          'A losange percée: a round hole punched through the middle, the rest of the figure left as it was. It is not the macle, which keeps nothing but its outline. Masculine, where the macle and the losange are feminine.',
+        sources: [blasonArmoiries('Rustre')],
+      },
       { defaultModifier: Modifier.pierced }
     ),
   ],
   [ChargeType.roundel]: [
     new FrenchWord(
       'besant',
-      'A plain disc borne in metal, named for the gold coin of Byzantium: gold by being a besant, so nothing is written after it where the blazon means gold. It answers for either metal, and for a disc cut from a fur.',
+      {
+        value:
+          'A plain disc borne in metal, named for the gold coin of Byzantium: gold by being a besant, so nothing is written after it where the blazon means gold. It answers for either metal, and for a disc cut from a fur.',
+        sources: [blasonArmoiries('Besant')],
+      },
       {
         allowedTinctures: [...METALS, ...PELTS],
         defaultTincture: Metals.or,
@@ -65,7 +87,11 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
     ),
     new FrenchWord(
       'tourteau',
-      'A plain disc borne in colour, named for the cake. No one colour is a tourteau’s own, so it is owed its tincture every time it is borne.',
+      {
+        value:
+          'A plain disc borne in colour, named for the cake. No one colour is a tourteau’s own, so it is owed its tincture every time it is borne.',
+        sources: [blasonArmoiries('Tourteau')],
+      },
       {
         plural: 'tourteaux',
         allowedTinctures: [...COLOURS, ...PELTS],
@@ -74,7 +100,11 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
   ],
   [ChargeType.goutte]: new FrenchWord(
     'goutte',
-    'A drop, point upwards: a pear-shape drawn out to a point, with the sides curving in before they swell. Heraldry names the liquid where it can — goutté d’eau for the silver drops, de sang for the red — which is a vocabulary of waters and bloods this does not read, so a field sown with them is sown in as many words.',
+    {
+      value:
+        'A drop, point upwards: a pear-shape drawn out to a point, with the sides curving in before they swell. Heraldry names the liquid where it can — goutté d’eau for the silver drops, de sang for the red — which is a vocabulary of waters and bloods this does not read, so a field sown with them is sown in as many words.',
+      sources: [blasonArmoiries('Goutte, goutté', 'goutte')],
+    },
     { isFeminine: true }
   ),
   // "Sa figuration ordinaire comporte cinq pointes que l'on appelle rais", which
@@ -87,12 +117,20 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
   [ChargeType.mullet]: [
     new FrenchWord(
       'étoile',
-      'A star of five straight rays, which the dictionaries call rais. Five is understood wherever the blazon counts none. The rays are straight: drawn wavy, and of six, the figure would be another one altogether. Percée it is a molette, so this word is the plain star and the vidée one.',
+      {
+        value:
+          'A star of five straight rays, which the dictionaries call rais. Five is understood wherever the blazon counts none. The rays are straight: drawn wavy, and of six, the figure would be another one altogether. Percée it is a molette, so this word is the plain star and the vidée one.',
+        sources: [blasonArmoiries('Étoile')],
+      },
       { isFeminine: true }
     ),
     new FrenchWord(
       'molette',
-      'An étoile percée: a star with a round hole through the middle, which is the rowel of a spur — a molette d’éperon. Pierced by being a molette, so the blazon writes nothing after it.',
+      {
+        value:
+          'An étoile percée: a star with a round hole through the middle, which is the rowel of a spur — a molette d’éperon. Pierced by being a molette, so the blazon writes nothing after it.',
+        sources: [blasonArmoiries('Molette d’éperon', 'molette-d-eperon')],
+      },
       { isFeminine: true, defaultModifier: Modifier.pierced }
     ),
   ],
@@ -104,7 +142,11 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
   // everywhere else; what tells them apart is that this one has a name around it.
   [ChargeType.fleurDeLis]: new FrenchWord(
     'fleur de lys',
-    'The lily, not as it grows but as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. Armorials spell it four ways, with the hyphens or without and ending in either letter, and all four are read.',
+    {
+      value:
+        'The lily, not as it grows but as the smiths forged it: a middle petal rising to a point, two falling away either side, and a band across the three. Armorials spell it four ways, with the hyphens or without and ending in either letter, and all four are read.',
+      sources: [blasonArmoiries('Fleur-de-lys')],
+    },
     {
       plural: 'fleurs de lys',
       isFeminine: true,
@@ -119,11 +161,16 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
   // word where English needs two, French having made a noun of the small one.
   [ChargeType.crossCouped]: new FrenchWord(
     'croisette',
-    'The little cross: four equal arms of equal length, stopping short of every edge, where the croix is laid across the whole shield.',
+    {
+      value:
+        'The little cross: four equal arms of equal length, stopping short of every edge, where the croix is laid across the whole shield.',
+      sources: [blasonArmoiries('Croisette')],
+    },
     { isFeminine: true }
   ),
-  [ChargeType.crescent]: new FrenchWord(
-    'croissant',
-    'A half-moon with the horns uppermost, which is where a croissant’s horns stand unless a blazon says otherwise — and no blazon can say otherwise here, the increscent and the decrescent being turnings this does not read.'
-  ),
+  [ChargeType.crescent]: new FrenchWord('croissant', {
+    value:
+      'A half-moon with the horns uppermost, which is where a croissant’s horns stand unless a blazon says otherwise — and no blazon can say otherwise here, the increscent and the decrescent being turnings this does not read.',
+    sources: [blasonArmoiries('Croissant')],
+  }),
 };

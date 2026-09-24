@@ -10,13 +10,14 @@ import { FrenchOrdinaryType } from '../../domain/translations/fr/Ordinaries';
 import { FrenchTinctures } from '../../domain/translations/fr/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
 import { bearing, withArticle } from './FrenchGrammar';
+import { FieldType } from '../../domain/models/Field';
 
 const parser = new FrenchBlazonParser();
 
 describe('a field bearing an ordinary', () => {
   test('reads "D\'azur à la fasce d\'or" as a fess on an azure field', () => {
     expect(parser.parse("D'azur à la fasce d'or")).toEqual({
-      field: { tincture: Colours.azure },
+      field: { type: FieldType.plain, tincture: Colours.azure },
       chargesOrOrdinaries: [{ type: OrdinaryType.fess, tincture: Metals.or }],
     });
   });
@@ -33,7 +34,7 @@ describe('a field bearing an ordinary', () => {
     ['au sautoir', OrdinaryType.saltire],
   ])('reads "%s" as that ordinary', (borne, type) => {
     expect(parser.parse(`De gueules ${borne} d'argent`)).toEqual({
-      field: { tincture: Colours.gules },
+      field: { type: FieldType.plain, tincture: Colours.gules },
       chargesOrOrdinaries: [{ type, tincture: Metals.argent }],
     });
   });
@@ -168,7 +169,7 @@ describe('the bar gemel', () => {
     // A gemel is a pair of bars, but it is one charge, and French names it in
     // the singular for all that the word means "twin".
     expect(parser.parse("D'argent à la jumelle de gueules")).toEqual({
-      field: { tincture: Metals.argent },
+      field: { type: FieldType.plain, tincture: Metals.argent },
       chargesOrOrdinaries: [{ type: OrdinaryType.barGemel, tincture: Colours.gules }],
     });
   });
@@ -191,7 +192,7 @@ describe('the bar gemel', () => {
 describe('a field bearing several of one ordinary', () => {
   test('reads "De gueules à trois chevrons d\'or" as three chevrons on a gules field', () => {
     expect(parser.parse("De gueules à trois chevrons d'or")).toEqual({
-      field: { tincture: Colours.gules },
+      field: { type: FieldType.plain, tincture: Colours.gules },
       chargesOrOrdinaries: [{ type: OrdinaryType.chevron, tincture: Metals.or, count: 3 }],
     });
   });
@@ -311,7 +312,7 @@ describe('a field bearing several of one ordinary', () => {
 describe('the bordure', () => {
   test('reads "D\'argent à la bordure de gueules" as a bordure on an argent field', () => {
     expect(parser.parse("D'argent à la bordure de gueules.")).toEqual({
-      field: { tincture: Metals.argent },
+      field: { type: FieldType.plain, tincture: Metals.argent },
       chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
     });
   });
@@ -328,7 +329,7 @@ describe('the bordure', () => {
 describe('a field bearing more than one ordinary', () => {
   test('reads the bends and the bordure an armorial writes', () => {
     expect(parser.parse("D'or à trois bandes de sable ; à la bordure de gueules")).toEqual({
-      field: { tincture: Metals.or },
+      field: { type: FieldType.plain, tincture: Metals.or },
       chargesOrOrdinaries: [
         { type: OrdinaryType.bend, tincture: Colours.sable, count: 3 },
         { type: OrdinaryType.bordure, tincture: Colours.gules },
@@ -382,7 +383,7 @@ describe('a field bearing more than one ordinary', () => {
 
   test('gives each one a tincture and a count of its own', () => {
     expect(parser.parse("D'argent à trois chevrons d'or ; à la bordure de gueules")).toEqual({
-      field: { tincture: Metals.argent },
+      field: { type: FieldType.plain, tincture: Metals.argent },
       chargesOrOrdinaries: [
         { type: OrdinaryType.chevron, tincture: Metals.or, count: 3 },
         { type: OrdinaryType.bordure, tincture: Colours.gules },

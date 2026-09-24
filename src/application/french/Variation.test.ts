@@ -2,7 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { MissingPieces } from '../../domain/errors/parsing/MissingPieces';
 import { MissingTincture } from '../../domain/errors/parsing/MissingTincture';
 import { UnknownDivision } from '../../domain/errors/parsing/UnknownDivision';
-import { DivisionType, VariationType } from '../../domain/models/Field';
+import { FieldType } from '../../domain/models/Field';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { Colours, Metals } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
@@ -13,7 +13,7 @@ describe('varied fields', () => {
   test('reads "Fascé d\'argent et de gueules" as a field cut in the six pieces understood', () => {
     expect(parser.parse("Fascé d'argent et de gueules")).toEqual({
       field: {
-        type: VariationType.barry,
+        type: FieldType.barry,
         firstTincture: Metals.argent,
         secondTincture: Colours.gules,
         pieces: 6,
@@ -22,10 +22,10 @@ describe('varied fields', () => {
   });
 
   test.each([
-    ['fascé', VariationType.barry],
-    ['palé', VariationType.paly],
-    ['bandé', VariationType.bendy],
-    ['chevronné', VariationType.chevronny],
+    ['fascé', FieldType.barry],
+    ['palé', FieldType.paly],
+    ['bandé', FieldType.bendy],
+    ['chevronné', FieldType.chevronny],
   ])('reads "%s" as that varied field', (name, type) => {
     expect(parser.parse(`${name} d'or et d'azur`).field).toEqual({
       type,
@@ -49,7 +49,7 @@ describe('varied fields', () => {
   describe('how many pieces', () => {
     test('reads the count an armorial writes after the tinctures', () => {
       expect(parser.parse("Bandé de gueules et d'argent de six pièces.").field).toEqual({
-        type: VariationType.bendy,
+        type: FieldType.bendy,
         firstTincture: Colours.gules,
         secondTincture: Metals.argent,
         pieces: 6,
@@ -64,7 +64,7 @@ describe('varied fields', () => {
 
     test('reads a count that is not the one understood', () => {
       expect(parser.parse("Palé d'argent et de gueules de huit pièces").field).toMatchObject({
-        type: VariationType.paly,
+        type: FieldType.paly,
         pieces: 8,
       });
     });
@@ -85,7 +85,7 @@ describe('varied fields', () => {
   describe('the émanché, which no number is understood of', () => {
     test('reads the count it is always written with', () => {
       expect(parser.parse("Émanché d'argent et de gueules de sept pièces").field).toEqual({
-        type: VariationType.pily,
+        type: FieldType.pily,
         firstTincture: Metals.argent,
         secondTincture: Colours.gules,
         pieces: 7,
@@ -137,19 +137,19 @@ describe('varied fields', () => {
 
     test('tells the fascé apart from the coupé it repeats', () => {
       expect(parser.parse("Fascé d'argent et de gueules").field).toMatchObject({
-        type: VariationType.barry,
+        type: FieldType.barry,
       });
       expect(parser.parse("Coupé d'argent et de gueules").field).toMatchObject({
-        type: DivisionType.fess,
+        type: FieldType.fess,
       });
     });
 
     test('tells the bandé apart from the tranché it repeats', () => {
       expect(parser.parse("Bandé d'argent et de gueules").field).toMatchObject({
-        type: VariationType.bendy,
+        type: FieldType.bendy,
       });
       expect(parser.parse("Tranché d'argent et de gueules").field).toMatchObject({
-        type: DivisionType.bend,
+        type: FieldType.bend,
       });
     });
   });
@@ -158,7 +158,7 @@ describe('varied fields', () => {
     test('bears an ordinary as any other field does', () => {
       expect(parser.parse("Bandé d'or et d'azur en six pièces, à la bordure de gueules")).toEqual({
         field: {
-          type: VariationType.bendy,
+          type: FieldType.bendy,
           firstTincture: Metals.or,
           secondTincture: Colours.azure,
           pieces: 6,
