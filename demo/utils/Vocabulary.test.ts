@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest';
 import { EnglishBlazonWriter } from '../../src/application/writer/EnglishBlazonWriter';
 import { FrenchBlazonWriter } from '../../src/application/writer/FrenchBlazonWriter';
 import { isFur } from '../../src/domain/models/Tinctures';
+import { Languages } from '../../src/domain/translations/Word';
 import { anchorOf, folded } from './Anchors';
 import { LanguageCode } from './Languages';
 import { readBlazon } from './Reading';
@@ -71,6 +72,29 @@ describe('what the vocabulary holds', () => {
   test.each(TONGUES)('%s says what every one of its words means', (language) => {
     for (const entry of vocabularyIn(language)) {
       expect(entry.description, entry.word).not.toBe('');
+    }
+  });
+
+  test.each(TONGUES)('%s says who says so of every one of its words', (language) => {
+    // A gloss nobody stands behind is this library's opinion about heraldry,
+    // which is not a thing it is entitled to have.
+    for (const entry of vocabularyIn(language)) {
+      expect(entry.sources.length, entry.word).toBeGreaterThan(0);
+      for (const source of entry.sources) {
+        expect(source.title, entry.word).not.toBe('');
+        expect(source.url, entry.word).toMatch(/^https?:\/\/\S+$/);
+      }
+    }
+  });
+
+  test('answers for a French word out of a French work, and says as much', () => {
+    // The gloss is English on both pages; the authority behind it need not be,
+    // and the dictionaries that settle French heraldry are French.
+    for (const source of word(french, 'sautoir').sources) {
+      expect(source.language).toBe(Languages.fr);
+    }
+    for (const source of word(english, 'saltire').sources) {
+      expect(source.language).toBe(Languages.en);
     }
   });
 

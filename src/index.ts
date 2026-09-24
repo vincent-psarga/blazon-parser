@@ -117,8 +117,17 @@ export { counted, numberWord } from './domain/translations/Numbers';
 export type { NumberWords } from './domain/translations/Numbers';
 export { strewnIn, strewnTerms } from './domain/translations/Strewings';
 export type { Strewings } from './domain/translations/Strewings';
-export { Word } from './domain/translations/Word';
-export type { AlternateWording, Spelling, Wording, WordOptions } from './domain/translations/Word';
+export { Languages, Word } from './domain/translations/Word';
+export type {
+  AlternateWording,
+  Description,
+  Gloss,
+  Source,
+  Spelling,
+  Wording,
+  WordOptions,
+} from './domain/translations/Word';
+export { blasonArmoiries, laLangueDuBlason, parker } from './domain/translations/Sources';
 export { FrenchWord } from './domain/translations/fr/FrenchWord';
 export type { FrenchWordOptions } from './domain/translations/fr/FrenchWord';
 export { EnglishDivisionType } from './domain/translations/en/Divisions';

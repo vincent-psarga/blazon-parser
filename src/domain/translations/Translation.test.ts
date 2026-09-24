@@ -273,7 +273,7 @@ describe('a vocabulary looked up in the plural', () => {
 describe('a vocabulary whose words are written more than one way', () => {
   const Lilies: Translation<Partition> = {
     [Partition.mantled]: new Word('mantelé'),
-    [Partition.mantledReversed]: new Word('fleur-de-lis', '', {
+    [Partition.mantledReversed]: new Word('fleur-de-lis', undefined, {
       plural: 'fleurs-de-lis',
       alternateWording: { 'fleur de lys': { plural: 'fleurs de lys' } },
     }),

@@ -114,6 +114,28 @@ describe('a word read at full size', () => {
     expect(within(showing()).getByText(/The little cross/)).toBeInTheDocument();
   });
 
+  test('says who says so, and leads to the entry itself', async () => {
+    mount(<VocabularyPage language="en" />);
+    await strike('mascle');
+    const cited = within(showing()).getByRole('link', {
+      name: 'James Parker, A Glossary of Terms Used in Heraldry, under Mascle',
+    });
+    expect(cited).toHaveAttribute(
+      'href',
+      'https://www.heraldsnet.org/saitou/parker/Jpglossm.htm#Mascle'
+    );
+  });
+
+  test('marks a source written in the other tongue as being in it', async () => {
+    // The gloss is English on both pages and the authority behind a French word
+    // is not: a reader is told which before they follow it.
+    mount(<VocabularyPage language="fr" />);
+    await strike('macle');
+    const cited = within(showing()).getByRole('link', { name: /Au blason des armoiries/ });
+    expect(cited).toHaveAttribute('hreflang', 'fr');
+    expect(cited).toHaveAttribute('href', 'https://blason-armoiries.org/heraldique/m/macle.htm');
+  });
+
   test('names the rank it belongs to', async () => {
     mount(<VocabularyPage language="fr" />);
     await strike('croix');

@@ -28,7 +28,7 @@ import {
   wordSaidOf,
   wordsOf,
 } from '../../src/domain/translations/Translation';
-import { Word } from '../../src/domain/translations/Word';
+import { Source, Word } from '../../src/domain/translations/Word';
 import { anchorOf, folded, letterOf } from './Anchors';
 import { LanguageCode } from './Languages';
 import { readBlazon } from './Reading';
@@ -120,7 +120,10 @@ export interface VocabularyEntry {
   readonly qualified: boolean;
   /** The letter of the index it is filed under, accents folded away. */
   readonly letter: string;
+  /** What the word means, which the page prints as it stands. */
   readonly description: string;
+  /** Who says so, for a reader who wants the authority rather than the summary. */
+  readonly sources: readonly Source[];
   /** The arms that show the word. */
   readonly blazon: Blazon;
   /** A blazon a reader could type, carrying this very spelling. */
@@ -826,7 +829,8 @@ function vocabularyOf<W extends Word, O extends Word>(
         rank: sense.rank,
         qualified,
         letter: letterOf(word.value),
-        description: word.description,
+        description: word.descriptions.en.value,
+        sources: word.descriptions.en.sources,
         blazon,
         typed,
         written: written === typed ? undefined : written,

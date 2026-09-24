@@ -5,6 +5,7 @@ import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 import { anchorOf, isAnchored } from '../utils/Anchors';
 import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
 import { readingPath } from '../utils/Reading';
+import { Source } from '../../src/domain/translations/Word';
 import { Sighting, VocabularyEntry, lettersOf, vocabularyPath } from '../utils/Vocabulary';
 
 export interface ReferenceProps {
@@ -252,6 +253,12 @@ export function Reference({
                 <Sightings heading="See also" sightings={struck.alsoHere} />
               )}
 
+              {/* Who says so. The gloss above is this library's own sentences,
+                and a reader who wants the authority behind them rather than the
+                summary of it follows these. They stand after the words of this
+                vocabulary because they lead out of it. */}
+              <Sources sources={struck.sources} />
+
               {/* The further arms are smaller than the struck ones, and say what
                 one drawing cannot without ever standing in its place. One
                 heading per question asked: borne in number, sown, and modified
@@ -298,6 +305,38 @@ export function Reference({
         </div>
       )}
     </main>
+  );
+}
+
+export interface SourcesProps {
+  readonly sources: readonly Source[];
+}
+
+/**
+ * The works this word rests on, each linked to the entry itself.
+ *
+ * A source is cited in full rather than by a bare name: a reader deciding
+ * whether to follow a link is owed the work and the entry within it, and half
+ * the citations here are the only thing standing between a gloss and an opinion.
+ *
+ * The tongue is the source's own. A French word is glossed in English, because
+ * the reader came to learn French heraldry and not to read French, but what
+ * answers for it is written in French — and is marked as French so that a reader
+ * knows before they follow it and a screen reader says it properly.
+ */
+export function Sources({ sources }: SourcesProps) {
+  if (sources.length === 0) {
+    return null;
+  }
+  return (
+    <p className="showing__sources">
+      <span className="showing__heading">{sources.length === 1 ? 'Source' : 'Sources'}</span>
+      {sources.map((source) => (
+        <a key={source.url} href={source.url} lang={source.language} hrefLang={source.language}>
+          {source.title}
+        </a>
+      ))}
+    </p>
   );
 }
 
