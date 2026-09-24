@@ -1,5 +1,5 @@
 import { Languages } from '../models/Languages';
-import { Source } from './Word';
+import { Source } from '../models/Source';
 
 /**
  * The works this vocabulary rests on, each entry addressed by name.

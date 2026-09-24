@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Languages } from '../../src/domain/models/Languages';
 import { blasonArmoiries, laLangueDuBlason, parker } from '../../src/domain/translations/Sources';
-import { Source } from '../../src/domain/translations/Word';
+import { Source } from '../../src/domain/models/Source';
 import { BlazonShield } from '../components/BlazonShield';
 import { BlazonLink } from '../components/Reference';
 import { Sources } from '../components/Sources';

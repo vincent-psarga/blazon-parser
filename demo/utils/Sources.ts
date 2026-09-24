@@ -1,5 +1,5 @@
 import { Languages } from '../../src/domain/models/Languages';
-import { Source } from '../../src/domain/translations/Word';
+import { Source } from '../../src/domain/models/Source';
 
 /**
  * The works the documentation rests on that the vocabulary does not.
@@ -25,10 +25,13 @@ export function greaves(at: string): Source {
 }
 
 /**
- * Wikipedia, for what is a fact about a language rather than about heraldry.
+ * Wikipedia in English, for what is a fact about a language rather than about
+ * heraldry.
  *
  * Cited once, for where blazon's word order comes from. A claim about heraldry
- * itself is owed a herald.
+ * itself is owed a herald. The armorials cite the French edition and write their
+ * citations out, each being one page with a fragment rather than an article this
+ * could address.
  */
 export function wikipedia(article: string): Source {
   return {

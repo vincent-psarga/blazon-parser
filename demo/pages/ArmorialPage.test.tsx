@@ -28,7 +28,11 @@ const FLANDERS = {
   name: 'Flanders',
   blazon: "D'or au lion de sable",
   image: 'https://example.invalid/flanders.png',
-  source: { name: 'Wikipedia: Armoiries de la Flandre', url: 'https://example.invalid/flanders' },
+  source: {
+    title: 'Wikipédia, Armoiries de la Flandre',
+    url: 'https://example.invalid/flanders',
+    language: Languages.fr,
+  },
 };
 
 const ARMORIAL: Armorial = {
@@ -36,7 +40,11 @@ const ARMORIAL: Armorial = {
   slug: 'an-armorial',
   language: Languages.fr,
   licence: 'MIT',
-  source: { name: 'Wherever it came from', url: 'https://example.invalid/armorial' },
+  source: {
+    title: 'Wherever it came from',
+    url: 'https://example.invalid/armorial',
+    language: Languages.en,
+  },
   entries: [HALBERSTADT, FLANDERS],
 };
 
@@ -61,7 +69,9 @@ describe('ArmorialPage', () => {
     );
   });
 
-  test('leads to the armorial’s own source', () => {
+  test('leads to the armorial’s own source, named in full', () => {
+    // There is room for the citation here, where a gloss has room for a mark
+    // alone, so the work is named rather than numbered.
     mount(<ArmorialPage armorial={ARMORIAL} />);
     expect(screen.getByRole('link', { name: 'Wherever it came from' })).toHaveAttribute(
       'href',
@@ -160,8 +170,24 @@ describe('ArmorialPage', () => {
   test('links an entry’s source where it has one', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
     expect(
-      within(row('Flanders')).getByRole('link', { name: 'Wikipedia: Armoiries de la Flandre' })
+      within(row('Flanders')).getByRole('link', {
+        name: 'Wikipédia, Armoiries de la Flandre — in French',
+      })
     ).toHaveAttribute('href', 'https://example.invalid/flanders');
+  });
+
+  test('says which tongue a source is in, where it is not the one being read', () => {
+    // Said of the French page a roll was copied from, and not of the English
+    // one: a reader told it of every source would learn nothing from being told.
+    mount(<ArmorialPage armorial={ARMORIAL} />);
+    const entry = within(row('Flanders')).getByRole('link', { name: /Armoiries de la Flandre/ });
+    expect(entry).toHaveAttribute('hreflang', 'fr');
+    expect(entry.querySelector('[lang="fr"]')?.textContent).toBe(
+      'Wikipédia, Armoiries de la Flandre'
+    );
+    expect(screen.getByRole('link', { name: 'Wherever it came from' }).textContent).not.toMatch(
+      /in English/
+    );
   });
 
   test('leaves the source cell empty for an entry without one', () => {

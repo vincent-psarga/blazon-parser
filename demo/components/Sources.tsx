@@ -1,5 +1,5 @@
 import { Languages } from '../../src/domain/models/Languages';
-import { Source } from '../../src/domain/translations/Word';
+import { Source } from '../../src/domain/models/Source';
 import { LANGUAGES } from '../utils/Languages';
 
 export interface SourcesProps {
@@ -19,12 +19,35 @@ const WRITTEN_IN = Languages.en;
 /**
  * What a reader will be reading in, where it is not what they are reading now.
  *
- * Said only where it is news. A reader following every mark into English learns
- * nothing from being told so each time, and a marking worn by everything says
- * nothing about anything.
+ * Said only where it is news. A reader following every citation into English
+ * learns nothing from being told so each time, and a marking worn by everything
+ * says nothing about anything.
  */
 function tongueOf(source: Source): string | undefined {
   return source.language === WRITTEN_IN ? undefined : ` — in ${LANGUAGES[source.language].named}`;
+}
+
+export interface CitedProps {
+  readonly source: Source;
+}
+
+/**
+ * One source, named in full, for where the citation itself fits.
+ *
+ * The armorial pages have room for it: a roll is copied from one page and says
+ * which, and the table it stands over has a column's worth of space. Where the
+ * room is a line under a gloss, the citation is marked instead — see `Sources`
+ * below, which says the same things about the same object.
+ */
+export function Cited({ source }: CitedProps) {
+  return (
+    <a href={source.url} hrefLang={source.language}>
+      {/* The tongue is marked around the title and not around the whole link:
+        the English saying which tongue this is belongs to no other. */}
+      <span lang={source.language}>{source.title}</span>
+      {tongueOf(source)}
+    </a>
+  );
 }
 
 /**

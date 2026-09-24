@@ -1,5 +1,6 @@
 import { ChargeType } from '../models/Charge';
 import { Languages } from '../models/Languages';
+import { Source } from '../models/Source';
 import { Modifier } from '../models/Modifier';
 import { TINCTURES, Tincture } from '../models/Tinctures';
 
@@ -40,21 +41,6 @@ export interface WordOptions {
   readonly saidOf?: readonly ChargeType[];
   /** What the word already says was done to the charge, for a name that says it. */
   readonly defaultModifier?: Modifier;
-}
-
-/**
- * Where a reader is sent to read more, and what they will be reading.
- *
- * The tongue is the source's own and not the word's. A French word is glossed in
- * English here, because the page is written in English, but what says so is
- * written in French and is marked as French so that a reader knows before they
- * follow it.
- */
-export interface Source {
-  /** The work and the entry within it, written out as a citation. */
-  readonly title: string;
-  readonly url: string;
-  readonly language: Languages;
 }
 
 /**

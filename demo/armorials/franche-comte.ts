@@ -18,8 +18,9 @@ export const FrancheComteArmorial: Armorial = {
   language: Languages.fr,
   licence: 'CC BY-SA 4.0',
   source: {
-    name: 'Wikipedia: Armorial des familles de Franche-Comté',
+    title: 'Wikipédia, Armorial des familles de Franche-Comté',
     url: 'https://fr.wikipedia.org/wiki/Armorial_des_familles_de_Franche-Comt%C3%A9',
+    language: Languages.fr,
   },
   entries: [
     {

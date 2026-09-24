@@ -1,15 +1,12 @@
 import { Languages } from './Languages';
-
-export type ArmorialSource = {
-  name: string;
-  url: string;
-};
+import { Source } from './Source';
 
 export type ArmorialEntry = {
   name: string;
   blazon: string;
   image: string;
-  source?: ArmorialSource;
+  /** Where this one entry was copied from, where it was copied from its own page. */
+  source?: Source;
 };
 
 export type Armorial = {
@@ -17,7 +14,8 @@ export type Armorial = {
   slug: string;
   /** The tongue its blazons are written in, which is the grammar that reads them. */
   language: Languages;
-  source?: ArmorialSource;
+  /** Where the roll was copied from, where one page holds the whole of it. */
+  source?: Source;
   licence?: string;
   entries: ArmorialEntry[];
 };

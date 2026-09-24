@@ -17,7 +17,8 @@ export { FrenchBlazonWriter } from './application/writer/FrenchBlazonWriter';
 export { Languages, TONGUES } from './domain/models/Languages';
 export { isCharge, isOrdinary } from './domain/models/Blazon';
 export type { Blazon, ChargeOrOrdinary } from './domain/models/Blazon';
-export type { Armorial, ArmorialEntry, ArmorialSource } from './domain/models/Armorial';
+export type { Armorial, ArmorialEntry } from './domain/models/Armorial';
+export type { Source } from './domain/models/Source';
 export { readArmorial } from './application/armorial/ArmorialReading';
 export type {
   ArmorialReading,
@@ -123,7 +124,6 @@ export type {
   AlternateWording,
   Description,
   Gloss,
-  Source,
   Spelling,
   Wording,
   WordOptions,

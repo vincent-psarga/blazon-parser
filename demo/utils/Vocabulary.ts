@@ -28,7 +28,8 @@ import {
   wordSaidOf,
   wordsOf,
 } from '../../src/domain/translations/Translation';
-import { Source, Word } from '../../src/domain/translations/Word';
+import { Source } from '../../src/domain/models/Source';
+import { Word } from '../../src/domain/translations/Word';
 import { anchorOf, folded, letterOf } from './Anchors';
 import { Languages } from '../../src/domain/models/Languages';
 import { readBlazon } from './Reading';
