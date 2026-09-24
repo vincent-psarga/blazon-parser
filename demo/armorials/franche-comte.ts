@@ -1,4 +1,5 @@
 import { Armorial } from '../../src/domain/models/Armorial';
+import { Languages } from '../../src/domain/models/Languages';
 
 /**
  * The families of Franche-Comté, copied from the French Wikipedia armorial as
@@ -14,7 +15,7 @@ import { Armorial } from '../../src/domain/models/Armorial';
 export const FrancheComteArmorial: Armorial = {
   name: 'Familles de Franche-Comté',
   slug: 'franche-comte',
-  language: 'french',
+  language: Languages.fr,
   licence: 'CC BY-SA 4.0',
   source: {
     name: 'Wikipedia: Armorial des familles de Franche-Comté',

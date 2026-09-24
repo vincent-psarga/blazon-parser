@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { cleanup, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
-import { vocabularyIn, vocabularyPath } from '../utils/Vocabulary';
+import { Languages, TONGUES } from '../../src/domain/models/Languages';
 import { mount } from '../testing/Mounting';
-import { DocIndexPage } from './DocIndexPage';
+import { vocabularyIn, vocabularyPath } from '../utils/Vocabulary';
 import { RULES } from './ConventionsPage';
+import { DocIndexPage } from './DocIndexPage';
 
 afterEach(cleanup);
 
@@ -15,10 +16,10 @@ const arms = (name: string) => index(name).filter((link) => link.querySelector('
 describe('the index of the documentation', () => {
   test('leads to each vocabulary by name', () => {
     mount(<DocIndexPage />, '/doc');
-    for (const language of ['fr', 'en'] as const) {
+    for (const language of TONGUES) {
       expect(
         within(screen.getByRole('navigation', { name: 'Documentation' })).getByRole('link', {
-          name: language === 'fr' ? 'French vocabulary' : 'English vocabulary',
+          name: language === Languages.fr ? 'French vocabulary' : 'English vocabulary',
         })
       ).toHaveAttribute('href', vocabularyPath(language));
     }
@@ -29,12 +30,12 @@ describe('the index of the documentation', () => {
     // Ten apiece, where the vocabularies run to forty and more: the index is a
     // way in rather than an inventory.
     expect(arms('Documentation')).toHaveLength(20);
-    expect(vocabularyIn('fr').length).toBeGreaterThan(10);
+    expect(vocabularyIn(Languages.fr).length).toBeGreaterThan(10);
   });
 
   test('leads from each arms to the word it was drawn from', () => {
     mount(<DocIndexPage />, '/doc');
-    const anchors = [...vocabularyIn('fr'), ...vocabularyIn('en')].map(
+    const anchors = [...vocabularyIn(Languages.fr), ...vocabularyIn(Languages.en)].map(
       (entry) => `#${entry.anchor}`
     );
     for (const arm of arms('Documentation')) {
@@ -46,7 +47,9 @@ describe('the index of the documentation', () => {
 
   test('names the word each arms stands for, a shield saying nothing by itself', () => {
     mount(<DocIndexPage />, '/doc');
-    const words = [...vocabularyIn('fr'), ...vocabularyIn('en')].map((entry) => entry.word);
+    const words = [...vocabularyIn(Languages.fr), ...vocabularyIn(Languages.en)].map(
+      (entry) => entry.word
+    );
     for (const arm of arms('Documentation')) {
       expect(words).toContain(arm.getAttribute('aria-label'));
     }
@@ -74,7 +77,9 @@ describe('the index of the documentation', () => {
   test('counts the whole of each vocabulary, though it shows a handful', () => {
     mount(<DocIndexPage />, '/doc');
     expect(
-      screen.getByText(new RegExp(`${vocabularyIn('fr').length} words of french vocabulary`, 'i'))
+      screen.getByText(
+        new RegExp(`${vocabularyIn(Languages.fr).length} words of french vocabulary`, 'i')
+      )
     ).toBeInTheDocument();
   });
 });

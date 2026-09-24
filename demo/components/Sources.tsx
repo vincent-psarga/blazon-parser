@@ -1,5 +1,6 @@
-import { Languages, Source } from '../../src/domain/translations/Word';
-import { LANGUAGES, codeFrom } from '../utils/Languages';
+import { Languages } from '../../src/domain/models/Languages';
+import { Source } from '../../src/domain/translations/Word';
+import { LANGUAGES } from '../utils/Languages';
 
 export interface SourcesProps {
   readonly sources: readonly Source[];
@@ -23,9 +24,7 @@ const WRITTEN_IN = Languages.en;
  * nothing about anything.
  */
 function tongueOf(source: Source): string | undefined {
-  return source.language === WRITTEN_IN
-    ? undefined
-    : ` — in ${LANGUAGES[codeFrom(source.language)].named}`;
+  return source.language === WRITTEN_IN ? undefined : ` — in ${LANGUAGES[source.language].named}`;
 }
 
 /**

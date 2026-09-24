@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
+import { Languages } from '../models/Languages';
 import { blasonArmoiries, laLangueDuBlason, parker } from './Sources';
-import { Languages } from './Word';
 
 describe('an entry in Parker', () => {
   test('is addressed by its own first letter and anchored at the term', () => {

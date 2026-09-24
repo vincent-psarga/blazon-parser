@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import { Armorial } from '../../src/domain/models/Armorial';
-import { LANGUAGES, codeOf } from '../utils/Languages';
+import { LANGUAGES } from '../utils/Languages';
 import { tally } from '../utils/Tally';
 
 /**
@@ -37,7 +37,7 @@ export function ArmorialsPage({ armorials }: ArmorialsPageProps) {
             <span className="index__name">{armorial.name}</span>
             <p className="index__note">
               {tally(armorial.entries.length, 'entry', 'entries')} ·{' '}
-              {LANGUAGES[codeOf(armorial.language)].named} · {armorial.licence}
+              {LANGUAGES[armorial.language].named} · {armorial.licence}
             </p>
           </Link>
         ))}

@@ -1,18 +1,19 @@
 import { ReactNode } from 'react';
+import { Languages } from '../../src/domain/models/Languages';
 import { blasonArmoiries, laLangueDuBlason, parker } from '../../src/domain/translations/Sources';
 import { Source } from '../../src/domain/translations/Word';
 import { BlazonShield } from '../components/BlazonShield';
 import { BlazonLink } from '../components/Reference';
 import { Sources } from '../components/Sources';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
-import { LANGUAGES, LanguageCode } from '../utils/Languages';
+import { LANGUAGES } from '../utils/Languages';
 import { readBlazon } from '../utils/Reading';
 import { greaves, wikipedia } from '../utils/Sources';
 
 /** A blazon as somebody might type it, and the tongue they typed it in. */
 export interface Typed {
   readonly text: string;
-  readonly language: LanguageCode;
+  readonly language: Languages;
 }
 
 /**
@@ -46,8 +47,8 @@ export interface Rule {
   readonly cases: readonly Typed[];
 }
 
-const en = (text: string): Typed => ({ text, language: 'en' });
-const fr = (text: string): Typed => ({ text, language: 'fr' });
+const en = (text: string): Typed => ({ text, language: Languages.en });
+const fr = (text: string): Typed => ({ text, language: Languages.fr });
 
 /**
  * Exported so that the index can show a rule by the arms it turns on rather than
@@ -619,8 +620,8 @@ function Case({
           <dt>{'blazon' in read ? 'Written' : 'Refused'}</dt>
           {'blazon' in read ? (
             <dd className="case__written">
-              <BlazonLink blazon={LANGUAGES.fr.writer.write(read.blazon)} language="fr" />
-              <BlazonLink blazon={LANGUAGES.en.writer.write(read.blazon)} language="en" />
+              <BlazonLink blazon={LANGUAGES.fr.writer.write(read.blazon)} language={Languages.fr} />
+              <BlazonLink blazon={LANGUAGES.en.writer.write(read.blazon)} language={Languages.en} />
             </dd>
           ) : (
             <dd className="case__refused">{read.refused}</dd>

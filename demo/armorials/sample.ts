@@ -1,9 +1,10 @@
 import { Armorial } from '../../src/domain/models/Armorial';
+import { Languages } from '../../src/domain/models/Languages';
 
 export const SampleArmorial: Armorial = {
   name: 'A sample armorial',
   slug: 'sample',
-  language: 'french',
+  language: Languages.fr,
   entries: [
     {
       name: 'Halberstadt',

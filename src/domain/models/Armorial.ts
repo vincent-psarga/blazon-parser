@@ -1,3 +1,5 @@
+import { Languages } from './Languages';
+
 export type ArmorialSource = {
   name: string;
   url: string;
@@ -13,7 +15,8 @@ export type ArmorialEntry = {
 export type Armorial = {
   name: string;
   slug: string;
-  language: 'french' | 'english';
+  /** The tongue its blazons are written in, which is the grammar that reads them. */
+  language: Languages;
   source?: ArmorialSource;
   licence?: string;
   entries: ArmorialEntry[];

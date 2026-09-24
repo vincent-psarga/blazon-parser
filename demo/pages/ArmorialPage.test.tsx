@@ -2,6 +2,7 @@
 import { cleanup, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
 import { Armorial } from '../../src/domain/models/Armorial';
+import { Languages } from '../../src/domain/models/Languages';
 import { Metals } from '../../src/domain/models/Tinctures';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 import { mount } from '../testing/Mounting';
@@ -33,7 +34,7 @@ const FLANDERS = {
 const ARMORIAL: Armorial = {
   name: 'An armorial',
   slug: 'an-armorial',
-  language: 'french',
+  language: Languages.fr,
   licence: 'MIT',
   source: { name: 'Wherever it came from', url: 'https://example.invalid/armorial' },
   entries: [HALBERSTADT, FLANDERS],
@@ -97,7 +98,7 @@ describe('ArmorialPage', () => {
       <ArmorialPage
         armorial={{
           ...ARMORIAL,
-          language: 'english',
+          language: Languages.en,
           entries: [{ ...HALBERSTADT, blazon: 'Per pale argent and gules' }],
         }}
       />
@@ -114,13 +115,13 @@ describe('ArmorialPage', () => {
     const source = within(cells('Halberstadt').blazon).getByRole('link', {
       name: HALBERSTADT.blazon,
     });
-    expect(source).toHaveAttribute('href', readingPath(HALBERSTADT.blazon, 'fr'));
+    expect(source).toHaveAttribute('href', readingPath(HALBERSTADT.blazon, Languages.fr));
   });
 
   test('leads from a blazon the parser refused too: the refusal is spelled out there', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
     const refused = within(cells('Flanders').blazon).getByRole('link', { name: FLANDERS.blazon });
-    expect(refused).toHaveAttribute('href', readingPath(FLANDERS.blazon, 'fr'));
+    expect(refused).toHaveAttribute('href', readingPath(FLANDERS.blazon, Languages.fr));
   });
 
   test('shows the translation under a blazon it could read, and links that too', () => {
@@ -129,7 +130,10 @@ describe('ArmorialPage', () => {
       name: 'Per pale argent and gules.',
     });
     expect(translated).toHaveAttribute('lang', 'en');
-    expect(translated).toHaveAttribute('href', readingPath('Per pale argent and gules.', 'en'));
+    expect(translated).toHaveAttribute(
+      'href',
+      readingPath('Per pale argent and gules.', Languages.en)
+    );
   });
 
   test('shows no translation of a blazon it could not read', () => {
@@ -142,7 +146,7 @@ describe('ArmorialPage', () => {
       <ArmorialPage
         armorial={{
           ...ARMORIAL,
-          language: 'english',
+          language: Languages.en,
           entries: [{ ...HALBERSTADT, blazon: 'Per pale argent and gules' }],
         }}
       />

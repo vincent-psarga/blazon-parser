@@ -1,15 +1,14 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { Blazon } from '../../src/domain/models/Blazon';
+import { TONGUES } from '../../src/domain/models/Languages';
 import { BlazonShield } from '../components/BlazonShield';
 import { COLOURINGS, OUTLINE } from '../utils/Colourings';
-import { LANGUAGES, LanguageCode } from '../utils/Languages';
+import { LANGUAGES } from '../utils/Languages';
 import { readBlazon } from '../utils/Reading';
 import { tally } from '../utils/Tally';
 import { vocabularyIn, vocabularyPath } from '../utils/Vocabulary';
 import { RULES } from './ConventionsPage';
-
-const TONGUES: readonly LanguageCode[] = ['fr', 'en'];
 
 // How many of a page's own the index shows, whether they are words or rules.
 // Enough to say what the page is full of, and few enough to be looked at: the

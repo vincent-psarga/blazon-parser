@@ -5,7 +5,7 @@ import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
 import { BlazonShield } from '../components/BlazonShield';
 import { BlazonLink } from '../components/Reference';
 import { COLOURINGS, OUTLINE } from '../utils/Colourings';
-import { LANGUAGES, codeOf, otherThan } from '../utils/Languages';
+import { LANGUAGES, otherThan } from '../utils/Languages';
 import { tally } from '../utils/Tally';
 
 /** Small enough to read a row by, large enough to tell two shields apart. */
@@ -31,7 +31,7 @@ export interface ArmorialPageProps {
  * where the refusal is spelled out in full.
  */
 export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: ArmorialPageProps) {
-  const language = codeOf(armorial.language);
+  const language = armorial.language;
   const other = otherThan(language);
   const { entries, read, total, score, unknown } = useMemo(
     () => readArmorial(armorial, LANGUAGES[language].parser),

@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'vitest';
+import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { Armorial } from '../../domain/models/Armorial';
+import { FieldType } from '../../domain/models/Field';
+import { Languages } from '../../domain/models/Languages';
 import { Colours, Metals } from '../../domain/models/Tinctures';
 import { FrenchBlazonParser } from '../parser/FrenchBlazonParser';
-import { UnknownTincture } from '../../domain/errors/parsing/UnknownTincture';
 import { readArmorial } from './ArmorialReading';
-import { FieldType } from '../../domain/models/Field';
 
 const parser = new FrenchBlazonParser();
 
@@ -12,7 +13,7 @@ function armorial(...blazons: readonly string[]): Armorial {
   return {
     name: 'An armorial',
     slug: 'an-armorial',
-    language: 'french',
+    language: Languages.fr,
     licence: 'MIT',
     entries: blazons.map((blazon, index) => ({
       name: `Entry ${index}`,

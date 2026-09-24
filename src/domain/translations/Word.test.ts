@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
+import { Languages } from '../models/Languages';
 import { COLOURS, Colours, Furs, METALS, Metals, PELTS, TINCTURES } from '../models/Tinctures';
 import { parker } from './Sources';
-import { Languages, Word } from './Word';
+import { Word } from './Word';
 
 /**
  * A gloss for a test that is about something other than the gloss.

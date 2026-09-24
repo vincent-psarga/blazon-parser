@@ -2,17 +2,18 @@
 import { cleanup, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { afterEach, describe, expect, test } from 'vitest';
+import { Languages } from '../../src/domain/models/Languages';
 import { Colours, Metals } from '../../src/domain/models/Tinctures';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
+import { mount } from '../testing/Mounting';
 import { OUTLINE } from '../utils/Colourings';
 import { vocabularyIn } from '../utils/Vocabulary';
-import { mount } from '../testing/Mounting';
 import { VocabularyPage } from './VocabularyPage';
 
 afterEach(cleanup);
 
-const FRENCH = vocabularyIn('fr');
-const ENGLISH = vocabularyIn('en');
+const FRENCH = vocabularyIn(Languages.fr);
+const ENGLISH = vocabularyIn(Languages.en);
 
 const ghost = (word: string) => screen.getByRole('link', { name: word });
 const showing = () => document.querySelector('.showing') as HTMLElement;
@@ -53,30 +54,30 @@ const painting = (colouring: string) =>
 
 describe('the vocabulary of one tongue', () => {
   test('states how many words there are, counting them rather than claiming', () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     expect(screen.getByText(new RegExp(`^${FRENCH.length} words`))).toBeInTheDocument();
   });
 
   test.each(FRENCH.map((entry) => entry.word))('keeps %s present in the stack', (word) => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     expect(ghost(word)).toBeInTheDocument();
   });
 
   test.each(ENGLISH.map((entry) => entry.word))('keeps %s present in English too', (word) => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     expect(ghost(word)).toBeInTheDocument();
   });
 
   test('holds the French words to the French page and the English to the English', () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     expect(screen.queryByRole('link', { name: 'saltire' })).toBeNull();
     cleanup();
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     expect(screen.queryByRole('link', { name: 'sautoir' })).toBeNull();
   });
 
   test('files the words under the letters of the alphabet', () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     const letters = Array.from(document.querySelectorAll('.stack__letter')).map(
       (heading) => heading.textContent
     );
@@ -87,35 +88,35 @@ describe('the vocabulary of one tongue', () => {
   });
 
   test('strikes the head of the vocabulary where the address names no word', () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     expect(struck()).toBe(FRENCH[0].word);
   });
 
   test('strikes the word the address names', () => {
-    mount(<VocabularyPage language="fr" />, '/doc/vocabulary/fr#sautoir');
+    mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr#sautoir');
     expect(struck()).toBe('sautoir');
   });
 
   test('strikes the word an address names by any way it is written', () => {
     // A reader who met the spelling in an armorial looks that up, and is shown
     // the word it is a writing of rather than the head of the vocabulary.
-    mount(<VocabularyPage language="en" />, '/doc/vocabulary/en#bezant');
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en#bezant');
     expect(struck()).toBe('besant');
     cleanup();
-    mount(<VocabularyPage language="fr" />, '/doc/vocabulary/fr#fleur-de-lis');
+    mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr#fleur-de-lis');
     expect(struck()).toBe('fleur de lys');
   });
 });
 
 describe('a word read at full size', () => {
   test('says what it means, in the tongue the documentation is written in', async () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     await strike('croisette');
     expect(within(showing()).getByText(/The little cross/)).toBeInTheDocument();
   });
 
   test('says who says so by a mark, and leads to the entry itself', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('mascle');
     const cited = within(showing()).getByRole('link', { name: /A Glossary of Terms Used/ });
     // The reading carries the mark, and the citation waits behind it: in the
@@ -135,7 +136,7 @@ describe('a word read at full size', () => {
   });
 
   test('stands against the gloss it answers for, nothing between the two', async () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     await strike('évidé');
     const read = showing().querySelector('.showing__read') as HTMLElement;
     const blocks = Array.from(read.children).map((block) => block.className);
@@ -146,7 +147,7 @@ describe('a word read at full size', () => {
     // Both pages are written in English, the French one included: a reader
     // learning French heraldry is not thereby reading French, so a citation
     // that leads out of English says where it leads before it is followed.
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     await strike('macle');
     const cited = within(showing()).getByRole('link', { name: /Au blason des armoiries/ });
     expect(cited).toHaveAttribute('title', 'Au blason des armoiries, Macle — in French');
@@ -158,27 +159,27 @@ describe('a word read at full size', () => {
   });
 
   test('says nothing of the tongue where the source is in the one being read', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('mascle');
     const cited = within(showing()).getByRole('link', { name: /A Glossary of Terms Used/ });
     expect(cited.getAttribute('title')).not.toMatch(/in English/);
   });
 
   test('names the rank it belongs to', async () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     await strike('croix');
     expect(showing().querySelector('.showing__rank')?.textContent).toBe('ordinary');
   });
 
   test('shows it painted and hatched, a tincture being a convention either way', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('saltire');
     expect(painting('colour')).toContain(WikipediaColours[Colours.gules]);
     expect(painting('hatching')).toContain('<pattern');
   });
 
   test('bears it gules on argent, so what changes is the word', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('billet');
     const painted = painting('colour').match(/(?:fill|stroke)="(#[0-9a-f]{6})"/g) ?? [];
     const [field, ...borne] = painted.filter((paint) => !paint.includes(OUTLINE));
@@ -189,27 +190,27 @@ describe('a word read at full size', () => {
   });
 
   test('offers a blazon carrying that very spelling, in this tongue alone', async () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     await strike('billette');
     expect(within(showing()).getByText("D'argent à la billette de gueules.")).toBeInTheDocument();
     expect(within(showing()).queryByText('Argent a billet gules.')).toBeNull();
   });
 
   test('says what a word it reads and never writes comes back as', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('cross humetty');
     expect(within(showing()).getByText('Written back as')).toBeInTheDocument();
     expect(within(showing()).getByText('Argent a cross couped gules.')).toBeInTheDocument();
   });
 
   test('says nothing of the sort where the blazon comes back as it went in', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('besant');
     expect(within(showing()).queryByText('Written back as')).toBeNull();
   });
 
   test('stands every other way of writing the word beside the one that is written', async () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     await strike('fleur de lys');
     const spellings = showing().querySelector('.showing__spellings') as HTMLElement;
     expect(Array.from(spellings.querySelectorAll('b')).map((one) => one.textContent)).toEqual([
@@ -227,7 +228,7 @@ describe('a word read at full size', () => {
   });
 
   test('sends the reader to the other spellings of the same term, all of them', async () => {
-    mount(<VocabularyPage language="en" />, '/doc/vocabulary/en');
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en');
     await strike('hurt');
     const seen = within(showing()).getByText('See also').parentElement as HTMLElement;
     expect(Array.from(seen.querySelectorAll('a')).map((link) => link.textContent)).toEqual([
@@ -245,7 +246,7 @@ describe('a word read at full size', () => {
     // Beside the name and not filed below the rest: it is the same word said
     // again, so a reader who came for the translation finds it where the word
     // is.
-    mount(<VocabularyPage language="en" />, '/doc/vocabulary/en');
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en');
     await strike('hurt');
     expect(struck()).toBe('hurt');
     expect(abroad()).toBe('(French: tourteau)');
@@ -255,7 +256,7 @@ describe('a word read at full size', () => {
   });
 
   test('says nothing beside it where the other tongue has no such word', async () => {
-    mount(<VocabularyPage language="fr" />);
+    mount(<VocabularyPage language={Languages.fr} />);
     await strike('plain');
     expect(struck()).toBe('plain');
     expect(abroad()).toBeUndefined();
@@ -266,7 +267,7 @@ describe('a word read at full size', () => {
     // long word read to the foot would leave the next one opened halfway down
     // itself. jsdom lays nothing out, so the scroll is set by hand and the
     // question put is only whether striking a word returns it.
-    mount(<VocabularyPage language="fr" />, '/doc/vocabulary/fr#losange');
+    mount(<VocabularyPage language={Languages.fr} />, '/doc/vocabulary/fr#losange');
     expect(struck()).toBe('losange');
     leaf().scrollTop = 705;
     await strike('chef');
@@ -275,7 +276,7 @@ describe('a word read at full size', () => {
   });
 
   test('sets the blazon with the arms it drew, the two being the one fact', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('billet');
     const arms = showing().querySelector('.showing__arms') as HTMLElement;
     // The shields and the blazon that produced them stand in the one block, so
@@ -287,7 +288,7 @@ describe('a word read at full size', () => {
 
 describe('what one drawing cannot say', () => {
   test('bears a charge in number, and sows it, under a heading apiece', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('cross couped');
     expect(headings()).toEqual(['Borne in number', 'Sown']);
     expect(labels('Borne in number')).toEqual(['Twice', 'Thrice']);
@@ -295,7 +296,7 @@ describe('what one drawing cannot say', () => {
   });
 
   test('shows a charge under whatever may be said of it, where anything may', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('billet');
     expect(headings()).toEqual(['Borne in number', 'Sown', 'Modified']);
     expect(labels('Modified')).toEqual(['Voided', 'Pierced']);
@@ -304,7 +305,7 @@ describe('what one drawing cannot say', () => {
   test('leads from the modified charge to the word that modified it', async () => {
     // The pairing is written once, on the arms that show it, so there is no
     // second list of the same words standing apart from them.
-    mount(<VocabularyPage language="en" />, '/doc/vocabulary/en');
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en');
     await strike('billet');
     const shown = within(section('Modified')).getByRole('link', { name: 'Voided' });
     expect(shown).toHaveAttribute('href', '/doc/vocabulary/en#voided');
@@ -312,7 +313,7 @@ describe('what one drawing cannot say', () => {
   });
 
   test('shows a modifier on every charge it is said of, and leads to each', async () => {
-    mount(<VocabularyPage language="en" />, '/doc/vocabulary/en');
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en');
     await strike('voided');
     expect(headings()).toEqual(['Said of']);
     expect(labels('Said of')).toEqual(['Billet', 'Lozenge', 'Roundel', 'Mullet']);
@@ -323,7 +324,7 @@ describe('what one drawing cannot say', () => {
   });
 
   test('says why an ordinary is borne but once, rather than bearing it twice', async () => {
-    mount(<VocabularyPage language="en" />);
+    mount(<VocabularyPage language={Languages.en} />);
     await strike('bordure');
     expect(showing().querySelectorAll('.showing__variant')).toHaveLength(0);
     expect(within(showing()).getByText(/shield has one edge/)).toBeInTheDocument();

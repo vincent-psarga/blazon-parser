@@ -1,12 +1,13 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
-import { BlazonShield } from './BlazonShield';
-import { Sources } from './Sources';
-import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
+import { Languages } from '../../src/domain/models/Languages';
 import { anchorOf, isAnchored } from '../utils/Anchors';
-import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
+import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
+import { LANGUAGES, otherThan } from '../utils/Languages';
 import { readingPath } from '../utils/Reading';
 import { Sighting, VocabularyEntry, lettersOf, vocabularyPath } from '../utils/Vocabulary';
+import { BlazonShield } from './BlazonShield';
+import { Sources } from './Sources';
 
 export interface ReferenceProps {
   readonly title: string;
@@ -14,7 +15,7 @@ export interface ReferenceProps {
   readonly extent: string;
   readonly lead: ReactNode;
   /** The tongue whose words these are, which is what the page is a page of. */
-  readonly language: LanguageCode;
+  readonly language: Languages;
   readonly entries: readonly VocabularyEntry[];
   readonly colourings?: readonly Colouring[];
 }
@@ -337,7 +338,7 @@ export function Sightings({ heading, sightings }: SightingsProps) {
 
 export interface BlazonLinkProps {
   readonly blazon: string;
-  readonly language: LanguageCode;
+  readonly language: Languages;
 }
 
 /** A blazon, and the way to the page that reads it. */

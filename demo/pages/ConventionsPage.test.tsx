@@ -2,9 +2,10 @@
 import { cleanup, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
 import { isDivision, isFurred, isPlain, isVariation } from '../../src/domain/models/Field';
+import { Languages } from '../../src/domain/models/Languages';
 import { METALS, Tincture, isFur } from '../../src/domain/models/Tinctures';
 import { mount } from '../testing/Mounting';
-import { LANGUAGES, LanguageCode } from '../utils/Languages';
+import { LANGUAGES } from '../utils/Languages';
 import { readingPath } from '../utils/Reading';
 import { ConventionsPage } from './ConventionsPage';
 
@@ -14,7 +15,7 @@ afterEach(cleanup);
 interface Case {
   readonly typed: string;
   /** The tongue it was typed in, which the page says of every blazon it shows. */
-  readonly language: LanguageCode;
+  readonly language: Languages;
   readonly written: readonly string[];
   readonly refused: string | undefined;
   readonly arms: number;
@@ -23,7 +24,7 @@ interface Case {
 const cases = (): readonly Case[] =>
   Array.from(document.querySelectorAll('.case')).map((shown) => ({
     typed: shown.querySelector('.case__typed')?.textContent ?? '',
-    language: shown.querySelector('.case__typed')?.getAttribute('lang') as LanguageCode,
+    language: shown.querySelector('.case__typed')?.getAttribute('lang') as Languages,
     written: Array.from(shown.querySelectorAll('.case__written a')).map(
       (link) => link.textContent ?? ''
     ),
@@ -38,7 +39,7 @@ const shown = (typed: string): Case => {
 };
 
 /** What the library answers, asked of it directly rather than of the page. */
-const answered = (typed: string, read: LanguageCode, written: LanguageCode) =>
+const answered = (typed: string, read: Languages, written: Languages) =>
   LANGUAGES[written].writer.write(LANGUAGES[read].parser.parse(typed));
 
 const HEADINGS = [
@@ -84,7 +85,10 @@ describe('ConventionsPage', () => {
         expect(() => LANGUAGES[language].parser.parse(typed)).toThrow(refused);
         continue;
       }
-      expect(written).toEqual([answered(typed, language, 'fr'), answered(typed, language, 'en')]);
+      expect(written).toEqual([
+        answered(typed, language, Languages.fr),
+        answered(typed, language, Languages.en),
+      ]);
     }
   });
 
@@ -92,7 +96,7 @@ describe('ConventionsPage', () => {
     mount(<ConventionsPage />);
     for (const link of Array.from(document.querySelectorAll('.case__written a'))) {
       const blazon = link.textContent ?? '';
-      const language = link.getAttribute('lang') as LanguageCode;
+      const language = link.getAttribute('lang') as Languages;
       expect(link).toHaveAttribute('href', readingPath(blazon, language));
     }
   });

@@ -1,4 +1,5 @@
-import { Languages, Source } from '../../src/domain/translations/Word';
+import { Languages } from '../../src/domain/models/Languages';
+import { Source } from '../../src/domain/translations/Word';
 
 /**
  * The works the documentation rests on that the vocabulary does not.

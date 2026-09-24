@@ -1,4 +1,5 @@
 import { ChargeType } from '../models/Charge';
+import { Languages } from '../models/Languages';
 import { Modifier } from '../models/Modifier';
 import { TINCTURES, Tincture } from '../models/Tinctures';
 
@@ -39,12 +40,6 @@ export interface WordOptions {
   readonly saidOf?: readonly ChargeType[];
   /** What the word already says was done to the charge, for a name that says it. */
   readonly defaultModifier?: Modifier;
-}
-
-/** A tongue, which a word is written in and a source is written in too. */
-export enum Languages {
-  fr = 'fr',
-  en = 'en',
 }
 
 /**

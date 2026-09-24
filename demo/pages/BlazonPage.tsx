@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
+import { Languages } from '../../src/domain/models/Languages';
 import { BlazonShield } from '../components/BlazonShield';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
-import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
+import { LANGUAGES, otherThan } from '../utils/Languages';
 import { Read, readBlazon } from '../utils/Reading';
 
 export interface BlazonPageProps {
   /** The language the blazon is written in to begin with. */
-  readonly initialLanguage?: LanguageCode;
+  readonly initialLanguage?: Languages;
   /** A blazon to start from, as handed over by a documentation page. */
   readonly initialText?: string;
   /** The paintings to show the arms in. */
@@ -14,16 +15,16 @@ export interface BlazonPageProps {
 }
 
 /** Nothing typed is nothing read: an empty page is not a blazon that failed. */
-function read(text: string, language: LanguageCode): Read | undefined {
+function read(text: string, language: Languages): Read | undefined {
   return text.trim() === '' ? undefined : readBlazon(text, language);
 }
 
 export function BlazonPage({
-  initialLanguage = 'fr',
+  initialLanguage = Languages.fr,
   initialText,
   colourings = COLOURINGS,
 }: BlazonPageProps) {
-  const [language, setLanguage] = useState<LanguageCode>(initialLanguage);
+  const [language, setLanguage] = useState<Languages>(initialLanguage);
   const [text, setText] = useState(initialText ?? LANGUAGES[initialLanguage].example);
 
   const reading = useMemo(() => read(text, language), [text, language]);
@@ -34,7 +35,7 @@ export function BlazonPage({
 
   // Switching language would otherwise leave the text unreadable in the language
   // now selected, so a blazon that was understood is carried over translated.
-  function switchTo(next: LanguageCode) {
+  function switchTo(next: Languages) {
     if (next !== language && blazon !== undefined) {
       setText(LANGUAGES[next].writer.write(blazon));
     }
@@ -52,7 +53,7 @@ export function BlazonPage({
           <select
             id="blazon-language"
             value={language}
-            onChange={(event) => switchTo(event.target.value as LanguageCode)}
+            onChange={(event) => switchTo(event.target.value as Languages)}
           >
             {Object.entries(LANGUAGES).map(([code, { label }]) => (
               <option key={code} value={code}>

@@ -1,8 +1,9 @@
+import { Languages } from '../../src/domain/models/Languages';
+import { Reference } from '../components/Reference';
 import { Colouring } from '../utils/Colourings';
-import { LANGUAGES, LanguageCode } from '../utils/Languages';
+import { LANGUAGES } from '../utils/Languages';
 import { tally } from '../utils/Tally';
 import { Rank, VocabularyEntry, vocabularyIn } from '../utils/Vocabulary';
-import { Reference } from '../components/Reference';
 
 /**
  * What each rank is called where several of it are counted.
@@ -42,7 +43,7 @@ function extentOf(entries: readonly VocabularyEntry[]): string {
 
 export interface VocabularyPageProps {
   /** The tongue whose words this page is a page of. */
-  readonly language: LanguageCode;
+  readonly language: Languages;
   readonly colourings?: readonly Colouring[];
 }
 

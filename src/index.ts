@@ -14,6 +14,7 @@ export { FrenchBlazonParser } from './application/parser/FrenchBlazonParser';
 export { EnglishBlazonWriter } from './application/writer/EnglishBlazonWriter';
 export { FrenchBlazonWriter } from './application/writer/FrenchBlazonWriter';
 
+export { Languages, TONGUES } from './domain/models/Languages';
 export { isCharge, isOrdinary } from './domain/models/Blazon';
 export type { Blazon, ChargeOrOrdinary } from './domain/models/Blazon';
 export type { Armorial, ArmorialEntry, ArmorialSource } from './domain/models/Armorial';
@@ -117,7 +118,7 @@ export { counted, numberWord } from './domain/translations/Numbers';
 export type { NumberWords } from './domain/translations/Numbers';
 export { strewnIn, strewnTerms } from './domain/translations/Strewings';
 export type { Strewings } from './domain/translations/Strewings';
-export { Languages, Word } from './domain/translations/Word';
+export { Word } from './domain/translations/Word';
 export type {
   AlternateWording,
   Description,
