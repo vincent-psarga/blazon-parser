@@ -104,16 +104,36 @@ must be told what the figure is before being told it is a variant spelling.
 
 Everything is backed, in one of two ways, and never in neither.
 
-**A claim about heraldry is sourced.** Link the source in the JSX, as
-`ConventionsPage.tsx` already does with its `GREAVES`, `PARKER`, `BLASON`
-constants. Quote the sentence you are relying on verbatim, and open the page to
-check it says that — a paraphrase from memory is how the Canadian attribution in
-`EnglishBlazonWording.ts` went wrong. The sources already cited here:
+**A claim about heraldry is sourced.** Quote the sentence you are relying on
+verbatim, and open the page to check it says that — a paraphrase from memory is
+how the Canadian attribution in `EnglishBlazonWording.ts` went wrong.
 
-- James Parker, _A Glossary of Terms Used in Heraldry_ — heraldsnet.org
-- Kevin Greaves, _A Guide to Blazonry_, Royal Heraldry Society of Canada, 2014
-- blason-armoiries.org, and _La langue du blason_
-- Wikipedia armorials, for the rolls of arms and their licences
+The citation itself is never written into the prose. It is a `Source`, built by
+one of the functions that know each work's addressing, and it is declared beside
+the prose rather than inside it:
+
+- a word declares its own, in the `sources` of its `description`;
+- a rule on `/doc/conventions` declares them in its `sources`, in the order its
+  `authority` prose quotes them.
+
+Both are rendered by `<Sources>`, which prints a numbered mark and keeps the
+citation in the mark's title. So the prose names a work in words where the
+sentence needs it — "Parker blazons", "Au blason des armoiries gives" — and
+never carries an `<a>` of its own.
+
+The works, and the function that cites each:
+
+- `parker(entry)` — James Parker, _A Glossary of Terms Used in Heraldry_, on
+  heraldsnet.org. Name the entry as Parker spells it: the bar gemel is under
+  Gemel and the green roundel under Pomeis.
+- `blasonArmoiries(entry, page?)` — the French dictionary. The page is the entry
+  with its accents dropped; name it only where the site files the word otherwise.
+- `laLangueDuBlason(entry, path)` — for what a dictionary entry does not settle.
+- `greaves(at)` and `wikipedia(article)` — demo only, in `demo/utils/Sources.ts`.
+
+The first three are the library's, in `src/domain/translations/Sources.ts`,
+because the vocabulary rests on them. Open every address you add: the page must
+answer, the anchor must be there, and the entry you cite must be on it.
 
 If there is no authority, write that there is none and that the choice was made
 here. Do not dress an opinion as a citation.

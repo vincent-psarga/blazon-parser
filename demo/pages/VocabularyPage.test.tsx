@@ -139,7 +139,7 @@ describe('a word read at full size', () => {
     await strike('évidé');
     const read = showing().querySelector('.showing__read') as HTMLElement;
     const blocks = Array.from(read.children).map((block) => block.className);
-    expect(blocks.indexOf('showing__sources')).toBe(blocks.indexOf('showing__gloss') + 1);
+    expect(blocks.indexOf('cited')).toBe(blocks.indexOf('showing__gloss') + 1);
   });
 
   test('marks a source written in the other tongue as being in it', async () => {

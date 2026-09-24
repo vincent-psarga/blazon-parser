@@ -1,9 +1,13 @@
 import { ReactNode } from 'react';
+import { blasonArmoiries, laLangueDuBlason, parker } from '../../src/domain/translations/Sources';
+import { Source } from '../../src/domain/translations/Word';
 import { BlazonShield } from '../components/BlazonShield';
 import { BlazonLink } from '../components/Reference';
+import { Sources } from '../components/Sources';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 import { LANGUAGES, LanguageCode } from '../utils/Languages';
 import { readBlazon } from '../utils/Reading';
+import { greaves, wikipedia } from '../utils/Sources';
 
 /** A blazon as somebody might type it, and the tongue they typed it in. */
 export interface Typed {
@@ -23,61 +27,27 @@ export interface Rule {
   readonly id: string;
   readonly heading: string;
   readonly law: ReactNode;
-  /** Whose authority the decision rests on, where it rests on one. */
-  readonly source?: ReactNode;
+  /**
+   * What the authorities say, quoted, and what they leave to be decided here.
+   *
+   * Left out where nobody says anything: a rule resting on nothing states as
+   * much in its law rather than dressing an opinion as a citation.
+   */
+  readonly authority?: ReactNode;
+  /**
+   * The works that prose quotes, in the order it quotes them.
+   *
+   * Written as addresses rather than as links inside the prose. A citation
+   * naming an author, a work and the entry within it is a sentence's worth of
+   * text, and three of them inside a paragraph leave the reader stepping over
+   * the apparatus to get at the argument.
+   */
+  readonly sources?: readonly Source[];
   readonly cases: readonly Typed[];
 }
 
 const en = (text: string): Typed => ({ text, language: 'en' });
 const fr = (text: string): Typed => ({ text, language: 'fr' });
-
-const GREAVES = (
-  <a href="https://www.heraldry.ca/resources/BLAZONRY_GUIDE_2014.pdf">
-    Kevin Greaves, <cite>A Guide to Blazonry</cite>, Royal Heraldry Society of Canada, 2014
-  </a>
-);
-
-const PARKER = (
-  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossr.htm">
-    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Roundles
-  </a>
-);
-
-const PARKER_SEMY = (
-  <a href="https://www.heraldsnet.org/saitou/parker/Jpglosss.htm">
-    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Semé
-  </a>
-);
-
-const PARKER_VOIDED = (
-  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossv.htm">
-    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Voided
-  </a>
-);
-
-const PARKER_MASCLE = (
-  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossm.htm">
-    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Mascle
-  </a>
-);
-
-const PARKER_RUSTRE = (
-  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossr.htm">
-    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Rustre
-  </a>
-);
-
-const PARKER_MULLET = (
-  <a href="https://www.heraldsnet.org/saitou/parker/Jpglossm.htm">
-    James Parker, <cite>A Glossary of Terms Used in Heraldry</cite>, under Mullet
-  </a>
-);
-
-const BLASON = (
-  <a href="http://lalanguedublason.blogspot.com/2012/08/plain-et-plein-en-langue-du-blason.html">
-    <cite>La langue du blason</cite>, “plain” et “plein”
-  </a>
-);
 
 /**
  * Exported so that the index can show a rule by the arms it turns on rather than
@@ -114,17 +84,14 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
         A handbook of blazon is written to give “a single correct way to blazon a given achievement,
-        not two or three alternatives, no matter how correct” — {GREAVES}, preface. That is what a
-        writer can do and a parser cannot. The losange is feminine in{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/l/losange.htm">
-          <cite>blason-armoiries</cite>
-        </a>
-        , which gives “LOSANGE, subst. fém.”
+        not two or three alternatives, no matter how correct” — Greaves, in the preface. That is
+        what a writer can do and a parser cannot. The losange is feminine: “LOSANGE, subst. fém.”
       </>
     ),
+    sources: [greaves('preface'), blasonArmoiries('Losange')],
     cases: [
       en('Argent a border gules'),
       en('Azure a bezant'),
@@ -155,18 +122,15 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
         English adapts the name of the partition-line and uses “terms like ‘barry’, ‘paly’ and
-        ‘bendy’, always stating the number and the tinctures involved” — {GREAVES}, page 7. French
-        counts only what is not understood: “Lorsque le Bandé a plus ou moins de six pièces, il faut
-        en exprimer le nombre” —{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/b/bandee.htm">
-          <cite>blason-armoiries</cite>, under Bandé
-        </a>
-        .
+        ‘bendy’, always stating the number and the tinctures involved” — Greaves, page 7. French
+        counts only what is not understood, Au blason des armoiries giving “Lorsque le Bandé a plus
+        ou moins de six pièces, il faut en exprimer le nombre”.
       </>
     ),
+    sources: [greaves('page 7'), blasonArmoiries('Bandé', 'bandee')],
     cases: [
       en('Barry or and azure'),
       fr("Bandé d'or et d'azur de six pièces"),
@@ -197,18 +161,15 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
         Roundles are “circles borne on shields, and to which specific names are given according to
-        their tinctures” — {PARKER}. French draws the line between the two names rather than among
+        their tinctures” — Parker. French draws the line between the two names rather than among
         seven: “Les Besants … sont toujours d’or ou d’argent … il ne faut pas les confondre avec les
-        tourteaux qui eux sont de couleur” —{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/b/besant.htm">
-          <cite>blason-armoiries</cite>, under Besant
-        </a>
-        .
+        tourteaux qui eux sont de couleur”.
       </>
     ),
+    sources: [parker('Roundles'), blasonArmoiries('Besant')],
     cases: [
       fr("D'azur au besant d'or"),
       en('Azure a besant argent'),
@@ -235,12 +196,13 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
         “The modern English rules … limit the several names to the several tinctures, — Or, called
-        always Bezants. Argent, Plates. Gules, Torteaux. Azure, Hurts” — {PARKER}.
+        always Bezants. Argent, Plates. Gules, Torteaux. Azure, Hurts” — Parker.
       </>
     ),
+    sources: [parker('Roundles')],
     cases: [
       en('Azure a roundel or'),
       en('Or three roundels gules'),
@@ -278,22 +240,25 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
-        “Mascle, (fr. macle): a lozenge voided” — {PARKER_MASCLE}; a rustre is “a lozenge with a
-        circular perforation” — {PARKER_RUSTRE}. French draws the same line in the same words:{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/m/macle.htm">
-          <cite>blason-armoiries</cite>
-        </a>{' '}
-        gives “MACLE, subst. fém., meuble de l’écu fait en losange, et percé dans le même sens”
-        against its <a href="http://www.blason-armoiries.org/heraldique/r/rustre.htm">rustre</a>,
-        “Meuble en forme de losange, percé en rond au centre, de sorte que l’on voit le champ de
-        l’écu à travers” — percé dans le même sens against percé en rond, which is the whole
-        difference. Of the pierced star Parker says it “is generally taken to represent the rowel of
-        a spur, and in modern French heraldry is called molette d’éperon” — {PARKER_MULLET}, which
-        is also why English is given no word for it here.
+        Parker has the mascle as “a lozenge voided” and the rustre as “a lozenge with a circular
+        perforation”. French draws the same line in the same words, Au blason des armoiries giving
+        “MACLE, subst. fém., meuble de l’écu fait en losange, et percé dans le même sens” against a
+        rustre, “Meuble en forme de losange, percé en rond au centre, de sorte que l’on voit le
+        champ de l’écu à travers” — percé dans le même sens against percé en rond, which is the
+        whole difference. Of the pierced star Parker says it “is generally taken to represent the
+        rowel of a spur, and in modern French heraldry is called molette d’éperon”, which is also
+        why English is given no word for it here.
       </>
     ),
+    sources: [
+      parker('Mascle'),
+      parker('Rustre'),
+      blasonArmoiries('Macle'),
+      blasonArmoiries('Rustre'),
+      parker('Mullet'),
+    ],
     cases: [
       en('Azure a lozenge voided or'),
       fr("D'azur au losange vidé d'or"),
@@ -329,12 +294,13 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
         “In the case of semé of crosslets, billets, bezants, the special term crusily, billetty, and
-        bezanty, already noted in their proper places, are preferable” — {PARKER_SEMY}.
+        bezanty, already noted in their proper places, are preferable” — Parker.
       </>
     ),
+    sources: [parker('Seme')],
     cases: [
       fr("D'azur semé de billettes d'or"),
       en('Azure semy of roundels or'),
@@ -366,14 +332,17 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
         “Plain (&lt; lat. <i>planus</i> ‘plan’) signifie que l’écu est d’une couleur unie, sans
         aucune figure”, where “plein (&lt; lat. <i>plenus</i>) indique que l’écu correspond aux
         armoiries d’un ‘chef d’armes’ … et que ces armes ne comprennent aucune brisure, aucune
-        marque de cadet” — {BLASON}.
+        marque de cadet” — La langue du blason.
       </>
     ),
+    sources: [
+      laLangueDuBlason('« plain » et « plein »', '2012/08/plain-et-plein-en-langue-du-blason.html'),
+    ],
     cases: [fr('De gueules plain'), fr("D'hermine plain"), fr("D'or plain au chef de gueules")],
   },
   {
@@ -397,24 +366,22 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
         Both tongues put the word between the charge and its tincture. Parker blazons “Argent, two
         bars voided gules” and “Argent, a cross voided and double cottised sable, within a bordure
-        or” — {PARKER_VOIDED}; and{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/e/evide.htm">
-          <cite>blason-armoiries</cite>, under Évidé
-        </a>{' '}
-        gives “d’azur, à l’étoile évidée d’argent”, as its{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/v/vide.htm">Vidé</a> gives “D’or, à la
-        croix vidée de gueules”. The order is the language’s own: “adjectives are normally placed
-        after nouns rather than before”, and a charge’s attributes are named before its tincture —{' '}
-        <a href="https://en.wikipedia.org/wiki/Blazon">
-          <cite>Blazon</cite>
-        </a>
-        .
+        or”; Au blason des armoiries gives “d’azur, à l’étoile évidée d’argent” under Évidé and
+        “D’or, à la croix vidée de gueules” under Vidé. The order is the language’s own rather than
+        heraldry’s: “adjectives are normally placed after nouns rather than before”, and a charge’s
+        attributes are named before its tincture.
       </>
     ),
+    sources: [
+      parker('Voided'),
+      blasonArmoiries('Évidé'),
+      blasonArmoiries('Vidé'),
+      wikipedia('Blazon'),
+    ],
     cases: [
       en('Azure a billet voided or'),
       en('Azure a billet or voided'),
@@ -440,17 +407,14 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
         The agreement is French grammar and not a rule of heraldry; what heraldry settles is which
-        gender each word carries.{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/l/losange.htm">
-          <cite>blason-armoiries</cite>
-        </a>{' '}
-        gives the losange as feminine, which is the gender it is written back in, as the spelling
-        rule above already has it.
+        gender each word carries. Au blason des armoiries gives the losange as feminine, which is
+        the gender it is written back in, as the spelling rule above already has it.
       </>
     ),
+    sources: [blasonArmoiries('Losange')],
     cases: [
       fr("D'azur à la billette vidée d'or"),
       fr("D'or à trois billettes de sable vidées"),
@@ -478,15 +442,15 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
-        The two drawings are the ones heraldry names apart: a mascle is “a lozenge voided” —{' '}
-        {PARKER_MASCLE} — and a rustre “a lozenge with a circular perforation” — {PARKER_RUSTRE}.
-        Which charges will take either is settled here rather than found. The dictionaries blazon
-        what armorials wrote and say nothing about what may not be written, so the line is drawn at
-        what can be drawn.
+        The two drawings are the ones heraldry names apart: Parker has a mascle as “a lozenge
+        voided” and a rustre as “a lozenge with a circular perforation”. Which charges will take
+        either is settled here rather than found. The dictionaries blazon what armorials wrote and
+        say nothing about what may not be written, so the line is drawn at what can be drawn.
       </>
     ),
+    sources: [parker('Mascle'), parker('Rustre')],
     cases: [
       en('Azure a fess voided or'),
       en('Azure an annulet voided or'),
@@ -521,19 +485,16 @@ export const RULES: readonly Rule[] = [
         </p>
       </>
     ),
-    source: (
+    authority: (
       <>
-        <a href="http://www.blason-armoiries.org/heraldique/v/vide.htm">
-          <cite>blason-armoiries</cite>, under Vidé
-        </a>{' '}
-        gives “on se sert du terme percées, pour les billettes ; évidés, pour les triangles et
-        étoiles”, and blazons “D’or, à la croix vidée de gueules”; its{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/e/evide.htm">Évidé</a> blazons “d’azur,
-        à l’étoile évidée d’argent”. The billettes are the one the same entry gets wrong: percé is
-        another thing done to a charge and not another way of saying this one, as the rule above has
-        it.
+        Au blason des armoiries gives, under Vidé, “on se sert du terme percées, pour les billettes
+        ; évidés, pour les triangles et étoiles”, and blazons “D’or, à la croix vidée de gueules”;
+        its Évidé blazons “d’azur, à l’étoile évidée d’argent”. The billettes are the one that entry
+        gets wrong: percé is another thing done to a charge and not another way of saying this one,
+        as the rule above has it.
       </>
     ),
+    sources: [blasonArmoiries('Vidé'), blasonArmoiries('Évidé')],
     cases: [
       fr("D'azur à la billette évidée d'or"),
       fr("D'argent à l'étoile vidée de gueules"),
@@ -610,7 +571,8 @@ export function ConventionsPage({ colourings = COLOURINGS }: ConventionsPageProp
           <section key={rule.id} id={rule.id} className="rule" aria-labelledby={`rule-${rule.id}`}>
             <h2 id={`rule-${rule.id}`}>{rule.heading}</h2>
             {rule.law}
-            {rule.source !== undefined && <p className="rule__source">{rule.source}</p>}
+            {rule.authority !== undefined && <p className="rule__source">{rule.authority}</p>}
+            <Sources sources={rule.sources ?? []} />
             <ul className="rule__cases" role="list">
               {rule.cases.map((typed) => (
                 <Case key={typed.text} typed={typed} colours={colours} />

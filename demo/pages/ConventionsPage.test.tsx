@@ -359,17 +359,43 @@ describe('the rule of tincture, which every example must keep', () => {
 describe('the authorities the decisions rest on', () => {
   test.each([
     ['https://www.heraldry.ca/resources/BLAZONRY_GUIDE_2014.pdf'],
-    ['http://www.blason-armoiries.org/heraldique/b/bandee.htm'],
-    ['https://www.heraldsnet.org/saitou/parker/Jpglossr.htm'],
-    ['http://www.blason-armoiries.org/heraldique/b/besant.htm'],
-    ['http://www.blason-armoiries.org/heraldique/l/losange.htm'],
-    ['https://www.heraldsnet.org/saitou/parker/Jpglossv.htm'],
-    ['http://www.blason-armoiries.org/heraldique/e/evide.htm'],
-    ['http://www.blason-armoiries.org/heraldique/v/vide.htm'],
+    ['https://blason-armoiries.org/heraldique/b/bandee.htm'],
+    ['https://www.heraldsnet.org/saitou/parker/Jpglossr.htm#Roundles'],
+    ['https://blason-armoiries.org/heraldique/b/besant.htm'],
+    ['https://blason-armoiries.org/heraldique/l/losange.htm'],
+    ['https://www.heraldsnet.org/saitou/parker/Jpglossv.htm#Voided'],
+    ['https://blason-armoiries.org/heraldique/e/evide.htm'],
+    ['https://blason-armoiries.org/heraldique/v/vide.htm'],
     ['https://en.wikipedia.org/wiki/Blazon'],
   ])('cites %s', (href) => {
     mount(<ConventionsPage />);
-    expect(document.querySelector(`.rule__source a[href="${href}"]`)).toBeInTheDocument();
+    expect(document.querySelector(`.cited a[href="${href}"]`)).toBeInTheDocument();
+  });
+
+  test('says who says so by a mark, the citation waiting behind it', () => {
+    mount(<ConventionsPage />);
+    const rule = document.querySelector('#naming-a-strewing') as HTMLElement;
+    const cited = within(rule).getByRole('link', { name: /A Glossary of Terms Used/ });
+    expect(cited.textContent).toContain('[1]');
+    expect(cited).toHaveAttribute(
+      'title',
+      'James Parker, A Glossary of Terms Used in Heraldry, under Seme'
+    );
+  });
+
+  test("marks each rule's works in the order its prose quotes them", () => {
+    mount(<ConventionsPage />);
+    const rule = document.querySelector('#a-name-that-means-what-was-done') as HTMLElement;
+    const marks = Array.from(rule.querySelectorAll('.cited a')).map((cited) =>
+      cited.getAttribute('title')
+    );
+    expect(marks).toEqual([
+      'James Parker, A Glossary of Terms Used in Heraldry, under Mascle',
+      'James Parker, A Glossary of Terms Used in Heraldry, under Rustre',
+      'Au blason des armoiries, Macle',
+      'Au blason des armoiries, Rustre',
+      'James Parker, A Glossary of Terms Used in Heraldry, under Mullet',
+    ]);
   });
 
   test('names the guide that says English counts every time', () => {

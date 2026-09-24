@@ -607,10 +607,11 @@ body {
   color: var(--bone-quiet);
 }
 
-/* What the reading calls a small block of itself: the rank, the other spellings,
-   the words elsewhere, the works behind the gloss. One idiom for the lot of them,
-   so that a reader learns to skip it once rather than four times. */
-.showing__heading {
+/* What a page calls a small block of itself: the rank, the other spellings, the
+   words elsewhere, the works behind the prose. One idiom for the lot of them, so
+   that a reader learns to skip it once rather than four times. */
+.showing__heading,
+.cited__label {
   font-family: var(--display);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -710,13 +711,18 @@ body {
 }
 
 /*
- * Who says so. It stands against the gloss it answers for, close as the
+ * Who says so. It stands against the prose it answers for, close as the
  * spellings stand under the word, and carries a mark apiece rather than the
  * citations themselves: an author, a work and the entry within it set here would
- * read as more of the gloss than as the authority behind it.
+ * read as more of that prose than as the authority behind it.
+ *
+ * The same block wherever anything is cited — under a word's gloss, and under a
+ * rule's — so that a reader learns the mark once and knows it on sight.
  */
-.showing__sources {
-  margin: -0.85rem 0 0;
+.cited {
+  /* Tight under what it answers for. The reading pane is a grid with a gap of
+     its own, so there it is pulled back through that gap to the same 0.4rem. */
+  margin: 0.4rem 0 0;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -725,10 +731,10 @@ body {
 
 /*
  * The mark is a link and is struck as one: the same bronze rule under it that
- * every other way out of this page carries, so that three characters read as
+ * every other way out of these pages carries, so that three characters read as
  * somewhere to go rather than as punctuation left over from the sentence above.
  */
-.showing__sources .showing__mark {
+.cited__mark {
   font-family: var(--display);
   font-size: 0.875rem;
   font-weight: 600;
@@ -740,19 +746,23 @@ body {
   text-decoration-thickness: 1px;
 }
 
-.showing__sources a {
+.cited a {
   color: var(--bone);
   text-decoration: none;
   transition: color 140ms linear;
 }
 
-.showing__sources a:hover,
-.showing__sources a:focus-visible {
+.cited a:hover,
+.cited a:focus-visible {
   color: var(--strike);
 }
 
+.showing__read .cited {
+  margin-top: -0.85rem;
+}
+
 /* The citation itself, out of sight and not out of the page. */
-.showing__cited {
+.cited__name {
   position: absolute;
   width: 1px;
   height: 1px;

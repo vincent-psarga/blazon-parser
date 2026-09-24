@@ -1,11 +1,11 @@
 import { ReactNode, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
 import { BlazonShield } from './BlazonShield';
+import { Sources } from './Sources';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 import { anchorOf, isAnchored } from '../utils/Anchors';
 import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
 import { readingPath } from '../utils/Reading';
-import { Source } from '../../src/domain/translations/Word';
 import { Sighting, VocabularyEntry, lettersOf, vocabularyPath } from '../utils/Vocabulary';
 
 export interface ReferenceProps {
@@ -306,54 +306,6 @@ export function Reference({
         </div>
       )}
     </main>
-  );
-}
-
-export interface SourcesProps {
-  readonly sources: readonly Source[];
-}
-
-/**
- * The works this word rests on, each linked to the entry itself.
- *
- * Numbered rather than written out. A citation is a whole line of prose — the
- * author, the work, and the entry within it — and a line of prose set under the
- * gloss reads as though it were more of the gloss. So the reading carries the
- * mark and the citation waits behind it, in the title a pointer shows and in the
- * name a screen reader says.
- *
- * The tongue is the source's own. A French word is glossed in English, because
- * the reader came to learn French heraldry and not to read French, but what
- * answers for it is written in French — and is marked as French so that a reader
- * knows before they follow it and a screen reader says it properly.
- */
-export function Sources({ sources }: SourcesProps) {
-  if (sources.length === 0) {
-    return null;
-  }
-  return (
-    <p className="showing__sources">
-      <span className="showing__heading">{sources.length === 1 ? 'Source' : 'Sources'}</span>
-      {sources.map((source, at) => (
-        <a
-          key={source.url}
-          href={source.url}
-          title={source.title}
-          lang={source.language}
-          hrefLang={source.language}
-        >
-          {/* The mark is struck on its own, so that the rule under it stops
-            where the mark stops and never runs on under the space behind it. */}
-          <span className="showing__mark">[{at + 1}]</span>{' '}
-          {/* The citation itself, out of sight and not out of the page: a link
-            reading "[1]" and nothing else tells whoever cannot see the tooltip
-            nothing whatever about where it goes. The space before it is the
-            reader's: it parts the mark from the citation in what is said aloud,
-            and shows as nothing at all. */}
-          <span className="showing__cited">{source.title}</span>
-        </a>
-      ))}
-    </p>
   );
 }
 
