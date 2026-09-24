@@ -36,7 +36,7 @@ const BELL =
  */
 export const bells =
   (edge?: string): Shape =>
-  (fill) => {
+  ({ fill }) => {
     const outline = edge === undefined ? '' : ` stroke="${edge}" stroke-width="0.7"`;
     const offset = BELL_WIDTH / 2;
     return (

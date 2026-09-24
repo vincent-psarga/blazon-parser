@@ -33,7 +33,7 @@ export function tiled(
       `<pattern id="${id}" x="${frame.dexter}" y="${frame.top}"` +
       ` width="${width}" height="${height}" patternUnits="userSpaceOnUse">` +
       `<rect width="${width}" height="${height}" fill="${ground}"/>` +
-      figure(cut) +
+      figure({ fill: cut }) +
       `</pattern>`,
   };
 }

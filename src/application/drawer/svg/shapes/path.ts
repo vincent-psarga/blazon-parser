@@ -1,10 +1,10 @@
-import { Shape } from './Shape';
+import { Brush, Shape, swelling, swollenBy } from './Shape';
 
 /** A path filled: the whole of whatever it encloses. */
 export const filled =
   (path: string): Shape =>
-  (fill) =>
-    `<path d="${path}" fill="${fill}"/>`;
+  (brush) =>
+    `<path d="${path}" fill="${brush.fill}"${swelling(brush)}/>`;
 
 /**
  * A path drawn about its own origin in a box one unit across, put where it
@@ -39,8 +39,12 @@ export const placed = (path: string, x: number, y: number, size: number): Shape 
  * a frame falls outside it and is clipped away: what is left is a band of half
  * the asked-for width lying inside the edge, and following it round whatever
  * curve it has — which nothing built out of rectangles would do.
+ *
+ * A band has no inside for a fill to cover an outline back to, so it is not
+ * swollen by a second stroke but drawn the wider by one: the fill laid over it
+ * afterwards leaves exactly the two lines either side of the band.
  */
 export const stroked =
   (path: string, width: number): Shape =>
-  (fill) =>
-    `<path d="${path}" fill="none" stroke="${fill}" stroke-width="${width}"/>`;
+  (brush: Brush) =>
+    `<path d="${path}" fill="none" stroke="${brush.fill}" stroke-width="${swollenBy(width, brush)}"/>`;
