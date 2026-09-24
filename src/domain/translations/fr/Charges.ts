@@ -45,7 +45,7 @@ export const FrenchChargeType: Translation<ChargeType, FrenchWord> = {
     ),
     new FrenchWord(
       'macle',
-      'A losange vidée: the middle taken out, and the field showing through the outline. Vidée by being a macle, so the blazon writes nothing after it. English spells the same word mascle.',
+      'A losange vidée: the middle taken out, and the field showing through the outline. Vidée by being a macle, so the blazon writes nothing after it.',
       { isFeminine: true, defaultModifier: Modifier.voided }
     ),
     new FrenchWord(

@@ -50,6 +50,8 @@ const HEADINGS = [
   'A strewing is named where heraldry names it',
   'A word that says nothing is read and never written',
   'A modifier stands after the charge and before its tincture',
+  'A French modifier agrees with the charge the blazon named',
+  'A modifier is said only of a charge that can show it',
   'A word the armorials keep for one charge is written of that charge alone',
   'The smaller settlements',
 ];
@@ -250,6 +252,9 @@ describe('what each rule shows', () => {
     // agree with the one the blazon chose — which is the other rule's case, the
     // losange voided having a name of its own to come back under.
     expect(shown("D'azur au losange vidé d'or").written).toContain("D'azur à la macle d'or.");
+    // And under the other article, with the word agreeing the other way: one
+    // charge, one answer, whichever gender the blazon chose for it.
+    expect(shown("D'azur à la losange vidée d'or").written).toContain("D'azur à la macle d'or.");
   });
 
   test('writes each of the two French voidings of the charges it is kept for', () => {
@@ -278,6 +283,13 @@ describe('what each rule shows', () => {
     mount(<ConventionsPage />);
     const refused = shown('Azure an annulet voided or');
     expect(refused.refused).toBe('Wrong modifier: annulet is never voided');
+    expect(refused.arms).toBe(0);
+  });
+
+  test('refuses a modifier on an ordinary, no voided band being drawn', () => {
+    mount(<ConventionsPage />);
+    const refused = shown('Azure a fess voided or');
+    expect(refused.refused).toBe('Wrong modifier: fess is never voided');
     expect(refused.arms).toBe(0);
   });
 

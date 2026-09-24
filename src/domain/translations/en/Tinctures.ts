@@ -3,7 +3,10 @@ import { Translation } from '../Translation';
 import { Word } from '../Word';
 
 export const EnglishMetals: Translation<Metals> = {
-  [Metals.or]: new Word('or', 'Gold, and never the conjunction the same two letters spell.'),
+  [Metals.or]: new Word(
+    'or',
+    'Gold, painted yellow. The French for gold, and never the conjunction the same two letters spell.'
+  ),
   [Metals.argent]: new Word(
     'argent',
     'Silver, or plain white. It carries no hatching at all: the bare paper is the metal.'

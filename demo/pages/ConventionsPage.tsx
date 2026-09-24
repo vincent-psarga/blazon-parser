@@ -384,36 +384,16 @@ export const RULES: readonly Rule[] = [
         <p className="rule__law">
           A blazon may say what was done to a charge as well as what the charge is: a lozenge with
           its middle out is a lozenge voided, and what shows through the hole is the field. Blazon
-          takes its word order from French, so what qualifies the charge follows the charge, and the
-          tincture comes last of all — two bars voided gules, à la croix vidée de gueules. That is
-          where it is written.
+          takes its word order from French, so the word qualifying the charge follows the charge and
+          the tincture comes last of all — two bars voided gules, à la croix vidée de gueules. That
+          is where it is written.
         </p>
         <p className="rule__law">
           It is read after the tincture as well. The model holds which modifier and not where the
-          armorial put it, so an armorial that says it late is understood and answered in the
-          settled order. What is not read is the word set before the charge: “a voided lozenge” is
-          modern English describing a shield rather than blazon naming one, and a vocabulary that
-          answered to it would be teaching a word order heraldry does not use.
-        </p>
-        <p className="rule__law">
-          French agrees the word with what it qualifies, and what it has to agree with is what the
-          blazon itself said. “À la billette” makes the charge feminine and is owed vidée, “au
-          besant” makes it masculine and is owed vidé, and a word the armorials write under either
-          article is owed whichever the blazon chose: “au losange vidé” and “à la losange vidée” are
-          both read, and a blazon that chose one gender and then said the other is refused rather
-          than quietly mended. What is written back agrees with the gender the charge is written
-          back in, which is the word’s own and not the blazon’s. English agrees with nothing and
-          writes the one word after one charge or three. None of this reaches the ordinaries, whose
-          modifiers are lines drawn otherwise rather than middles taken out; and a charge that is
-          already what the modifier says refuses it by name, an annulet being a roundel voided
-          already.
-        </p>
-        <p className="rule__law">
-          What is said is not always the voiding. A billette percée is not a billette vidée however
-          the dictionaries file the two words: voiding leaves the outline of the charge and nothing
-          else, piercing leaves the charge with a round hole in it, and two drawings are two things
-          to have said. So they are two words of the model and not one word written twice, and
-          neither is ever written for the other.
+          armorial put it, so a blazon that says it late is understood and answered in the settled
+          order. Set before the charge it is not read at all: “a voided lozenge” is modern English
+          describing a shield rather than blazon naming one, and reading it would teach a word order
+          heraldry does not use.
         </p>
       </>
     ),
@@ -432,22 +412,85 @@ export const RULES: readonly Rule[] = [
         <a href="https://en.wikipedia.org/wiki/Blazon">
           <cite>Blazon</cite>
         </a>
-        . The gender agreed with is the word’s, which{' '}
-        <a href="http://www.blason-armoiries.org/heraldique/l/losange.htm">
-          <cite>blason-armoiries</cite>
-        </a>{' '}
-        gives as feminine for the losange, as the spelling rule above already has it.
+        .
       </>
     ),
     cases: [
       en('Azure a billet voided or'),
       en('Azure a billet or voided'),
+      en('Azure a voided lozenge or'),
+    ],
+  },
+  {
+    id: 'a-modifier-agrees-in-french',
+    heading: 'A French modifier agrees with the charge the blazon named',
+    law: (
+      <>
+        <p className="rule__law">
+          French agrees the word with what it qualifies, and what it agrees with is what the blazon
+          itself said. “À la billette” makes the charge feminine and is owed vidée, “au besant”
+          makes it masculine and is owed vidé, and three billettes are owed vidées. A blazon that
+          chose one gender and then said the other is refused rather than quietly mended.
+        </p>
+        <p className="rule__law">
+          A word the armorials write under either article is owed whichever the blazon chose: “au
+          losange vidé” and “à la losange vidée” are both read. What comes back agrees with the
+          gender the charge is written back in, which is the word’s own rather than the blazon’s.
+          English agrees with nothing, and writes the one word after one charge or three.
+        </p>
+      </>
+    ),
+    source: (
+      <>
+        The agreement is French grammar and not a rule of heraldry; what heraldry settles is which
+        gender each word carries.{' '}
+        <a href="http://www.blason-armoiries.org/heraldique/l/losange.htm">
+          <cite>blason-armoiries</cite>
+        </a>{' '}
+        gives the losange as feminine, which is the gender it is written back in, as the spelling
+        rule above already has it.
+      </>
+    ),
+    cases: [
       fr("D'azur à la billette vidée d'or"),
       fr("D'or à trois billettes de sable vidées"),
-      fr("D'azur à la billette percée d'or"),
+      fr("D'azur à la losange vidée d'or"),
       fr("D'azur à la billette vidé d'or"),
-      en('Azure a voided lozenge or'),
+    ],
+  },
+  {
+    id: 'a-modifier-said-of-what-can-show-it',
+    heading: 'A modifier is said only of a charge that can show it',
+    law: (
+      <>
+        <p className="rule__law">
+          Neither word is said of an ordinary here. Heraldry says them — Parker blazons a cross
+          voided — but no voided band is drawn, and a vocabulary that read the word would promise a
+          drawing it cannot make. A band told it is voided is refused by name. So is a charge that
+          is already what the word says: an annulet is a roundel voided, and voiding it again names
+          no figure.
+        </p>
+        <p className="rule__law">
+          The two words are never traded for one another. A billette percée is not a billette vidée,
+          however the dictionaries file them together: voiding leaves the outline and nothing else,
+          piercing leaves the charge with a round hole in it. Two drawings are two things to have
+          said, so each comes back in the word that said it.
+        </p>
+      </>
+    ),
+    source: (
+      <>
+        The two drawings are the ones heraldry names apart: a mascle is “a lozenge voided” —{' '}
+        {PARKER_MASCLE} — and a rustre “a lozenge with a circular perforation” — {PARKER_RUSTRE}.
+        Which charges will take either is settled here rather than found. The dictionaries blazon
+        what armorials wrote and say nothing about what may not be written, so the line is drawn at
+        what can be drawn.
+      </>
+    ),
+    cases: [
+      en('Azure a fess voided or'),
       en('Azure an annulet voided or'),
+      fr("D'azur à la billette percée d'or"),
     ],
   },
   {

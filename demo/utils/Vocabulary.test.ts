@@ -88,6 +88,8 @@ describe('what a word means', () => {
     expect(word(english, 'azure').description).toBe('Blue.');
     expect(word(english, 'mullet').description).not.toMatch(/French/);
     expect(word(french, 'étoile').description).not.toMatch(/English/);
+    expect(word(french, 'macle').description).not.toMatch(/English/);
+    expect(word(english, 'mascle').description).not.toMatch(/French/);
   });
 
   test('stands on its own, a reader arriving at any word by its anchor alone', () => {

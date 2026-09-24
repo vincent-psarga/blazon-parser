@@ -5,7 +5,7 @@ import { FrenchWord } from './FrenchWord';
 export const FrenchMetals: Translation<Metals, FrenchWord> = {
   [Metals.or]: new FrenchWord(
     'or',
-    'Gold, and never the conjunction the same three letters spell.'
+    'Gold, painted yellow. Never the conjunction the same two letters spell.'
   ),
   [Metals.argent]: new FrenchWord(
     'argent',
