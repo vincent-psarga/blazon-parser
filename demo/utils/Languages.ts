@@ -5,6 +5,7 @@ import { EnglishBlazonWriter } from '../../src/application/writer/EnglishBlazonW
 import { FrenchBlazonWriter } from '../../src/application/writer/FrenchBlazonWriter';
 import { IBlazonParser } from '../../src/domain/services/IBlazonParser';
 import { IBlazonWriter } from '../../src/domain/services/IBlazonWriter';
+import { Languages } from '../../src/domain/translations/Word';
 
 export type LanguageCode = 'fr' | 'en';
 
@@ -46,4 +47,12 @@ export function otherThan(language: LanguageCode): LanguageCode {
  */
 export function codeOf(language: Armorial['language']): LanguageCode {
   return language === 'french' ? 'fr' : 'en';
+}
+
+/**
+ * The same, for a tongue the library named: a word's gloss and a source are
+ * marked with the library's own enum, and the demo files a tongue under a code.
+ */
+export function codeFrom(language: Languages): LanguageCode {
+  return language === Languages.fr ? 'fr' : 'en';
 }

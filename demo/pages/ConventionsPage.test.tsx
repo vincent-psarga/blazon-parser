@@ -392,8 +392,8 @@ describe('the authorities the decisions rest on', () => {
     expect(marks).toEqual([
       'James Parker, A Glossary of Terms Used in Heraldry, under Mascle',
       'James Parker, A Glossary of Terms Used in Heraldry, under Rustre',
-      'Au blason des armoiries, Macle',
-      'Au blason des armoiries, Rustre',
+      'Au blason des armoiries, Macle — in French',
+      'Au blason des armoiries, Rustre — in French',
       'James Parker, A Glossary of Terms Used in Heraldry, under Mullet',
     ]);
   });

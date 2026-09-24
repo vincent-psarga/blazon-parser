@@ -142,14 +142,26 @@ describe('a word read at full size', () => {
     expect(blocks.indexOf('cited')).toBe(blocks.indexOf('showing__gloss') + 1);
   });
 
-  test('marks a source written in the other tongue as being in it', async () => {
-    // The gloss is English on both pages and the authority behind a French word
-    // is not: a reader is told which before they follow it.
+  test('says which tongue a source is in, where it is not the one being read', async () => {
+    // Both pages are written in English, the French one included: a reader
+    // learning French heraldry is not thereby reading French, so a citation
+    // that leads out of English says where it leads before it is followed.
     mount(<VocabularyPage language="fr" />);
     await strike('macle');
     const cited = within(showing()).getByRole('link', { name: /Au blason des armoiries/ });
+    expect(cited).toHaveAttribute('title', 'Au blason des armoiries, Macle — in French');
     expect(cited).toHaveAttribute('hreflang', 'fr');
     expect(cited).toHaveAttribute('href', 'https://blason-armoiries.org/heraldique/m/macle.htm');
+    // The tongue is marked around the citation alone: the mark belongs to no
+    // language, and neither does the English saying which language this is.
+    expect(cited.querySelector('[lang="fr"]')?.textContent).toBe('Au blason des armoiries, Macle');
+  });
+
+  test('says nothing of the tongue where the source is in the one being read', async () => {
+    mount(<VocabularyPage language="en" />);
+    await strike('mascle');
+    const cited = within(showing()).getByRole('link', { name: /A Glossary of Terms Used/ });
+    expect(cited.getAttribute('title')).not.toMatch(/in English/);
   });
 
   test('names the rank it belongs to', async () => {
