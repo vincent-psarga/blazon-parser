@@ -558,6 +558,253 @@ body {
   align-items: start;
 }
 
+/*
+ * The arms and the sentence taken apart, side by side. Each explains the other,
+ * so they are set at the same height and the reader's eye crosses between them;
+ * narrow, the arms lead and the words follow, which is the order they were made
+ * in.
+ */
+.showing__both {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: start;
+  gap: clamp(1.75rem, 5vw, 4rem);
+}
+
+.showing__structure {
+  min-width: 0;
+}
+
+/*
+ * The blazon as a shape: a word to a line, and what was said of a word standing
+ * under it.
+ *
+ * The one place in this world with rules drawn on it, and drawn on purpose. The
+ * ban is on rules that divide — a line set between two things to say they are
+ * apart — and these say the opposite: a trunk gathers everything said of one
+ * word and closes under the last of it. A blazon will nest five and six deep
+ * once arms are quartered and bands are charged, and at that depth a step alone
+ * stops answering which word a tincture belongs to. So the line is drawn, in the
+ * gauze the page is already woven from, and stays a thread rather than a border.
+ *
+ * The scale says the same thing a second way. A word falls in size, in weight
+ * and out of the light the further under the field it stands, so the shape is
+ * legible before a single word is read.
+ */
+.structure,
+.structure ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* How far a group steps in from the word it hangs under, and where the trunk
+     stands within that step. */
+  --step: 1.6rem;
+  --trunk: 0.55rem;
+}
+
+.structure ul {
+  /* Nothing of its own: the step belongs to the item, which is what the trunk and
+     the elbow are measured against. */
+  padding-left: 0;
+}
+
+/* Air between what the field bears and the next thing it bears. */
+.structure > .structure__twig + .structure__twig {
+  margin-top: 0.9rem;
+}
+
+.structure__twig {
+  font-family: var(--display);
+  /* The same line the words are set on, so the strut cannot stand taller than
+     them and carry the elbow off the middle of the word it points at. */
+  line-height: 1.2;
+}
+
+/*
+ * The step, and the room the trunk runs down.
+ *
+ * Held as padding rather than margin so the trunk covers it: a margin between
+ * two items is a gap in the line, and a line that breaks between a word and the
+ * next stops being one line.
+ */
+.structure ul > .structure__twig {
+  position: relative;
+  padding-left: var(--step);
+  padding-top: 0.25rem;
+}
+
+/*
+ * Where the elbow meets the word: half the line the word is set on, which is the
+ * same fraction at every size because the line-height is. The step above it is
+ * added back, the line box starting under the padding.
+ */
+.structure ul > .structure__twig {
+  --stem: calc(0.25rem + 0.6em);
+}
+
+/*
+ * The trunk, standing in the group's own step and running from its head.
+ *
+ * It begins under the word it hangs from rather than reaching up to it: a line
+ * carried up to the parent's own middle passes across the arms beside it, and a
+ * rule drawn over a shield is the one thing this page must never do.
+ */
+.structure ul > .structure__twig::before {
+  content: '';
+  position: absolute;
+  left: var(--trunk);
+  top: 0;
+  bottom: 0;
+  border-left: 1px solid rgb(var(--gauze) / 0.55);
+}
+
+/* And stopping at the last of them, so a branch closes rather than trailing past
+   what it holds. */
+.structure ul > .structure__twig:last-child::before {
+  bottom: auto;
+  height: var(--stem);
+}
+
+/*
+ * The elbow, out from the trunk to the word it points at — reaching under the
+ * room kept for a mark where the word has none, so that it always stops just
+ * short of what it is pointing at rather than short of where a shield would
+ * have been.
+ */
+.structure ul > .structure__twig::after {
+  content: '';
+  position: absolute;
+  left: var(--trunk);
+  top: var(--stem);
+  width: calc(var(--step) - var(--trunk) - 0.3rem);
+  border-top: 1px solid rgb(var(--gauze) / 0.55);
+}
+
+.structure ul > .structure__twig:not([data-painted])::after {
+  width: calc(var(--step) - var(--trunk) - 0.3rem + var(--mark) + 0.4rem);
+}
+
+/*
+ * A block rather than a line of text, so the box is exactly the line it holds:
+ * an inline box sits on a baseline and carries a descender under it, and the
+ * elbow would meet the word a little above its middle at every level.
+ */
+.structure__said {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  line-height: 1.2;
+}
+
+/* The mark and the word are one target: a reader aims at the colour, and a
+   picture of the word that is not the way to it is a target that misses. */
+.structure__said a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/*
+ * The scale. Three steps and then it levels off, a blazon nesting no deeper than
+ * a field sown with a figure painted in a tincture.
+ */
+.structure__twig[data-deep='0'] {
+  --mark: 1.4rem;
+  font-size: clamp(1.5rem, 2.4vw, 1.875rem);
+  font-weight: 700;
+  letter-spacing: 0.005em;
+  color: var(--strike);
+}
+
+.structure__twig[data-deep='1'] {
+  --mark: 1rem;
+  font-size: 1.1875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--bone);
+}
+
+.structure__twig[data-deep='2'] {
+  --mark: 0.9rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--bone-quiet);
+}
+
+/*
+ * A tincture shown in itself — the word's own arms, a field of that tincture and
+ * nothing on it, drawn in the paint the shields beside it were drawn in.
+ *
+ * It is the only colour in the tree and the only colour it may have: the page is
+ * achromatic and every chromatic pixel on it is a tincture. Haloed as the arms
+ * are, so that sable never disappears into the ground it is drawn on.
+ */
+.structure .blazon-shield {
+  display: block;
+  flex: none;
+  height: auto;
+  /* A rim and a halo. The drawer rules its shields at three parts in two
+     hundred, which at this size is no line at all — so the edge is built up
+     here instead, out of the same bone the drawer would have ruled it in.
+     Without it a sable field is a hole in the page. */
+  filter: drop-shadow(0 0 0.5px var(--strike)) drop-shadow(0 0 0.5px var(--strike))
+    drop-shadow(0 0 0.5px var(--strike)) drop-shadow(0 0 7px rgb(251 247 238 / 0.22));
+}
+
+/* Cut to the height of the word it stands beside, never over it: the word is
+   what is being said and the arms are what it means. */
+.structure .blazon-shield {
+  width: var(--mark);
+}
+
+/*
+ * The room a mark takes is kept whether there is one or not, so that the words
+ * of a step line up and the tinctures fall into a column of their own. A page
+ * whose colours can be read straight down is worth the empty gutter beside parti
+ * and bande, which have no tincture to show and never will.
+ */
+.structure__twig:not([data-painted]) > .structure__said {
+  padding-left: calc(var(--mark) + 0.4rem);
+}
+
+/*
+ * A word is a way to itself, and says so the way every way through this
+ * documentation says so: underlined in the gauze, and struck to full strength
+ * under the pointer. Quieter at rest than a line of prose would be — a tree is
+ * eight of them at once, and eight bronze rules is a fence.
+ */
+.structure__word {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--gauze) / 0.55);
+  text-underline-offset: 0.28em;
+  text-decoration-thickness: 1px;
+  transition:
+    color 140ms linear,
+    text-decoration-color 140ms linear;
+}
+
+.structure__said a:hover .structure__word,
+.structure__said a:focus-visible .structure__word {
+  color: var(--strike);
+  text-decoration-color: var(--strike);
+}
+
+.structure__said a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* How many are borne. A count is not a term, and must not read as one: it stands
+   quiet beside the word rather than underlined like a way to somewhere. */
+.structure__count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--bone-quiet);
+}
+
 .showing__field {
   display: grid;
   justify-items: center;
