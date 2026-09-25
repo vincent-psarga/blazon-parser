@@ -908,6 +908,100 @@ body {
   letter-spacing: 0.02em;
 }
 
+/* ─ the glimpse: a word before it is gone to ─────────────────────────────── */
+
+/*
+ * A name the reader has not met, shown before they leave the word they are on.
+ *
+ * It stands against the window rather than beside the name that raised it: the
+ * reading is a pane that scrolls, and anything held inside it is cut off at its
+ * edge. Where it stands is worked out as it is put into the page, which is what
+ * the two inline values are; everything else about it is here.
+ *
+ * The one enclosed thing in a world with no boxes, and enclosed on purpose: it
+ * is laid over words it is not part of, and an edge is what says so.
+ */
+.preview {
+  position: fixed;
+  z-index: 10;
+  width: 20rem;
+  max-width: calc(100vw - 1.5rem);
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  /* Laid over words of every size and case the page uses — the "said of" labels
+     are uppercase and letter-spaced — so it sets its own type outright rather
+     than taking whatever it happens to be standing on. */
+  font-family: var(--prose);
+  font-size: 1rem;
+  font-weight: 400;
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  text-align: left;
+  line-height: 1.5;
+  color: var(--bone);
+  background: var(--void-lift);
+  border: 1px solid rgb(var(--gauze) / 0.55);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.55);
+  /* Raised by a pointer and never taking one: whatever the card covers is still
+     the reader's to reach. */
+  pointer-events: none;
+  animation: preview-lift 120ms ease-out;
+}
+
+/* Where the foot of the window was nearer than the card is tall, it hangs from
+   the point given rather than standing on it. */
+.preview[data-place='above'] {
+  transform: translateY(-100%);
+}
+
+@keyframes preview-lift {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.preview .blazon-shield {
+  display: block;
+  flex: none;
+  width: 3.25rem;
+  height: auto;
+  filter: drop-shadow(0 0 12px rgb(251 247 238 / 0.16));
+}
+
+.preview__said {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+/* Held under the card's own class as well as its name: the card is laid over
+   blocks with rules of their own about the elements it is built from, and "said
+   of" styles every b inside it. */
+.preview .preview__name {
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--strike);
+}
+
+/* The opening of the gloss, broken off at a word. It is a glimpse and not the
+   reading: small, quiet, and never more lines than the arms are tall. */
+.preview .preview__gloss {
+  margin-top: 0.15rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--bone-quiet);
+  text-wrap: pretty;
+}
+
 /*
  * A blazon is offered by being a way to itself: each line leads to the reading
  * of that very blazon, in the tongue it is written in. Two links say which
@@ -1563,6 +1657,7 @@ body {
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
 
