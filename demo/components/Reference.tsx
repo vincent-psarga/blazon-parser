@@ -1,20 +1,45 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
-import { BlazonShield } from './BlazonShield';
+import { Languages } from '../../src/domain/models/Languages';
+import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
+import { anchorOf } from '../utils/Anchors';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
-import { anchorOf, isAnchored } from '../utils/Anchors';
-import { LANGUAGES, LanguageCode, otherThan } from '../utils/Languages';
+import { LANGUAGES, otherThan } from '../utils/Languages';
 import { readingPath } from '../utils/Reading';
-import { Sighting, VocabularyEntry, lettersOf, vocabularyPath } from '../utils/Vocabulary';
+import {
+  Sighting,
+  VocabularyEntry,
+  lettersOf,
+  struckIn,
+  vocabularyPath,
+} from '../utils/Vocabulary';
+import { BlazonShield } from './BlazonShield';
+import { PreviewedLink } from './WordPreview';
+import { Sources } from './Sources';
 
 export interface ReferenceProps {
   readonly title: string;
-  /** The size of the closed set, stated before anything is read. */
-  readonly extent: string;
+  /**
+   * The size of the closed set, stated before anything is read.
+   *
+   * Brought whole, element and all, rather than as words to be wrapped here: the
+   * vocabulary's extent is a set of links and would have been a nav inside a
+   * paragraph.
+   */
+  readonly extent: ReactNode;
   readonly lead: ReactNode;
   /** The tongue whose words these are, which is what the page is a page of. */
-  readonly language: LanguageCode;
+  readonly language: Languages;
   readonly entries: readonly VocabularyEntry[];
+  /**
+   * Every word of this tongue, for the previews the page raises from a name.
+   *
+   * Not the entries themselves: the vocabulary can be sifted down to one kind,
+   * and the words a struck word points at are not all of that kind — voided
+   * points at the losange, which is a charge. What is listed and what may be
+   * glimpsed are two questions, so they are two lists.
+   */
+  readonly vocabulary?: readonly VocabularyEntry[];
   readonly colourings?: readonly Colouring[];
 }
 
@@ -36,22 +61,24 @@ export function Reference({
   lead,
   language,
   entries,
+  vocabulary = entries,
   colourings = COLOURINGS,
 }: ReferenceProps) {
-  const { hash } = useLocation();
-  // A word answers to every way it is written, not only to the one it is written
-  // in: whoever met "bezant" in an armorial looks that up, and is shown the word
-  // it is a writing of. No anchor at all means the head of the vocabulary, so
-  // the page is never empty.
-  const struck =
-    entries.find((entry) => isAnchored(entry.anchor, hash)) ??
-    entries.find((entry) =>
-      entry.spellings.some((spelling) => isAnchored(anchorOf(spelling), hash))
-    ) ??
-    entries[0];
+  const { hash, search } = useLocation();
+  // No anchor at all means the head of the vocabulary, so the page is never
+  // empty.
+  const struck = struckIn(entries, hash) ?? entries[0];
   const letters = lettersOf(entries);
+  // By the anchor, which is what a sighting carries and what every way through
+  // the vocabulary is written in.
+  const previews = useMemo(
+    () => new Map(vocabulary.map((entry) => [entry.anchor, entry])),
+    [vocabulary]
+  );
 
   const reading = useRef<HTMLDivElement>(null);
+  /** The pane the vocabulary stands in, which is the box that scrolls it. */
+  const listing = useRef<HTMLDivElement>(null);
   // What was last brought into view. A page opened without an anchor is opened
   // at its beginning, so what it strikes of its own accord counts as read
   // already; one opened at an anchor was opened at that word, and is answered
@@ -92,11 +119,35 @@ export function Reference({
     shown.scrollIntoView({ block: 'start' });
   }, [struck?.anchor]);
 
+  /*
+   * And the word itself is brought into view among the rest.
+   *
+   * A reader who strikes a word from the stack is already looking at it, but one
+   * who arrives at an address, or follows "see also" out of the reading, is not:
+   * the stack stands wherever it was last left, and the word now being read is
+   * anywhere in it — struck, and out of sight.
+   *
+   * Only where the stack scrolls itself. Narrow, it is the page that scrolls,
+   * and the page is already carrying the reader to the reading: two answers to
+   * one tap would fight each other. "Nearest" is what makes this safe to run on
+   * every strike — a word already in view is not moved at all.
+   */
+  useEffect(() => {
+    const pane = listing.current;
+    if (pane === null || pane.scrollHeight <= pane.clientHeight) {
+      return;
+    }
+    // Among the words, and not among whatever else the pane holds that marks
+    // itself current: the filter above the stack is current too, and is not a
+    // word.
+    pane.querySelector('.stack [aria-current="true"]')?.scrollIntoView({ block: 'nearest' });
+  }, [struck?.anchor]);
+
   return (
     <main className="plane plane--reference">
-      <div className="reference__read">
+      <div className="reference__read" ref={listing}>
         <h1>{title}</h1>
-        <p className="plane__extent">{extent}</p>
+        {extent}
         {lead}
 
         <div className="stack">
@@ -119,7 +170,7 @@ export function Reference({
                   <li key={entry.anchor}>
                     <Link
                       className="ghost"
-                      to={`#${entry.anchor}`}
+                      to={`${search}#${entry.anchor}`}
                       aria-current={entry.anchor === struck?.anchor ? 'true' : undefined}
                     >
                       <span className="ghost__field">
@@ -246,10 +297,22 @@ export function Reference({
               )}
 
               <p className="showing__gloss">{struck.description}</p>
+
+              {/* Who says so, against the sentences it answers for. A gloss and
+                the authority behind it are one thing, and anything standing
+                between them makes a reader hold the first in mind while they
+                look for the second. */}
+              <Sources sources={struck.sources} />
+
               {struck.note !== undefined && <p className="showing__note">{struck.note}</p>}
 
               {struck.alsoHere.length !== 0 && (
-                <Sightings heading="See also" sightings={struck.alsoHere} />
+                <Sightings
+                  heading="See also"
+                  sightings={struck.alsoHere}
+                  previews={previews}
+                  colours={colourings[0]?.colours}
+                />
               )}
 
               {/* The further arms are smaller than the struck ones, and say what
@@ -283,7 +346,14 @@ export function Reference({
                             {variant.sighting === undefined ? (
                               variant.label
                             ) : (
-                              <Link to={`#${variant.sighting.anchor}`}>{variant.label}</Link>
+                              <PreviewedLink
+                                word={previews.get(variant.sighting.anchor)}
+                                language={variant.sighting.language}
+                                to={`${search}#${variant.sighting.anchor}`}
+                                colours={colourings[0]?.colours}
+                              >
+                                {variant.label}
+                              </PreviewedLink>
                             )}
                           </b>
                           <BlazonLink blazon={variant.typed} language={language} />
@@ -304,6 +374,9 @@ export function Reference({
 export interface SightingsProps {
   readonly heading: string;
   readonly sightings: readonly Sighting[];
+  /** The words themselves, by anchor, for the glimpse each name raises. */
+  readonly previews?: ReadonlyMap<string, VocabularyEntry>;
+  readonly colours?: ColorModel;
 }
 
 /**
@@ -313,15 +386,26 @@ export interface SightingsProps {
  * other tongue says the word with is not among them: that is the same word said
  * again rather than another word, and it stands beside the name. Nothing is
  * elided — a reader after the synonyms wants all of them.
+ *
+ * A name here is a word the reader has not met, so it shows what it leads to
+ * before they go: six spellings of the roundel say nothing about which of them
+ * is the blue one, and the arms say it at once.
  */
-export function Sightings({ heading, sightings }: SightingsProps) {
+export function Sightings({ heading, sightings, previews, colours }: SightingsProps) {
+  const { search } = useLocation();
   return (
     <p className="showing__sightings">
       <span className="showing__heading">{heading}</span>
       {sightings.map((sighting) => (
-        <Link key={sighting.anchor} lang={sighting.language} to={`#${sighting.anchor}`}>
+        <PreviewedLink
+          key={sighting.anchor}
+          word={previews?.get(sighting.anchor)}
+          language={sighting.language}
+          to={`${search}#${sighting.anchor}`}
+          colours={colours}
+        >
           {sighting.word}
-        </Link>
+        </PreviewedLink>
       ))}
     </p>
   );
@@ -329,7 +413,7 @@ export function Sightings({ heading, sightings }: SightingsProps) {
 
 export interface BlazonLinkProps {
   readonly blazon: string;
-  readonly language: LanguageCode;
+  readonly language: Languages;
 }
 
 /** A blazon, and the way to the page that reads it. */

@@ -1,5 +1,6 @@
 import { Frame, Ink, Painter } from '../Ground';
-import { Shape, all } from '../shapes/Shape';
+import { Shape } from '../shapes/Shape';
+import { inked } from './inked';
 
 /**
  * Shapes laid over the ground, every one of them in the one ink: three billets
@@ -8,4 +9,4 @@ import { Shape, all } from '../shapes/Shape';
 export const laid =
   (shapes: (frame: Frame) => readonly Shape[], ink: Ink): Painter =>
   (ground) =>
-    all(shapes(ground.frame))(ink(ground));
+    inked(shapes(ground.frame), ink)(ground);

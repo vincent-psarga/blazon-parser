@@ -1,4 +1,6 @@
 import { ChargeType } from '../models/Charge';
+import { Languages } from '../models/Languages';
+import { Source } from '../models/Source';
 import { Modifier } from '../models/Modifier';
 import { TINCTURES, Tincture } from '../models/Tinctures';
 
@@ -40,6 +42,26 @@ export interface WordOptions {
   /** What the word already says was done to the charge, for a name that says it. */
   readonly defaultModifier?: Modifier;
 }
+
+/**
+ * What a word means, and who says so.
+ *
+ * The gloss is this library's own sentences and the sources are not: a reader
+ * who wants the authority rather than the summary follows them, and a claim made
+ * here that no source carries is a claim this library invented.
+ */
+export interface Gloss {
+  readonly value: string;
+  readonly sources: readonly Source[];
+}
+
+/** A gloss, under the tongue its sentences are written in. */
+export interface Description<Lang extends Languages> extends Gloss {
+  readonly lang: Lang;
+}
+
+/** A word with nothing of its own to say, which is a word with no sources either. */
+const UNGLOSSED: Description<Languages.en> = { lang: Languages.en, value: '', sources: [] };
 
 /**
  * One word of a language's heraldic vocabulary, with what the grammar needs to
@@ -86,6 +108,17 @@ export interface WordOptions {
  * exactly this.
  */
 export class Word {
+  /**
+   * What the word means, under each tongue it has been glossed in.
+   *
+   * English alone for now, on both vocabulary pages: what a French word means is
+   * told to whoever is learning French heraldry, and telling them in French
+   * would be answering a question they did not ask. The tongue is named all the
+   * same, so that a French gloss written later stands beside this one rather
+   * than replacing it.
+   */
+  public readonly descriptions: { readonly en: Description<Languages.en> };
+
   /** The word as more than one: "fasces" for "fasce". */
   public readonly plural: string;
 
@@ -128,16 +161,21 @@ export class Word {
   public readonly defaultModifier?: Modifier;
 
   /**
-   * What the word means, in as many sentences as it takes.
+   * What the word means, in as many sentences as it takes, and who says so.
    *
-   * Empty where there is nothing of the word's own to say: a number is not a
-   * heraldic term, and glossing "trois" would be glossing French.
+   * Left out where there is nothing of the word's own to say: a number is not a
+   * heraldic term, and glossing "trois" would be glossing French. Everything
+   * else carries both halves — a gloss nobody stands behind is this library's
+   * opinion about heraldry, which is not a thing it is entitled to have.
    */
   constructor(
     public readonly value: string,
-    public readonly description: string = '',
+    description?: Gloss,
     options?: WordOptions
   ) {
+    this.descriptions = {
+      en: description === undefined ? UNGLOSSED : { lang: Languages.en, ...description },
+    };
     this.plural = options?.plural ?? `${value}s`;
     this.spellings = [
       { value, plural: this.plural },

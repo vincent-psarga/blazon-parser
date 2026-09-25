@@ -171,7 +171,7 @@ describe('the crescent', () => {
    * asks for — the moon hangs below them.
    */
   test('stands its horns uppermost, there being no other way to blazon it here', () => {
-    const drawn = crescent(100, 100, 40)('#fff');
+    const drawn = crescent(100, 100, 40)({ fill: '#fff' });
     const [, , dexter, , sinister] =
       drawn.match(/M(-?[\d.]+) (-?[\d.]+) A[\d.]+ [\d.]+ 0 1 0 (-?[\d.]+) (-?[\d.]+)/) ?? [];
     expect(dexter).toBe(sinister);

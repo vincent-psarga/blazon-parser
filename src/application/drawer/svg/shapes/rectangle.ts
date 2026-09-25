@@ -1,11 +1,11 @@
-import { Shape } from './Shape';
+import { Shape, swelling } from './Shape';
 import { circleOutline } from './disc';
 import { hollow } from './hollow';
 
 export const rectangle =
   (x: number, y: number, width: number, height: number): Shape =>
-  (fill) =>
-    `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${fill}"/>`;
+  (brush) =>
+    `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="${brush.fill}"${swelling(brush)}/>`;
 
 /**
  * The outline of such a rectangle, written as a path so it can enclose another —

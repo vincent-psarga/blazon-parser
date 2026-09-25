@@ -2,6 +2,7 @@
 import { cleanup, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
 import { Armorial } from '../../src/domain/models/Armorial';
+import { Languages } from '../../src/domain/models/Languages';
 import { Metals } from '../../src/domain/models/Tinctures';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 import { mount } from '../testing/Mounting';
@@ -27,15 +28,23 @@ const FLANDERS = {
   name: 'Flanders',
   blazon: "D'or au lion de sable",
   image: 'https://example.invalid/flanders.png',
-  source: { name: 'Wikipedia: Armoiries de la Flandre', url: 'https://example.invalid/flanders' },
+  source: {
+    title: 'Wikipédia, Armoiries de la Flandre',
+    url: 'https://example.invalid/flanders',
+    language: Languages.fr,
+  },
 };
 
 const ARMORIAL: Armorial = {
   name: 'An armorial',
   slug: 'an-armorial',
-  language: 'french',
+  language: Languages.fr,
   licence: 'MIT',
-  source: { name: 'Wherever it came from', url: 'https://example.invalid/armorial' },
+  source: {
+    title: 'Wherever it came from',
+    url: 'https://example.invalid/armorial',
+    language: Languages.en,
+  },
   entries: [HALBERSTADT, FLANDERS],
 };
 
@@ -55,12 +64,14 @@ describe('ArmorialPage', () => {
 
   test('states how much of it the parser could read', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
-    expect(screen.getByText(/was able to parse/)).toHaveTextContent(
-      'blazon-parser was able to parse 50% of this armorial: 1 of 2 blazons.'
+    expect(screen.getByText(/of this armorial is read/)).toHaveTextContent(
+      '50% of this armorial is read: 1 of 2 blazons.'
     );
   });
 
-  test('leads to the armorial’s own source', () => {
+  test('leads to the armorial’s own source, named in full', () => {
+    // There is room for the citation here, where a gloss has room for a mark
+    // alone, so the work is named rather than numbered.
     mount(<ArmorialPage armorial={ARMORIAL} />);
     expect(screen.getByRole('link', { name: 'Wherever it came from' })).toHaveAttribute(
       'href',
@@ -97,7 +108,7 @@ describe('ArmorialPage', () => {
       <ArmorialPage
         armorial={{
           ...ARMORIAL,
-          language: 'english',
+          language: Languages.en,
           entries: [{ ...HALBERSTADT, blazon: 'Per pale argent and gules' }],
         }}
       />
@@ -114,13 +125,13 @@ describe('ArmorialPage', () => {
     const source = within(cells('Halberstadt').blazon).getByRole('link', {
       name: HALBERSTADT.blazon,
     });
-    expect(source).toHaveAttribute('href', readingPath(HALBERSTADT.blazon, 'fr'));
+    expect(source).toHaveAttribute('href', readingPath(HALBERSTADT.blazon, Languages.fr));
   });
 
   test('leads from a blazon the parser refused too: the refusal is spelled out there', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
     const refused = within(cells('Flanders').blazon).getByRole('link', { name: FLANDERS.blazon });
-    expect(refused).toHaveAttribute('href', readingPath(FLANDERS.blazon, 'fr'));
+    expect(refused).toHaveAttribute('href', readingPath(FLANDERS.blazon, Languages.fr));
   });
 
   test('shows the translation under a blazon it could read, and links that too', () => {
@@ -129,7 +140,10 @@ describe('ArmorialPage', () => {
       name: 'Per pale argent and gules.',
     });
     expect(translated).toHaveAttribute('lang', 'en');
-    expect(translated).toHaveAttribute('href', readingPath('Per pale argent and gules.', 'en'));
+    expect(translated).toHaveAttribute(
+      'href',
+      readingPath('Per pale argent and gules.', Languages.en)
+    );
   });
 
   test('shows no translation of a blazon it could not read', () => {
@@ -142,7 +156,7 @@ describe('ArmorialPage', () => {
       <ArmorialPage
         armorial={{
           ...ARMORIAL,
-          language: 'english',
+          language: Languages.en,
           entries: [{ ...HALBERSTADT, blazon: 'Per pale argent and gules' }],
         }}
       />
@@ -156,8 +170,24 @@ describe('ArmorialPage', () => {
   test('links an entry’s source where it has one', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
     expect(
-      within(row('Flanders')).getByRole('link', { name: 'Wikipedia: Armoiries de la Flandre' })
+      within(row('Flanders')).getByRole('link', {
+        name: 'Wikipédia, Armoiries de la Flandre — in French',
+      })
     ).toHaveAttribute('href', 'https://example.invalid/flanders');
+  });
+
+  test('says which tongue a source is in, where it is not the one being read', () => {
+    // Said of the French page a roll was copied from, and not of the English
+    // one: a reader told it of every source would learn nothing from being told.
+    mount(<ArmorialPage armorial={ARMORIAL} />);
+    const entry = within(row('Flanders')).getByRole('link', { name: /Armoiries de la Flandre/ });
+    expect(entry).toHaveAttribute('hreflang', 'fr');
+    expect(entry.querySelector('[lang="fr"]')?.textContent).toBe(
+      'Wikipédia, Armoiries de la Flandre'
+    );
+    expect(screen.getByRole('link', { name: 'Wherever it came from' }).textContent).not.toMatch(
+      /in English/
+    );
   });
 
   test('leaves the source cell empty for an entry without one', () => {

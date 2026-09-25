@@ -1,4 +1,5 @@
 import { Armorial } from '../../src/domain/models/Armorial';
+import { Languages } from '../../src/domain/models/Languages';
 
 /**
  * The knights of the Round Table, copied from the French Wikipedia armorial.
@@ -14,11 +15,12 @@ import { Armorial } from '../../src/domain/models/Armorial';
 export const TableRondeArmorial: Armorial = {
   name: 'Chevaliers de la Table ronde',
   slug: 'table-ronde',
-  language: 'french',
+  language: Languages.fr,
   licence: 'CC BY-SA 4.0',
   source: {
-    name: 'Wikipedia: Armorial des chevaliers de la Table ronde',
+    title: 'Wikipédia, Armorial des chevaliers de la Table ronde',
     url: 'https://fr.wikipedia.org/wiki/Armorial_des_chevaliers_de_la_Table_ronde',
+    language: Languages.fr,
   },
   entries: [
     {

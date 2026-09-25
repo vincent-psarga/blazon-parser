@@ -1,7 +1,7 @@
-# blazon-parser
+# the-herald-playground
 
 A parser for heraldic blazons, built on [typescript-parsec](https://github.com/microsoft/ts-parsec).
-A demo is available at [vincent-psarga.github.io/blazon-parser/](https://vincent-psarga.github.io/blazon-parser/).
+A demo is available at [vincent-psarga.github.io/the-herald-playground/](https://vincent-psarga.github.io/the-herald-playground/).
 
 ## About the project
 
@@ -15,7 +15,7 @@ The main drives behind this project are:
 Adding support for new words is mainly driven by:
 
 - Grammar before vocabulary: given the choice, I'd rather support new grammar than complete parts of the existing dictionary (that's why, for example, only 4 divisions are supported so far)
-- Armorial Driven Development: the [armorials](https://vincent-psarga.github.io/blazon-parser/armorials) provide many unsupported blazons
+- Armorial Driven Development: the [armorials](https://vincent-psarga.github.io/the-herald-playground/armorials) provide many unsupported blazons
 - supporting weird cases where French and English have mismatches
 
 What will not be supported:
@@ -33,7 +33,7 @@ This project (as my understanding of heraldry in general) comes mostly from seco
 
 The documentation (especially the vocabularies) in the demo is not meant to become a reference about heraldry. The point of this page is to work out the best way to present the vocabulary (as complex as it can be, considering all the potential links between the items).
 
-The documentation pages may state incorrect things, which I (or my coding agent) may have misunderstood. When decisions had to be taken about how a blazon is parsed or rewritten, the [conventions](https://vincent-psarga.github.io/blazon-parser/doc/conventions) page should show which sources have been used to take the decision.
+The documentation pages may state incorrect things, which I (or my coding agent) may have misunderstood. When decisions had to be taken about how a blazon is parsed or rewritten, the [conventions](https://vincent-psarga.github.io/the-herald-playground/doc/conventions) page should show which sources have been used to take the decision.
 
 ### About AI usage
 

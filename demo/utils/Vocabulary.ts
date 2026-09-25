@@ -29,9 +29,10 @@ import {
   wordSaidOf,
   wordsOf,
 } from '../../src/domain/translations/Translation';
+import { Source } from '../../src/domain/models/Source';
 import { Word } from '../../src/domain/translations/Word';
-import { anchorOf, folded, letterOf } from './Anchors';
-import { LanguageCode } from './Languages';
+import { anchorOf, folded, isAnchored, letterOf } from './Anchors';
+import { Languages } from '../../src/domain/models/Languages';
 import { readBlazon } from './Reading';
 
 /**
@@ -81,7 +82,7 @@ export interface Sighting {
   readonly word: string;
   readonly anchor: string;
   /** Which tongue's page holds it, a word being reachable across the two. */
-  readonly language: LanguageCode;
+  readonly language: Languages;
 }
 
 /** The same word in arms of its own, where one drawing does not tell the whole. */
@@ -121,7 +122,10 @@ export interface VocabularyEntry {
   readonly qualified: boolean;
   /** The letter of the index it is filed under, accents folded away. */
   readonly letter: string;
+  /** What the word means, which the page prints as it stands. */
   readonly description: string;
+  /** Who says so, for a reader who wants the authority rather than the summary. */
+  readonly sources: readonly Source[];
   /** The arms that show the word. */
   readonly blazon: Blazon;
   /** A blazon a reader could type, carrying this very spelling. */
@@ -227,7 +231,7 @@ type Sense<W extends Word = Word> = Ranked & {
  * which the wording holds inside a sentence rather than as a word.
  */
 interface Tongue<W extends Word = Word> {
-  readonly code: LanguageCode;
+  readonly code: Languages;
   readonly wording: BlazonWording<W>;
   /** The word for a field that carries nothing, where the tongue has one. */
   readonly plain?: W;
@@ -238,7 +242,7 @@ interface Tongue<W extends Word = Word> {
 }
 
 const FRENCH: Tongue<FrenchWord> = {
-  code: 'fr',
+  code: Languages.fr,
   wording: FrenchBlazonWording,
   plain: FrenchPlain,
   sown: [FrenchSown],
@@ -246,7 +250,7 @@ const FRENCH: Tongue<FrenchWord> = {
 };
 
 const ENGLISH: Tongue = {
-  code: 'en',
+  code: Languages.en,
   wording: EnglishBlazonWording,
   sown: EnglishSown,
   sowing: (spelling) => (word) => `${spelling} ${OF} ${word.plural}`,
@@ -499,14 +503,14 @@ const BUT_ONCE: Record<OrdinaryType, string | undefined> = {
  *
  * Where no number is understood the two agree, and say so alike.
  */
-const COUNTING: Record<LanguageCode, (pieces: string) => string> = {
-  fr: (pieces) =>
+const COUNTING: Record<Languages, (pieces: string) => string> = {
+  [Languages.fr]: (pieces) =>
     `${pieces} pieces understood, and left unwritten: the number is blazoned only where it is some other. The pieces are even, always — an odd count is how heraldry says bars borne on a field instead.`,
-  en: (pieces) =>
+  [Languages.en]: (pieces) =>
     `${pieces} pieces understood, and blazoned all the same: the number is written whether or not it is the usual one. The pieces are even, always — an odd count is how heraldry says bars borne on a field instead.`,
 };
 
-function counting(type: VariationType, language: LanguageCode): string {
+function counting(type: VariationType, language: Languages): string {
   const usual = usualPieces(type);
   return usual === undefined
     ? 'No number understood, so the pieces are counted every time and a blazon that leaves the count out is refused rather than guessed at. They interlock rather than follow one another, so an odd count is as good as an even one.'
@@ -524,8 +528,8 @@ function counting(type: VariationType, language: LanguageCode): string {
  * once on the conventions page for both tongues, and a note repeating it here
  * would be filling the page with what the word does not say.
  */
-const MODIFIER_NOTE: Partial<Record<LanguageCode, (word: Word) => string>> = {
-  fr: (word) =>
+const MODIFIER_NOTE: Partial<Record<Languages, (word: Word) => string>> = {
+  [Languages.fr]: (word) =>
     `Said of a charge after its tincture, and never on its own: it names no figure and no tincture, only what was done to one. It agrees with the charge in gender and in number — ${writings(word)} — and agrees with what the blazon called the charge, so a losange borne “au” is said masculine and borne “à la” feminine. Written back, it agrees with the gender the charge itself is written in. A charge that will not take it refuses it by name.`,
 };
 
@@ -546,11 +550,7 @@ function writings(word: Word): string {
 const FURRED_NOTE =
   'Named where the fur itself is not. A fur is a tincture and carries its pair with it, so naming it is the whole of what a blazon says; a furred field is owed the two tinctures its figures are cut from.';
 
-function noteOn<W extends Word>(
-  sense: Sense<W>,
-  word: W,
-  language: LanguageCode
-): string | undefined {
+function noteOn<W extends Word>(sense: Sense<W>, word: W, language: Languages): string | undefined {
   switch (sense.rank) {
     case 'ordinary':
       return BUT_ONCE[sense.term];
@@ -807,7 +807,7 @@ function vocabularyOf<W extends Word, O extends Word>(
   }
 
   // Where a word stands, so that one entry can point at another.
-  const whereabouts = (rank: Rank, word: Word, language: LanguageCode): Sighting => ({
+  const whereabouts = (rank: Rank, word: Word, language: Languages): Sighting => ({
     word: word.value,
     anchor: anchorOf(word.value, (seen.get(anchorOf(word.value)) ?? 0) > 1 ? rank : undefined),
     language,
@@ -827,7 +827,8 @@ function vocabularyOf<W extends Word, O extends Word>(
         rank: sense.rank,
         qualified,
         letter: letterOf(word.value),
-        description: word.description,
+        description: word.descriptions.en.value,
+        sources: word.descriptions.en.sources,
         blazon,
         typed,
         written: written === typed ? undefined : written,
@@ -855,14 +856,37 @@ function vocabularyOf<W extends Word, O extends Word>(
 }
 
 /**
+ * The word an address names, out of these.
+ *
+ * A word answers to every way it is written and not only to the one it is
+ * written in: whoever met "bezant" in an armorial looks that up, and is shown
+ * the word it is a writing of.
+ *
+ * Nothing where the address names no word of this set — which is a question the
+ * page asks as well as the pane that draws the answer, a vocabulary sifted down
+ * to one kind having to know whether the word being read is still among them.
+ */
+export function struckIn(
+  entries: readonly VocabularyEntry[],
+  hash: string
+): VocabularyEntry | undefined {
+  return (
+    entries.find((entry) => isAnchored(entry.anchor, hash)) ??
+    entries.find((entry) =>
+      entry.spellings.some((spelling) => isAnchored(anchorOf(spelling), hash))
+    )
+  );
+}
+
+/**
  * The vocabulary of one tongue, every word of it, filed under its own letter.
  *
  * Built rather than written down: what the page lists is what the wording holds,
  * so a word added to the library arrives on the page of itself and a word taken
  * away leaves it.
  */
-export function vocabularyIn(language: LanguageCode): readonly VocabularyEntry[] {
-  return language === 'fr' ? vocabularyOf(FRENCH, ENGLISH) : vocabularyOf(ENGLISH, FRENCH);
+export function vocabularyIn(language: Languages): readonly VocabularyEntry[] {
+  return language === Languages.fr ? vocabularyOf(FRENCH, ENGLISH) : vocabularyOf(ENGLISH, FRENCH);
 }
 
 /** The letters the vocabulary of a tongue runs to, each with the words filed under it. */
@@ -882,6 +906,6 @@ export function lettersOf(
 }
 
 /** Where a tongue's vocabulary is read. */
-export function vocabularyPath(language: LanguageCode): string {
+export function vocabularyPath(language: Languages): string {
   return `/doc/vocabulary/${language}`;
 }

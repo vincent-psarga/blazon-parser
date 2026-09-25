@@ -2,6 +2,7 @@
 import { cleanup, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, test } from 'vitest';
 import { Armorial } from '../../src/domain/models/Armorial';
+import { Languages } from '../../src/domain/models/Languages';
 import { mount } from '../testing/Mounting';
 import { ArmorialsPage, armorialPath } from './ArmorialsPage';
 
@@ -10,7 +11,7 @@ afterEach(cleanup);
 const ONE: Armorial = {
   name: 'A sample armorial',
   slug: 'sample',
-  language: 'french',
+  language: Languages.fr,
   licence: 'MIT',
   entries: [
     { name: 'Halberstadt', blazon: "Parti d'argent et de gueules", image: '' },
@@ -21,7 +22,7 @@ const ONE: Armorial = {
 const ANOTHER: Armorial = {
   name: 'A roll of English arms',
   slug: 'english-roll',
-  language: 'english',
+  language: Languages.en,
   licence: 'CC BY-SA 4.0',
   entries: [{ name: 'Somewhere', blazon: 'Per pale argent and gules', image: '' }],
 };

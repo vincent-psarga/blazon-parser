@@ -19,9 +19,9 @@ const term = (name: string) => screen.getByRole('link', { name });
 const openDoc = () => userEvent.setup().click(doc());
 
 describe('the rail', () => {
-  test('carries the demo, the documentation and the armorials, and names each once', () => {
+  test('carries the playground, the documentation and the armorials, and names each once', () => {
     render(<App />);
-    expect(within(rail()).getByRole('link', { name: 'Demo' })).toBeInTheDocument();
+    expect(within(rail()).getByRole('link', { name: 'Playground' })).toBeInTheDocument();
     expect(within(rail()).getByRole('link', { name: 'Armorials' })).toBeInTheDocument();
     expect(doc()).toBeInTheDocument();
     // Two entries pointing at the same page is one entry too many.
@@ -218,7 +218,7 @@ describe('the armorials', () => {
     window.history.pushState(null, '', '/armorial/sample');
     render(<App />);
     expect(heading()).toBe('A sample armorial');
-    expect(screen.getByText(/was able to parse/)).toBeInTheDocument();
+    expect(screen.getByText(/of this armorial is read/)).toBeInTheDocument();
   });
 
   test('mark the rail entry as where the reader is, index and armorial alike', async () => {
@@ -244,18 +244,18 @@ describe('a path no page answers to', () => {
 
 describe('served from a subdirectory, as on GitHub Pages', () => {
   beforeEach(() => {
-    vi.stubEnv('BASE_URL', '/blazon-parser/');
-    window.history.pushState(null, '', '/blazon-parser/');
+    vi.stubEnv('BASE_URL', '/the-herald-playground/');
+    window.history.pushState(null, '', '/the-herald-playground/');
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  test('shows the demo at the base itself rather than claiming nothing answers', () => {
+  test('shows the playground at the base itself rather than claiming nothing answers', () => {
     render(<App />);
     expect(heading()).toBe('Blazon');
   });
 
   test('reads a page below the base', () => {
-    window.history.pushState(null, '', '/blazon-parser/doc/vocabulary/en');
+    window.history.pushState(null, '', '/the-herald-playground/doc/vocabulary/en');
     render(<App />);
     expect(heading()).toBe('The English vocabulary');
   });
@@ -265,26 +265,29 @@ describe('served from a subdirectory, as on GitHub Pages', () => {
     await openDoc();
     await userEvent.setup().click(inMenu('English vocabulary')!);
     expect(heading()).toBe('The English vocabulary');
-    expect(window.location.pathname).toBe('/blazon-parser/doc/vocabulary/en');
+    expect(window.location.pathname).toBe('/the-herald-playground/doc/vocabulary/en');
   });
 
   test('reads an armorial below the base', () => {
-    window.history.pushState(null, '', '/blazon-parser/armorial/sample');
+    window.history.pushState(null, '', '/the-herald-playground/armorial/sample');
     render(<App />);
     expect(heading()).toBe('A sample armorial');
   });
 
   test('points the links themselves below the base, for whoever opens one in a new tab', async () => {
     render(<App />);
-    expect(within(rail()).getByRole('link', { name: 'Demo' })).toHaveAttribute(
+    expect(within(rail()).getByRole('link', { name: 'Playground' })).toHaveAttribute(
       'href',
-      '/blazon-parser/'
+      '/the-herald-playground/'
     );
     expect(within(rail()).getByRole('link', { name: 'Armorials' })).toHaveAttribute(
       'href',
-      '/blazon-parser/armorials'
+      '/the-herald-playground/armorials'
     );
     await openDoc();
-    expect(inMenu('French vocabulary')).toHaveAttribute('href', '/blazon-parser/doc/vocabulary/fr');
+    expect(inMenu('French vocabulary')).toHaveAttribute(
+      'href',
+      '/the-herald-playground/doc/vocabulary/fr'
+    );
   });
 });

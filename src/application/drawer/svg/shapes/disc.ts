@@ -1,4 +1,4 @@
-import { Shape } from './Shape';
+import { Shape, swelling } from './Shape';
 
 /**
  * A filled circle: what a ring would be if it were painted through rather than
@@ -6,8 +6,8 @@ import { Shape } from './Shape';
  */
 export const disc =
   (x: number, y: number, radius: number): Shape =>
-  (fill) =>
-    `<circle cx="${x}" cy="${y}" r="${radius}" fill="${fill}"/>`;
+  (brush) =>
+    `<circle cx="${x}" cy="${y}" r="${radius}" fill="${brush.fill}"${swelling(brush)}/>`;
 
 /**
  * The outline of such a circle, written as a path so it can be a hole in

@@ -15,7 +15,7 @@ export const SPOTS = 24;
  * The two spots one tile carries, the second set half a tile along both ways, so
  * that the rows fall between one another rather than under.
  */
-export const spots: Shape = (fill) =>
+export const spots: Shape = ({ fill }) =>
   `<g fill="${fill}">` +
   `<g transform="translate(6 7)">${SPOT}</g>` +
   `<g transform="translate(18 19)">${SPOT}</g>` +

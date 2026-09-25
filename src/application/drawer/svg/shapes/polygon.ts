@@ -1,6 +1,6 @@
-import { Shape } from './Shape';
+import { Shape, swelling } from './Shape';
 
 export const polygon =
   (points: string): Shape =>
-  (fill) =>
-    `<polygon points="${points}" fill="${fill}"/>`;
+  (brush) =>
+    `<polygon points="${points}" fill="${brush.fill}"${swelling(brush)}/>`;
