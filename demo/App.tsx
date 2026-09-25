@@ -44,7 +44,7 @@ const DOCS = [
  * router puts it back the moment an address reaches the browser.
  *
  * Routing is the application's, never the library's: the router lives here, and
- * blazon-parser neither knows nor cares that there is one.
+ * the parser neither knows nor cares that there is one.
  */
 export function App() {
   return (
@@ -155,7 +155,7 @@ function Rail() {
   return (
     <nav className="rail">
       <Link to="/" aria-current={pathname === '/' ? 'page' : undefined}>
-        Demo
+        Playground
       </Link>
       <RailMenu label="Doc" docs={DOCS} pathname={pathname} />
       <Link to="/armorials" aria-current={pathname.startsWith('/armorial') ? 'page' : undefined}>

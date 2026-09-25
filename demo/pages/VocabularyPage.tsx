@@ -123,6 +123,7 @@ export function VocabularyPage({ language, colourings }: VocabularyPageProps) {
       extent={<Kinds kinds={kindsOf(whole, vocabularyPath(language))} sifted={sifted} />}
       language={language}
       entries={entries}
+      vocabulary={whole}
       colourings={colourings}
       lead={
         <>
