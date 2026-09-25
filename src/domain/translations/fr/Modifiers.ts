@@ -25,6 +25,16 @@ import { FrenchWord } from './FrenchWord';
 // Percé is not a third word for the same thing, whatever the dictionaries'
 // filing suggests. It is the word for the other modifier, and the other drawing:
 // see Modifier.pierced.
+//
+// Denché is not the word for the indenting, though Parker glosses indented "(fr.
+// denché)" and glosses the dancetty with it too. French tells the two apart by
+// the size of the teeth where English tells them apart by the word: denché is
+// said of lines "en forme de dents de scie de grandes dimensions", and "dentelé
+// est le denché dont les angles sont plus petits et plus nombreux". The line this
+// draws is the small-toothed one, so dentelé is what it is written with and read
+// under; denché belongs to the dancetty, and arrives with it. Reading it here
+// would answer a blazon that asked for great teeth with a band of small ones,
+// which is the one thing a vocabulary must not do.
 export const FrenchModifiers: Translation<Modifier, FrenchWord> = {
   [Modifier.voided]: [
     new FrenchWord('vidé', {
@@ -47,6 +57,15 @@ export const FrenchModifiers: Translation<Modifier, FrenchWord> = {
       value:
         'A round hole punched through the middle, the rest of the charge left as it was. The dictionaries file it under Vidé — "on se sert du terme percées, pour les billettes" — but a billette percée is not a billette vidée: voiding leaves the outline of the charge and nothing else, and piercing leaves the charge with a hole in it. Two figures, so two words, and this one is not a way of writing the other.',
       sources: [blasonArmoiries('Percé')],
+    }),
+  ],
+  [Modifier.indented]: [
+    new FrenchWord('dentelé', {
+      value:
+        'The edges of the band cut into small teeth instead of run straight: "dentelé est le denché dont les angles sont plus petits et plus nombreux". It is not denché, which is the same line cut "en forme de dents de scie de grandes dimensions" and is what English calls dancetty — a second drawing, and one this vocabulary does not hold. A fasce dentelée is the band English blazons a fess indented.',
+      // Under Denché, which is where the dictionary's Dentelé sends a reader and
+      // where the two are told apart.
+      sources: [blasonArmoiries('Denché', 'denche')],
     }),
   ],
 };

@@ -50,9 +50,9 @@ const HEADINGS = [
   'A name that means what was done to the charge is written without saying it',
   'A strewing is named where heraldry names it',
   'A word that says nothing is read and never written',
-  'A modifier stands after the charge and before its tincture',
+  'A modifier stands after what it qualifies and before its tincture',
   'A French modifier agrees with the charge the blazon named',
-  'A modifier is said only of a charge that can show it',
+  'A modifier is said only of what can show it',
   'A word the armorials keep for one charge is written of that charge alone',
   'The smaller settlements',
 ];
@@ -231,6 +231,30 @@ describe('what each rule shows', () => {
       "D'azur à la billette percée d'or.",
       'Azure a billet pierced or.',
     ]);
+  });
+
+  test('writes a band’s modified line where it writes a charge’s modifier', () => {
+    mount(<ConventionsPage />);
+    expect(shown('Azure a fess indented or').written).toEqual([
+      "D'azur à la fasce dentelée d'or.",
+      'Azure a fess indented or.',
+    ]);
+    expect(shown("D'or à trois bandes dentelées de sable").written).toContain(
+      'Or three bends indented sable.'
+    );
+    // The French participle agrees with the band it stands after, as it agrees
+    // with a charge: le chef is masculine where la fasce is feminine.
+    expect(shown("D'azur au chef dentelé d'or").written).toContain("D'azur au chef dentelé d'or.");
+  });
+
+  test('keeps the two lists apart, a band having no middle and a charge no line', () => {
+    mount(<ConventionsPage />);
+    const band = shown('Azure a fess voided or');
+    expect(band.refused).toBe('Wrong modifier: fess is never voided');
+    expect(band.arms).toBe(0);
+    const charge = shown('Azure a lozenge indented or');
+    expect(charge.refused).toBe('Wrong modifier: lozenge is never indented');
+    expect(charge.arms).toBe(0);
   });
 
   test('reads it after the tincture too, and answers in the settled order', () => {
