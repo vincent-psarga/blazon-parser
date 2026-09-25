@@ -19,9 +19,25 @@ import { Spot } from './charges/disposition';
  * a frame of its own.
  */
 
-/** A field cut in two along a line: the half in chief first. */
+/**
+ * One part of a field cut in two: the whole of what it covers, and the room it
+ * gives whatever it bears.
+ *
+ * What it covers is a path rather than a shape, being asked for twice over: once
+ * to paint the part's own tincture, and once to cut off whatever the part carries
+ * at the line.
+ */
+export type FieldPart = {
+  readonly covers: string;
+  /** The frame whatever the part bears is drawn against, in the part's own coordinates. */
+  readonly room: Frame;
+  /** Where that room sits in the frame the field was cut from. */
+  readonly at: readonly [x: number, y: number];
+};
+
+/** A field cut in two along a line: the part in chief first. */
 export type DivisionFigure = {
-  readonly halves: (frame: Frame) => readonly [Shape, Shape];
+  readonly parts: (frame: Frame) => readonly [FieldPart, FieldPart];
 };
 
 /**

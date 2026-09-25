@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { FieldType } from '../../domain/models/Field';
+import { FieldType, half } from '../../domain/models/Field';
 import { ChargeType } from '../../domain/models/Charge';
 import { OrdinaryType } from '../../domain/models/Ordinary';
 import { InvalidTincture } from '../../domain/errors/parsing/InvalidTincture';
@@ -22,10 +22,12 @@ import { nameOf, wordOf } from '../../domain/translations/Translation';
 import { EnglishChargeType } from '../../domain/translations/en/Charges';
 import { EnglishTinctures } from '../../domain/translations/en/Tinctures';
 import { bearing } from '../english/EnglishGrammar';
+import { EnglishBlazonWriter } from '../writer/EnglishBlazonWriter';
 import { EnglishBlazonParser } from './EnglishBlazonParser';
 import { FrenchBlazonParser } from './FrenchBlazonParser';
 
 const parser = new EnglishBlazonParser();
+const writer = new EnglishBlazonWriter();
 
 describe('EnglishBlazonParser', () => {
   test.each(TINCTURES)('reads a plain field of %s', (tincture) => {
@@ -36,11 +38,7 @@ describe('EnglishBlazonParser', () => {
 
   test('reads a divided field', () => {
     expect(parser.parse('Per pale azure and or.')).toEqual({
-      field: {
-        type: FieldType.pale,
-        firstTincture: Colours.azure,
-        secondTincture: Metals.or,
-      },
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
     });
   });
 
@@ -50,7 +48,7 @@ describe('EnglishBlazonParser', () => {
     ['Per bend sinister', FieldType.bendSinister],
   ])('reads "%s" as a field divided per that line', (name, type) => {
     expect(parser.parse(`${name} gules and argent`)).toEqual({
-      field: { type, firstTincture: Colours.gules, secondTincture: Metals.argent },
+      field: { type, first: half(Colours.gules), second: half(Metals.argent) },
     });
   });
 
@@ -61,8 +59,70 @@ describe('EnglishBlazonParser', () => {
 
   test('is case insensitive', () => {
     expect(parser.parse('PER PALE AZURE AND OR')).toEqual({
-      field: { type: FieldType.pale, firstTincture: Colours.azure, secondTincture: Metals.or },
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
     });
+  });
+
+  // A half is arms, so English charges one where French does: what it bears
+  // stands between its tincture and the conjunction, and the rule that reads
+  // what a shield bears reads it.
+  test('reads "Per fess azure a bend or and argent" as a bend on the half in chief', () => {
+    expect(parser.parse('Per fess azure a bend or and argent')).toEqual({
+      field: {
+        type: FieldType.fess,
+        first: {
+          field: { type: FieldType.plain, tincture: Colours.azure },
+          chargesOrOrdinaries: [{ type: OrdinaryType.bend, tincture: Metals.or }],
+        },
+        second: half(Metals.argent),
+      },
+    });
+  });
+
+  test('lays what follows the second half on the shield', () => {
+    expect(parser.parse('Per pale azure and or a bordure gules')).toEqual({
+      field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
+      chargesOrOrdinaries: [{ type: OrdinaryType.bordure, tincture: Colours.gules }],
+    });
+  });
+
+  // A half is a field in English as in French, so it takes what English says of
+  // a field of one tincture: what it is sown with. English has no word for a
+  // field being plain, so there is nothing of that sort to read here.
+  test('reads a sown half, and sows the half whose tincture it follows', () => {
+    expect(parser.parse('Per pale azure semy of billets or and argent').field).toMatchObject({
+      first: { field: { semy: { type: ChargeType.billet, tincture: Metals.or } } },
+      second: { field: { tincture: Metals.argent } },
+    });
+    expect(parser.parse('Per pale azure and or semy of billets argent').field).toMatchObject({
+      first: { field: { tincture: Colours.azure } },
+      second: { field: { semy: { type: ChargeType.billet, tincture: Metals.argent } } },
+    });
+  });
+
+  test('reads the mark a blazon sets before the conjunction', () => {
+    expect(parser.parse('Per pale azure three fleurs-de-lis or, and ermine')).toEqual(
+      parser.parse('Per pale azure three fleurs-de-lis or and ermine')
+    );
+  });
+
+  // English does not rank the parts of a partition. It sets two whole coats side
+  // by side another way — "It is necessary always to mention the dexter shield
+  // first and to say impaled with" — which is a phrase of its own and no rank at
+  // all, and where English does rank it ranks quarters, which are not read yet.
+  // So the French form is not lent to it: a tongue contributes the ranks it has,
+  // and English contributes none.
+  test.each([
+    'Per pale, in the first azure, in the second or',
+    'Per pale, 1 azure, 2 or',
+    'Per pale, au premier azure, au second or',
+  ])('does not rank the parts of a partition: %s', (blazon) => {
+    expect(() => parser.parse(blazon)).toThrow();
+  });
+
+  test('survives the round trip, the charged half and all', () => {
+    const blazon = 'Per pale azure three fleurs-de-lis or and ermine.';
+    expect(writer.write(parser.parse(blazon))).toBe(blazon);
   });
 
   test('takes the closing full stop or leaves it', () => {
@@ -103,11 +163,7 @@ describe('EnglishBlazonParser', () => {
 
     test('lays an ordinary on a divided field', () => {
       expect(parser.parse('Per pale azure and or a saltire gules')).toEqual({
-        field: {
-          type: FieldType.pale,
-          firstTincture: Colours.azure,
-          secondTincture: Metals.or,
-        },
+        field: { type: FieldType.pale, first: half(Colours.azure), second: half(Metals.or) },
         chargesOrOrdinaries: [{ type: OrdinaryType.saltire, tincture: Colours.gules }],
       });
     });

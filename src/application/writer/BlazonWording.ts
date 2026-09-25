@@ -19,6 +19,7 @@ import {
 import { OrdinaryType, SEVERAL, borne } from '../../domain/models/Ordinary';
 import { Tincture } from '../../domain/models/Tinctures';
 import { NumberWords, counted } from '../../domain/translations/Numbers';
+import { FIRST, SECOND } from '../../domain/translations/Ranks';
 import { Strewings, strewnIn } from '../../domain/translations/Strewings';
 import {
   Translation,
@@ -86,6 +87,17 @@ export interface BlazonWording<W extends Word = Word> {
   readonly strew: (word: W) => string;
   /** The conjunction joining the halves of a divided field. */
   readonly conjunction: string;
+  /**
+   * How the language names the rank of one part of a divided field: "au
+   * premier", "au second". The rank arrives as the number it is, counting from
+   * one, the language having said how it spells its ranks.
+   *
+   * A language that does not rank the parts leaves this off — English sets two
+   * whole coats side by side another way, naming the dexter first and saying
+   * "impaled with" between them — and writes the unranked form, which can say
+   * only what the first part bears.
+   */
+  readonly rank?: (rank: number) => string;
 }
 
 /**
@@ -113,11 +125,23 @@ const SEPARATOR = ',';
  * covers the bends.
  */
 export function writeBlazon<W extends Word>(wording: BlazonWording<W>, blazon: Blazon): string {
-  const field = capitalise(writeField(wording, blazon.field));
+  return `${capitalise(writeArms(wording, blazon))}.`;
+}
+
+/**
+ * A field and whatever it bears, which is the same phrase wherever it stands:
+ * the whole shield says it, and so does either half of a divided field.
+ *
+ * The sentence is what a blazon is written as, and a half is no sentence — it is
+ * written inside one — so the capital and the full stop are put on by the caller
+ * that has a sentence to make.
+ */
+function writeArms<W extends Word>(wording: BlazonWording<W>, blazon: Blazon): string {
+  const field = writeField(wording, blazon.field);
   const borne = (blazon.chargesOrOrdinaries ?? [])
     .map((one) => writeBorne(wording, one))
     .join(`${SEPARATOR} `);
-  return `${borne === '' ? field : `${field} ${borne}`}.`;
+  return borne === '' ? field : `${field} ${borne}`;
 }
 
 /**
@@ -260,30 +284,59 @@ function writeVariation<W extends Word>(wording: BlazonWording<W>, variation: Va
   );
 }
 
+/**
+ * The name of the line, then each half written as the arms it is, with the
+ * conjunction between them.
+ *
+ * A half carrying nothing but its tincture writes as that tincture and nothing
+ * else — which is what a plain field bearing nothing writes as — so "parti
+ * d'azur et d'or" comes back out as itself, and a half carrying more says more
+ * in the same place: "Parti d'azur à trois fleurs de lys d'or et d'hermine".
+ *
+ * What the first half bears reads back as the first half's, both tongues
+ * writing it between that half's tincture and the conjunction, and both reading
+ * it there. What the second half bears does not: a blazon written this way lays
+ * it on the shield when it is read again, because that is what an armorial means
+ * by writing anything after the second half. Heraldry says the other thing
+ * another way — "au premier ..., au second ..." — and until that phrase is
+ * written, this writes what the arms are and the reading takes them as it finds
+ * them.
+ */
 function writeDivision<W extends Word>(wording: BlazonWording<W>, division: Division): string {
-  return writeBetween(wording, nameOf(wording.divisions, division.type), division);
+  const name = nameOf(wording.divisions, division.type);
+  const ranked = wording.rank;
+  if (ranked === undefined || !bearsAnything(division.second)) {
+    return [
+      name,
+      writeArms(wording, division.first),
+      wording.conjunction,
+      writeArms(wording, division.second),
+    ].join(' ');
+  }
+  return [
+    `${name}${SEPARATOR}`,
+    `${ranked(FIRST)} ${writeArms(wording, division.first)}${SEPARATOR}`,
+    `${ranked(SECOND)} ${writeArms(wording, division.second)}`,
+  ].join(' ');
+}
+
+/** Whether a part of a divided field bears anything at all. */
+function bearsAnything(part: Blazon): boolean {
+  return (part.chargesOrOrdinaries ?? []).length !== 0;
 }
 
 /**
- * A furred field is written as a division is — the name, then the two tinctures
- * — because that is all there is to say: no count stands anywhere in the phrase,
- * and neither tongue puts anything between the name and the pair.
+ * A furred field is written as a division of two bare halves is — the name, then
+ * the two tinctures — because that is all there is to say: no count stands
+ * anywhere in the phrase, neither tongue puts anything between the name and the
+ * pair, and a pelt has no halves for anything to be laid on.
  */
 function writeFurred<W extends Word>(wording: BlazonWording<W>, furred: Furred): string {
-  return writeBetween(wording, nameOf(wording.furs, furred.type), furred);
-}
-
-/** A named term and the two tinctures it takes, joined by the conjunction. */
-function writeBetween<W extends Word>(
-  wording: BlazonWording<W>,
-  name: string,
-  between: Division | Furred
-): string {
   return [
-    name,
-    writeTincture(wording, between.firstTincture),
+    nameOf(wording.furs, furred.type),
+    writeTincture(wording, furred.firstTincture),
     wording.conjunction,
-    writeTincture(wording, between.secondTincture),
+    writeTincture(wording, furred.secondTincture),
   ].join(' ');
 }
 
