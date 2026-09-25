@@ -8,8 +8,10 @@ import {
   Division,
   Field,
   FieldType,
+  Furred,
   Plain,
   Semy,
+  Variation,
   isDivision,
   isFurred,
   isPlain,
@@ -30,12 +32,19 @@ import { Rank } from './Vocabulary';
  * What a blazon holds is a field and the figures laid on it, each named by a
  * word and each carrying its own tincture; nesting says what was said of what.
  * So a branch is a word, and its children are the words that qualify it.
+ *
+ * All but one kind of branch is a word. A divided field holds two whole coats
+ * rather than two tinctures, and the part they are laid in is no term of
+ * heraldry: it says which half, and a tongue that ranks its parts says it in
+ * words of its own — "au premier" — while a tongue that does not has nothing to
+ * say there at all. Such a branch is a place in the shield rather than a word
+ * about it, so it carries no rank and leads nowhere.
  */
 export interface Branch {
-  /** The spelling the tongue writes it with, which is the one shown. */
-  readonly word: string;
-  /** The vocabulary it belongs to, which is how the way to it is found. */
-  readonly rank: Rank;
+  /** The spelling the tongue writes it with, where a word names this at all. */
+  readonly word?: string;
+  /** The vocabulary it belongs to, where it is a word of the vocabulary. */
+  readonly rank?: Rank;
   /** How many are borne, where more than one is. */
   readonly count?: number;
   /**
@@ -105,28 +114,75 @@ function structureOf<W extends Word>(
  */
 function fieldBranch<W extends Word>(wording: BlazonWording<W>, sown: Word, field: Field): Branch {
   // The arms are the field as the blazon cut it — the very field on the shield
-  // beside it, nothing chosen here at all — and the two tinctures stand under it
-  // in the order the blazon named them.
-  const cut = (word: string, rank: Rank): Branch => ({
+  // beside it, nothing chosen here at all.
+  const cut = (word: string, rank: Rank, children: readonly Branch[]): Branch => ({
     word,
     rank,
     arms: { field },
-    children: [
-      tinctureBranch(wording, (field as Division).firstTincture),
-      tinctureBranch(wording, (field as Division).secondTincture),
-    ],
+    children,
   });
 
+  // A varied field and a fur alternate two tinctures and bear nothing, so the
+  // pair stands under the word in the order the blazon named them.
+  const pair = (between: Variation | Furred): readonly Branch[] => [
+    tinctureBranch(wording, between.firstTincture),
+    tinctureBranch(wording, between.secondTincture),
+  ];
+
   if (isVariation(field)) {
-    return cut(wordOf(wording.variations, field.type).value, 'variation');
+    return cut(wordOf(wording.variations, field.type).value, 'variation', pair(field));
   }
   if (isDivision(field)) {
-    return cut(wordOf(wording.divisions, field.type).value, 'division');
+    return cut(
+      wordOf(wording.divisions, field.type).value,
+      'division',
+      halves(wording, sown, field)
+    );
   }
   if (isFurred(field)) {
-    return cut(wordOf(wording.furs, field.type).value, 'furred field');
+    return cut(wordOf(wording.furs, field.type).value, 'furred field', pair(field));
   }
   return plainBranch(wording, sown, field);
+}
+
+/**
+ * The two halves of a divided field, each a whole coat and each taken apart as
+ * one.
+ *
+ * Where neither half bears anything the halves are their tinctures and nothing
+ * more, so they stand straight under the partition: a parti of azure and or
+ * reads as the two words the blazon wrote and wants no scaffolding between them.
+ *
+ * Where either bears something the halves are gathered, each under the part it
+ * is laid in. Ungathered, a bend blazoned in the second half would stand beside
+ * the first half's tincture with nothing to say which half it belonged to —
+ * which is the one thing a divided field's structure exists to answer.
+ *
+ * That is the same question the writer asks before it writes: a blazon says "au
+ * premier" exactly when the short form could not say what a part bears.
+ */
+function halves<W extends Word>(
+  wording: BlazonWording<W>,
+  sown: Word,
+  division: Division
+): readonly Branch[] {
+  const parts = [division.first, division.second];
+  if (!parts.some(bears)) {
+    return parts.flatMap((part) => structureOf(wording, sown, part));
+  }
+  return parts.map((part, at) => ({
+    // What the tongue ranks the part by, where it ranks them at all. It is no
+    // term of the vocabulary and leads nowhere: it names a place in the shield
+    // rather than anything borne there.
+    word: wording.rank?.(at + 1),
+    arms: part,
+    children: structureOf(wording, sown, part),
+  }));
+}
+
+/** Whether a half carries anything beyond the tincture of its field. */
+function bears(part: Blazon): boolean {
+  return (part.chargesOrOrdinaries ?? []).length !== 0;
 }
 
 /** A field of one tincture, with whatever it was sown with standing under it. */
