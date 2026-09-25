@@ -1,6 +1,7 @@
-import { ReactNode, useEffect, useRef } from 'react';
+import { ReactNode, useEffect, useMemo, useRef } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Languages } from '../../src/domain/models/Languages';
+import { ColorModel } from '../../src/domain/services/IBlazonDrawer';
 import { anchorOf } from '../utils/Anchors';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 import { LANGUAGES, otherThan } from '../utils/Languages';
@@ -13,6 +14,7 @@ import {
   vocabularyPath,
 } from '../utils/Vocabulary';
 import { BlazonShield } from './BlazonShield';
+import { PreviewedLink } from './WordPreview';
 import { Sources } from './Sources';
 
 export interface ReferenceProps {
@@ -29,6 +31,15 @@ export interface ReferenceProps {
   /** The tongue whose words these are, which is what the page is a page of. */
   readonly language: Languages;
   readonly entries: readonly VocabularyEntry[];
+  /**
+   * Every word of this tongue, for the previews the page raises from a name.
+   *
+   * Not the entries themselves: the vocabulary can be sifted down to one kind,
+   * and the words a struck word points at are not all of that kind — voided
+   * points at the losange, which is a charge. What is listed and what may be
+   * glimpsed are two questions, so they are two lists.
+   */
+  readonly vocabulary?: readonly VocabularyEntry[];
   readonly colourings?: readonly Colouring[];
 }
 
@@ -50,6 +61,7 @@ export function Reference({
   lead,
   language,
   entries,
+  vocabulary = entries,
   colourings = COLOURINGS,
 }: ReferenceProps) {
   const { hash, search } = useLocation();
@@ -57,6 +69,12 @@ export function Reference({
   // empty.
   const struck = struckIn(entries, hash) ?? entries[0];
   const letters = lettersOf(entries);
+  // By the anchor, which is what a sighting carries and what every way through
+  // the vocabulary is written in.
+  const previews = useMemo(
+    () => new Map(vocabulary.map((entry) => [entry.anchor, entry])),
+    [vocabulary]
+  );
 
   const reading = useRef<HTMLDivElement>(null);
   /** The pane the vocabulary stands in, which is the box that scrolls it. */
@@ -289,7 +307,12 @@ export function Reference({
               {struck.note !== undefined && <p className="showing__note">{struck.note}</p>}
 
               {struck.alsoHere.length !== 0 && (
-                <Sightings heading="See also" sightings={struck.alsoHere} />
+                <Sightings
+                  heading="See also"
+                  sightings={struck.alsoHere}
+                  previews={previews}
+                  colours={colourings[0]?.colours}
+                />
               )}
 
               {/* The further arms are smaller than the struck ones, and say what
@@ -323,9 +346,14 @@ export function Reference({
                             {variant.sighting === undefined ? (
                               variant.label
                             ) : (
-                              <Link to={`${search}#${variant.sighting.anchor}`}>
+                              <PreviewedLink
+                                word={previews.get(variant.sighting.anchor)}
+                                language={variant.sighting.language}
+                                to={`${search}#${variant.sighting.anchor}`}
+                                colours={colourings[0]?.colours}
+                              >
                                 {variant.label}
-                              </Link>
+                              </PreviewedLink>
                             )}
                           </b>
                           <BlazonLink blazon={variant.typed} language={language} />
@@ -346,6 +374,9 @@ export function Reference({
 export interface SightingsProps {
   readonly heading: string;
   readonly sightings: readonly Sighting[];
+  /** The words themselves, by anchor, for the glimpse each name raises. */
+  readonly previews?: ReadonlyMap<string, VocabularyEntry>;
+  readonly colours?: ColorModel;
 }
 
 /**
@@ -355,16 +386,26 @@ export interface SightingsProps {
  * other tongue says the word with is not among them: that is the same word said
  * again rather than another word, and it stands beside the name. Nothing is
  * elided — a reader after the synonyms wants all of them.
+ *
+ * A name here is a word the reader has not met, so it shows what it leads to
+ * before they go: six spellings of the roundel say nothing about which of them
+ * is the blue one, and the arms say it at once.
  */
-export function Sightings({ heading, sightings }: SightingsProps) {
+export function Sightings({ heading, sightings, previews, colours }: SightingsProps) {
   const { search } = useLocation();
   return (
     <p className="showing__sightings">
       <span className="showing__heading">{heading}</span>
       {sightings.map((sighting) => (
-        <Link key={sighting.anchor} lang={sighting.language} to={`${search}#${sighting.anchor}`}>
+        <PreviewedLink
+          key={sighting.anchor}
+          word={previews?.get(sighting.anchor)}
+          language={sighting.language}
+          to={`${search}#${sighting.anchor}`}
+          colours={colours}
+        >
           {sighting.word}
-        </Link>
+        </PreviewedLink>
       ))}
     </p>
   );

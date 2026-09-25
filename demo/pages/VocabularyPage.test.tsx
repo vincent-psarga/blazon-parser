@@ -7,7 +7,8 @@ import { Colours, Metals } from '../../src/domain/models/Tinctures';
 import { WikipediaColours } from '../../src/infra/colours/WikipediaColours';
 import { mount } from '../testing/Mounting';
 import { OUTLINE } from '../utils/Colourings';
-import { vocabularyIn } from '../utils/Vocabulary';
+import { shortened } from '../utils/Shortened';
+import { VocabularyEntry, vocabularyIn } from '../utils/Vocabulary';
 import { VocabularyPage } from './VocabularyPage';
 
 afterEach(cleanup);
@@ -23,6 +24,18 @@ const struck = () => showing().querySelector('.showing__spelling')?.textContent;
 /** What the other tongue says it with, said beside the word itself. */
 const abroad = () => showing().querySelector('.showing__abroad')?.textContent?.trim();
 const strike = async (word: string) => userEvent.setup().click(ghost(word));
+
+/** The words the struck one points at, which stand under "See also". */
+const seeAlso = () => within(showing()).getByText('See also').parentElement as HTMLElement;
+
+/** One word of a tongue, as the vocabulary itself holds it. */
+const word = (vocabulary: readonly VocabularyEntry[], name: string): VocabularyEntry => {
+  const found = vocabulary.find((entry) => entry.word === name);
+  if (found === undefined) {
+    throw new Error(`No word "${name}" in that vocabulary`);
+  }
+  return found;
+};
 
 /** The questions the struck word is asked, each under a heading of its own. */
 const headings = () =>
@@ -333,7 +346,7 @@ describe('a word read at full size', () => {
   test('sends the reader to the other spellings of the same term, all of them', async () => {
     mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en');
     await strike('hurt');
-    const seen = within(showing()).getByText('See also').parentElement as HTMLElement;
+    const seen = seeAlso();
     expect(Array.from(seen.querySelectorAll('a')).map((link) => link.textContent)).toEqual([
       'roundel',
       'besant',
@@ -459,5 +472,53 @@ describe('what one drawing cannot say', () => {
     expect(labels('Modified')).toEqual(['Indented']);
     expect(() => section('Borne in number')).toThrow();
     expect(within(showing()).getByText(/shield has one edge/)).toBeInTheDocument();
+  });
+});
+
+describe('the glimpse a name gives of the word it leads to', () => {
+  const card = () => screen.queryByRole('tooltip');
+  const glimpse = async (among: HTMLElement, name: string) => {
+    await userEvent.setup().hover(within(among).getByRole('link', { name }));
+    return card();
+  };
+
+  test('shows a word under "See also" before the reader goes to it', async () => {
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en');
+    await strike('hurt');
+    const shown = (await glimpse(seeAlso(), 'pomme')) as HTMLElement;
+    expect(shown.querySelector('.preview__name')).toHaveTextContent('pomme');
+    // The arms are the half that answers "is this the word I want?" fastest.
+    expect(shown.querySelector('img')).toBeInTheDocument();
+    expect(shown.querySelector('.preview__gloss')?.textContent).toBe(
+      shortened(word(ENGLISH, 'pomme').description)
+    );
+  });
+
+  test('leaves the translation alone: it is the same word again, not a word to look up', async () => {
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en');
+    await strike('hurt');
+    const abroadLink = showing().querySelector('.showing__abroad a') as HTMLElement;
+    await userEvent.setup().hover(abroadLink);
+    expect(card()).toBeNull();
+  });
+
+  test('shows a charge named under "Said of" as well', async () => {
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en');
+    await strike('voided');
+    const shown = (await glimpse(section('Said of'), 'Lozenge')) as HTMLElement;
+    expect(shown.querySelector('.preview__name')).toHaveTextContent('lozenge');
+    expect(shown.querySelector('.preview__gloss')?.textContent).toBe(
+      shortened(word(ENGLISH, 'lozenge').description)
+    );
+  });
+
+  test('shows a word the stack has been sifted out of, the glimpse being of the whole', async () => {
+    // Sifted to the modifiers, voided still points at the losange, which is a
+    // charge: what is listed and what may be glimpsed are two questions.
+    mount(<VocabularyPage language={Languages.en} />, '/doc/vocabulary/en?of=modifier#voided');
+    expect(struck()).toBe('voided');
+    expect((await glimpse(section('Said of'), 'Lozenge')) as HTMLElement).toHaveTextContent(
+      'lozenge'
+    );
   });
 });

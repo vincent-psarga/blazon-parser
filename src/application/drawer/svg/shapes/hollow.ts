@@ -1,4 +1,4 @@
-import { Shape } from './Shape';
+import { Shape, swelling } from './Shape';
 
 /**
  * A shape with its middle taken out: the band between two outlines painted, and
@@ -15,5 +15,5 @@ import { Shape } from './Shape';
  */
 export const hollow =
   (outer: string, inner: string): Shape =>
-  (fill) =>
-    `<path d="${outer} ${inner}" fill="${fill}" fill-rule="evenodd"/>`;
+  (brush) =>
+    `<path d="${outer} ${inner}" fill="${brush.fill}" fill-rule="evenodd"${swelling(brush)}/>`;

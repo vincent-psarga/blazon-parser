@@ -28,7 +28,7 @@ describe('a figure written about its own origin', () => {
   const UNIT = 'M-0.5 -0.5 L0.5 -0.5 L0.5 0.5 Z';
 
   test('is put where it belongs and drawn the size it was asked for', () => {
-    expect(placed(UNIT, 100, 50, 10)('#fff')).toBe(
+    expect(placed(UNIT, 100, 50, 10)({ fill: '#fff' })).toBe(
       '<path d="M95 45 L105 45 L105 55 Z" fill="#fff"/>'
     );
   });
@@ -40,7 +40,7 @@ describe('a figure written about its own origin', () => {
    * charge that was simply not there.
    */
   test('is not placed by a transform, which would scale its filling with it', () => {
-    expect(placed(UNIT, 100, 50, 10)('#fff')).not.toContain('scale');
+    expect(placed(UNIT, 100, 50, 10)({ fill: '#fff' })).not.toContain('scale');
   });
 
   test('leaves what fills it alone, so a pattern keeps the size it was defined at', () => {
@@ -84,7 +84,7 @@ describe('the figures each new charge is drawn as', () => {
       const figure = CHARGES[type];
       const spot = { x: 100, y: 100, size: 20 };
       expect(figure.strewn(SHIELD_FRAME).length).toBeGreaterThan(20);
-      expect(figure.at(spot)('#fff')).toBe(figure.at(spot)('#fff'));
+      expect(figure.at(spot)({ fill: '#fff' })).toBe(figure.at(spot)({ fill: '#fff' }));
     }
   );
 });

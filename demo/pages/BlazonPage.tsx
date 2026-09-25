@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Languages } from '../../src/domain/models/Languages';
 import { BlazonShield } from '../components/BlazonShield';
+import { BlazonStructure } from '../components/BlazonStructure';
 import { COLOURINGS, Colouring, OUTLINE } from '../utils/Colourings';
 import { LANGUAGES, otherThan } from '../utils/Languages';
 import { Read, readBlazon } from '../utils/Reading';
@@ -89,19 +90,35 @@ export function BlazonPage({
 
       {blazon !== undefined && (
         <div className="showing" aria-live="polite">
-          <div className="showing__fields">
-            {colourings.map(({ label, colours }) => (
-              <figure key={label} className="showing__field">
-                <BlazonShield
-                  blazon={blazon}
-                  alt={`${translation} (${label.toLowerCase()})`}
-                  colours={colours}
-                  outline={OUTLINE}
-                  width={200}
-                />
-                <figcaption>{label}</figcaption>
-              </figure>
-            ))}
+          {/* The arms and the sentence they were drawn from, side by side: each
+              is the other explained, and a reader looking from one to the other
+              is doing the thing the page is for. */}
+          <div className="showing__both">
+            <div className="showing__fields">
+              {colourings.map(({ label, colours }) => (
+                <figure key={label} className="showing__field">
+                  <BlazonShield
+                    blazon={blazon}
+                    alt={`${translation} (${label.toLowerCase()})`}
+                    colours={colours}
+                    outline={OUTLINE}
+                    width={200}
+                  />
+                  <figcaption>{label}</figcaption>
+                </figure>
+              ))}
+            </div>
+
+            <section className="showing__structure" aria-labelledby="blazon-structure-heading">
+              <h2 className="compose__label" id="blazon-structure-heading">
+                As read
+              </h2>
+              <BlazonStructure
+                blazon={blazon}
+                language={language}
+                colours={colourings[0]?.colours}
+              />
+            </section>
           </div>
         </div>
       )}

@@ -10,7 +10,7 @@ web
 
 Two audiences, weighted equally — neither is an afterthought.
 
-- **Developers** deciding whether to install `blason-parser`, or already integrating it. They arrive
+- **Developers** deciding whether to install `the-herald-playground`, or already integrating it. They arrive
   wanting the supported vocabulary, the exact input string a term takes, and the component API.
 - **Heraldry learners** who want to understand blazon itself. They arrive wanting the conventions
   taught — what a tincture is, why the ranks exist, what "in chief" means — with the library as the

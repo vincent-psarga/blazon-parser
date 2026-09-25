@@ -54,8 +54,7 @@ export function ArmorialPage({ armorial, colours = COLOURINGS[0]?.colours }: Arm
       )}
 
       <p className="roll__score">
-        blazon-parser was able to parse <b>{score}%</b> of this armorial: {read} of{' '}
-        {tally(total, 'blazon')}.
+        <b>{score}%</b> of this armorial is read: {read} of {tally(total, 'blazon')}.
       </p>
 
       <Unknown words={unknown} language={language} />

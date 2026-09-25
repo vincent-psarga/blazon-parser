@@ -64,8 +64,8 @@ describe('ArmorialPage', () => {
 
   test('states how much of it the parser could read', () => {
     mount(<ArmorialPage armorial={ARMORIAL} />);
-    expect(screen.getByText(/was able to parse/)).toHaveTextContent(
-      'blazon-parser was able to parse 50% of this armorial: 1 of 2 blazons.'
+    expect(screen.getByText(/of this armorial is read/)).toHaveTextContent(
+      '50% of this armorial is read: 1 of 2 blazons.'
     );
   });
 
